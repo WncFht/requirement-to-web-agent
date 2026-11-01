@@ -1,5 +1,6 @@
 {
-  "version": 1,
+  "version": 2,
+  "revision_note": "F04 failure requires no stale authenticated identity, matching teacher text; it does not prescribe entry-link visibility on HTTP failure. Corrected before executing the current complete application's independent acceptance; prior oracle hashes and negative-control evidence are retained.",
   "input": "input/requirements.yaml",
   "teacher_tests": ["input/tests/REQ-1.spec.ts", "input/tests/REQ-2.spec.ts"],
   "teacher_requirement_mapping": {"REQ-1.spec.ts": "REQ-2 registration", "REQ-2.spec.ts": "REQ-3 login"},

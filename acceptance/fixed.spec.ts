@@ -51,6 +51,8 @@ test("F04: real pending and failed session lookup do not expose cached identity"
   const held = new Promise<void>(resolve => { release = resolve; });
   let reached!: () => void;
   const started = new Promise<void>(resolve => { reached = resolve; });
+  const failedResponse = page.waitForResponse(response =>
+    new URL(response.url()).pathname === adapter.session_path && response.status() === 503);
   await page.route(`**${adapter.session_path}`, async route => {
     reached(); await held; await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"fixed lookup failure"}' });
   });
@@ -59,7 +61,7 @@ test("F04: real pending and failed session lookup do not expose cached identity"
     await started;
     await expect(page.getByText(EXISTING_ACCOUNT.username, { exact: true })).toHaveCount(0);
   } finally { release(); }
-  await expectSignedOut(page);
+  expect((await failedResponse).status()).toBe(503);
   await expect(page.getByText(EXISTING_ACCOUNT.username, { exact: true })).toHaveCount(0);
   expect(snapshot()).toEqual(before);
 });
