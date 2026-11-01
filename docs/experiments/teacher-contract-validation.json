@@ -1,0 +1,75 @@
+{
+  "scope": "Compiler fixes for actual teacher label locators and read-only mount failures; no performance treatment",
+  "source_start_revision": "762c82e",
+  "historical_failure_replay": {
+    "archive_sha256": "ce2a72ef21475a92954781ec03d2c41500dfba7b1456ba4381cdafbdeebc2459",
+    "labels": {
+      "scope": "Archived real page rendered statically; DOM-only positive control, not application repair",
+      "results": [
+        {
+          "label": "Password",
+          "original_accessible_name_passed": true,
+          "exact_count_before": 0,
+          "added_gate_rejected": true,
+          "positive_control_exact_count": 1
+        },
+        {
+          "label": "Confirm Password",
+          "original_accessible_name_passed": true,
+          "exact_count_before": 0,
+          "added_gate_rejected": true,
+          "positive_control_exact_count": 1
+        }
+      ]
+    },
+    "read_failures": {
+      "returncode": 1,
+      "results": [
+        {
+          "event": "EV-home-resolve",
+          "mode": "http-503",
+          "calls": 1,
+          "updates": 1,
+          "status": "FAILED",
+          "error": "Error: Unexpected session response status: 503"
+        },
+        {
+          "event": "EV-home-resolve",
+          "mode": "transport-rejection",
+          "calls": 1,
+          "updates": 1,
+          "status": "FAILED",
+          "error": "Error: Compiler read-only transport failure"
+        }
+      ],
+      "failures": [
+        {
+          "event": "EV-home-resolve",
+          "mode": "http-503",
+          "calls": 1,
+          "updates": 1,
+          "status": "FAILED",
+          "error": "Error: Unexpected session response status: 503"
+        },
+        {
+          "event": "EV-home-resolve",
+          "mode": "transport-rejection",
+          "calls": 1,
+          "updates": 1,
+          "status": "FAILED",
+          "error": "Error: Compiler read-only transport failure"
+        }
+      ],
+      "exercised": 2,
+      "not_exercised": 0
+    }
+  },
+  "fresh_run": "teacher-contracts-1101",
+  "fresh_status": "RUNNING",
+  "fixed_acceptance_unchanged": true,
+  "limits": [
+    "Handler probes isolate context.api; real browser/database checks remain required",
+    "NOT_EXERCISED is recorded, not counted as coverage",
+    "DOM positive control is not a repair of the archived application"
+  ]
+}
