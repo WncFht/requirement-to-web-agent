@@ -1,0 +1,14 @@
+{
+  "origin": "Teacher Lab 6 distribution",
+  "archive_sha256": "a5c26c96f04b3def8daad497f411798270056b3805fc459ca384a36d5f42ef20",
+  "files": {
+    "reference/homepage.png": "a993a429965857982022eb457b1859ec42ae1935382f321111ce3515e6bca79c",
+    "reference/login.png": "5792c1edb96395b5e8554d87840ac7cfb0f9dc37b66dac9816290b8996f9c371",
+    "reference/register.png": "12e14f2c678e3b07e572ecf3da65f86874f5b9bf9e83eba1352045194fe93352",
+    "requirements.yaml": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+    "tests/REQ-1.spec.ts": "d52caae072c7e88264786d08bca79245eb473287e72d33de824c71e1a1b88ee3",
+    "tests/REQ-2.spec.ts": "946fe20d8cf344ad0fed1f4077d7e416a4697487feb264ac9fdd1953f8a2b7d5",
+    "tests/helpers.ts": "8ec6cca12e15fc32c4ed34cf86d7e455850c04e095a412a39b1c8fc063a7bf7c"
+  },
+  "policy": "Keep these teacher bytes frozen; independent acceptance lives outside input/tests. Legacy test requirement IDs refer to registration/login, not YAML node IDs."
+}
