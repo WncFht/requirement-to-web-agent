@@ -10,6 +10,7 @@ from infrastructure.shared.agent.files import (
     source_paths,
 )
 from infrastructure.shared.agent.loop import run_file_agent
+from infrastructure.stages.backend.test_admission import validate_backend_test
 from infrastructure.shared.models.text import TextModel
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.shared.project.entrypoints import selected_path
@@ -242,6 +243,9 @@ def implement_backend_tdd(
 
                 def test_gate(aid=aid):
                     chosen = selected_path(output, "backend_test", aid) or relative
+                    validate_backend_test(
+                        (output / chosen).read_text(encoding="utf-8-sig")
+                    )
                     targets[aid] = chosen
                     files_by_api[aid] = [chosen]
                     generation_files = [
