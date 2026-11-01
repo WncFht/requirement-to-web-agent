@@ -32,8 +32,8 @@
   `{"edits":[{path,content}]}` 整文件批编辑；`FileWorkspace` 校验路径合法性、
   原子写入失败回滚、每次请求重新供给文件内容。`run_file_agent` 是有界修复循环：
   生成 → gate → 失败反馈 → 重试。
-- **义务守恒**：需求（父）的读写义务必须被其 API 集合（子）完整覆盖；
-  04 号脚本做机器校验，是"编译对了没有"的第一道确定性判据。
+- **义务守恒**：叶子需求与分配 API、交互调用的字段级 R/W 集合保持一致；
+  04 号脚本检查义务记录和字段引用，06/11 比较分配集合。这不证明自然语言义务推断或业务实现本身正确。
 - **契约冻结测试**：08/12 先把 P/Q 与场景冻结为可执行测试（RED），实现以
   通过冻结测试为完成定义——模型没有"我觉得做完了"的话语权。
 - **确定性接线**：工件校验、运行时接线和测试执行由代码完成；数据库、API、页面与事件提案依赖模型。
@@ -45,6 +45,7 @@
 | 优化 | 位置 | 触发/回退 |
 | --- | --- | --- |
 | Stage 12 创建调用上下文瘦身 | `interactions/implementation.py` | `ARC_FULL_CONTEXT=1` 回退 |
+| 进一步单事件上下文试验 | `interactions/creation_context.py` | `ARC_EVENT_CONTEXT=1` 显式启用，默认 0；完整候选未通过外部验收 |
 | agent 反馈去噪（ANSI/截断） | `shared/agent/loop.py` | 常开 |
 | 瞬态传输退避重试 | `shared/models/text.py` | `ARC_MODEL_TRANSPORT_RETRIES` |
 | Stage 09 逐需求设计 checkpoint | `frontend/ui/synthesis.py` | `ARC_UI_DESIGN_FRESH=1` 全新 |
@@ -55,6 +56,8 @@
 - `00`–`12_*.py`：阶段脚本（教师内容，语义冻结）
 - `infrastructure/`：编译器库——`shared/agent`（编辑协议与循环）、`shared/models`
   （text/vision 客户端）、`stages/*`（各 pass）、`shared/rag`（页面检索）、`utils`、`project/templates`
-- `input/`：smoke 需求 + 参考截图 + 教师参考 E2E
+- `input/`：按教师 ZIP 原字节冻结的需求、截图与原始 E2E；pending 扩展在 `examples/registration-pending/`
 - `tests/`：编译器单元测试（含文件编辑、流程与反馈回归）
 - `main.py`：平台入口（run_all → db:init → build → deploy.sh）
+
+当前成本分布、恢复边界和优化顺序见 [整体优化审阅](2026-11-01-整体优化审阅.md)。JSON 形状/义务校验、行为测试与固定外部验收分别承担不同职责，不把任一 IR 检查称为完整业务证明。
