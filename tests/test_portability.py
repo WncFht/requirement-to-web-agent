@@ -272,6 +272,9 @@ class PortableBatchRunner(unittest.TestCase):
             with (
                 patch.object(sys, "argv", argv),
                 patch.object(run_all, "STEPS", ("first.py", "second.py", "third.py")),
+                # These fake children test process portability, not numbered-pass
+                # artifacts. Real completion/resume behavior has its own suite.
+                patch("infrastructure.utils.pipeline_state.validate_completion"),
                 patch.object(
                     run_all, "start_process", side_effect=processes_to_start
                 ) as start,

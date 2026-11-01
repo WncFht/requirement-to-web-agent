@@ -2,12 +2,15 @@
 
 import argparse
 import json
+import os
+from contextlib import nullcontext
 from pathlib import Path
 import subprocess
 import sys
 
 from infrastructure.utils.cli import COMPILER_DIR, resolve_directories
 from infrastructure.utils.processes import start_process, stop_process
+from infrastructure.utils.pipeline_state import PipelineState, pipeline_lock
 from infrastructure.utils.presentation.logging import configure_console
 from infrastructure.utils.presentation.console import show_panel
 from infrastructure.utils.presentation.stages import stage_label
@@ -29,8 +32,7 @@ STEPS = (
     "12_implement_frontend_tdd.py",
 )
 
-# Artifacts that prove a step already finished. Steps with no sentinel are
-# always rerun (they are cheap, self-resuming or act as pure checkers).
+# Legacy compatibility only. These existence checks are not completion proof.
 SENTINELS = {
     "00_project_initialization.py": ("package.json",),
     "01_explore_requirement.py": (
@@ -40,7 +42,7 @@ SENTINELS = {
     "02_build_db_schema.py": (".arc/db_schema.json",),
     "03_infer_db_obligations.py": (".arc/db_obligations.json",),
     "04_check_db_obligations.py": (),
-    "05_implement_db.py": (),  # 哨兵在 step_completed 特判：tables 目录须含至少一个 .sql
+    "05_implement_db.py": (),  # 哨兵在 legacy_step_completed 特判：tables 目录须含至少一个 .sql
     "06_decompose_backend_apis.py": (".arc/backend_apis.json",),
     "07_infer_api_contracts.py": (".arc/backend_contracts.json",),
     "08_implement_backend_tdd.py": (".arc/backend_tdd.json",),
@@ -57,7 +59,7 @@ GREEN_SENTINELS = {
 }
 
 
-def step_completed(output: Path, step: str) -> bool:
+def legacy_step_completed(output: Path, step: str) -> bool:
     """True when every sentinel artifact exists (and reports GREEN where required)."""
     if step == "05_implement_db.py":
         # The scaffold creates an empty backend/src/db/tables directory; stage 05
@@ -81,6 +83,61 @@ def step_completed(output: Path, step: str) -> bool:
         return False
 
 
+def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
+    """Run sequential passes; publish successful receipts only after exit and gate validation."""
+    legacy = os.getenv("ARC_LEGACY_PIPELINE_RESUME", "0") == "1"
+    with nullcontext() if legacy else pipeline_lock(output_dir):
+        state = (
+            None
+            if legacy
+            else PipelineState(COMPILER_DIR, input_dir, output_dir, STEPS, resume)
+        )
+        for index, step in enumerate(STEPS, 1):
+            complete = resume and (
+                legacy_step_completed(output_dir, step)
+                if legacy
+                else state.completed(step)
+            )
+            if resume and complete:
+                show_panel(
+                    f"[{index}/{len(STEPS)}] {stage_label(step)}",
+                    "Verified completion record; skipping (--resume)."
+                    if state
+                    else "Legacy sentinel hit; skipping (--resume).",
+                )
+                continue
+            show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", f"Running {step}")
+            if state:
+                state.begin(step)
+            command = [
+                sys.executable,
+                str(COMPILER_DIR / step),
+                "--input",
+                str(input_dir),
+                "--output",
+                str(output_dir),
+            ]
+            if step == "01_explore_requirement.py":
+                command.append("--no-browse")
+            success = False
+            checkpoint_safe = True
+            try:
+                process = start_process(command, cwd=COMPILER_DIR)
+                try:
+                    code = process.wait()
+                except BaseException:
+                    checkpoint_safe = False
+                    stop_process(process)
+                    checkpoint_safe = True
+                    raise
+                if code:
+                    raise subprocess.CalledProcessError(code, [sys.executable, step])
+                success = True
+            finally:
+                if state and checkpoint_safe:
+                    state.finish(step, success)
+
+
 def main() -> None:
     configure_console()
     parser = argparse.ArgumentParser(description=__doc__)
@@ -99,7 +156,7 @@ def main() -> None:
     parser.add_argument(
         "--resume",
         action="store_true",
-        help="Skip steps whose artifacts already exist (08/12 additionally require status GREEN)",
+        help="Reuse a verified successful prefix with unchanged inputs, compiler, configuration and artifacts",
     )
     args = parser.parse_args()
     try:
@@ -110,39 +167,11 @@ def main() -> None:
             "Requirement compiler | Pipeline",
             f"Input: {input_dir}\nOutput: {output_dir}\nStages to run: {len(STEPS)}\nResume: {args.resume}",
         )
-        for index, step in enumerate(STEPS, 1):
-            if args.resume and step_completed(output_dir, step):
-                show_panel(
-                    f"[{index}/{len(STEPS)}] {stage_label(step)}",
-                    "Artifacts already complete; skipping (--resume).",
-                )
-                continue
-            show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", f"Running {step}")
-            command = [
-                sys.executable,
-                str(COMPILER_DIR / step),
-                "--input",
-                str(input_dir),
-                "--output",
-                str(output_dir),
-            ]
-            if step == "01_explore_requirement.py":
-                command.append("--no-browse")
-            process = start_process(
-                command,
-                cwd=COMPILER_DIR,
-            )
-            try:
-                code = process.wait()
-            except BaseException:
-                stop_process(process)
-                raise
-            if code:
-                raise subprocess.CalledProcessError(code, [sys.executable, step])
+        run_pipeline(input_dir, output_dir, args.resume)
     except subprocess.CalledProcessError as error:
         parser.exit(
             error.returncode if error.returncode > 0 else 1,
-            f"Pipeline stopped: {step} failed.\n",
+            f"Pipeline stopped: {Path(error.cmd[-1]).name} failed.\n",
         )
     except (OSError, ValueError) as error:
         parser.exit(1, f"Execution failed: {error}\n")

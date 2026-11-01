@@ -15,7 +15,7 @@ def main():
     parser.add_argument(
         "--resume",
         action="store_true",
-        help="Skip pipeline steps whose artifacts already exist (08/12 require status GREEN)",
+        help="Reuse verified pipeline completion records under unchanged provenance",
     )
     args = parser.parse_args()
     source = Path(__file__).resolve().parent

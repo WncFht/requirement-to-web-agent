@@ -38,7 +38,7 @@
   通过冻结测试为完成定义——模型没有"我觉得做完了"的话语权。
 - **确定性接线**：工件校验、运行时接线和测试执行由代码完成；数据库、API、页面与事件提案依赖模型。
 - **失败语义**：单阶段失败由 `guarded` 转为警告继续（部分阶段）或中止流水线；
-  `run_all.py --resume` 按哨兵产物跳过已完成阶段（08/12 须 status GREEN）。
+  `run_all.py --resume` 按可信成功前缀恢复；完成记录与局部 checkpoint 分离，08/10/12 检查成功状态。输入/编译器/配置指纹与整体工作区哈希不符时拒绝复用，要求新目录，尚无最小 DAG 增量重建。详见 [恢复规则](development.md#可信断点续跑与旧目录迁移)。
 
 ## 性能优化落点（详见实验报告）
 
@@ -49,7 +49,7 @@
 | agent 反馈去噪（ANSI/截断） | `shared/agent/loop.py` | 常开 |
 | 瞬态传输退避重试 | `shared/models/text.py` | `ARC_MODEL_TRANSPORT_RETRIES` |
 | Stage 09 逐需求设计 checkpoint | `frontend/ui/synthesis.py` | `ARC_UI_DESIGN_FRESH=1` 全新 |
-| 流水线断点续跑 | `run_all.py`、`main.py` | `--resume` |
+| 流水线断点续跑 | `run_all.py`、`utils/pipeline_state.py`、`main.py` | `--resume`；`ARC_LEGACY_PIPELINE_RESUME=1` 回退 |
 
 ## 仓库布局
 
