@@ -58,6 +58,9 @@ def verify(path):
 
 
 def write_package(lab, paths, target, revision, kind):
+    validation = json.loads((lab / "source.json").read_text()).get(
+        "current_validation", {}
+    )
     files = {}
     for relative in sorted(set(paths)):
         path = lab / relative
@@ -74,7 +77,7 @@ def write_package(lab, paths, target, revision, kind):
         "kind": kind,
         "source_revision": revision,
         "files": files,
-        "full_generation_status": "FAILED; new admission guard needs a fresh full run",
+        "full_generation_status": validation.get("latest_full_generation", "UNKNOWN"),
     }
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="lab6-package-") as folder:
