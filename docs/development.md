@@ -23,6 +23,9 @@
 | 变量                          | 默认               | 作用                                                             |
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
 | `ARC_LEGACY_E2E_SOURCE_CHECK` | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
+| `ARC_LEGACY_REFERENCE_TESTS` | 0 | =1 不向前端设计/实现提供 input/tests 外部交互契约 |
+| `ARC_LEGACY_UI_PREDICATES` | 0 | =1 回退完整可见性谓词提示；UI IR 与 gate 不变 |
+| `ARC_LEGACY_TEST_SANITY` | 0 | =1 回退后端恒假 header 断言的冻结前准入检查 |
 | `ARC_FULL_FEEDBACK`           | 0                  | =1 恢复旧的字符串修复反馈与重复 output                           |
 | `ARC_FULL_CONTEXT`            | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）              |
 | `ARC_UI_DESIGN_FRESH`         | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                        |
