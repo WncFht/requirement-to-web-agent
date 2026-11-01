@@ -4,6 +4,7 @@
 - 「整体应该优先优化哪里、有哪些恢复和校验缺口？」→ [整体优化审阅](2026-11-01-整体优化审阅.md)
 - 「怎么跑、断了怎么续、怎么量 token 和各阶段耗时？」→ [development.md](development.md)
 - 「baseline 是多少、优化改了什么、效果如何？」→ [experiments/2026-11-01-baseline-optimization.md](experiments/2026-11-01-baseline-optimization.md)
+- 「固定次数复测、串行速度消融和缓存 V2 的最终结果？」→ [串行消融与缓存验证](experiments/2026-11-02-串行消融与缓存验证.md)
 - 「为什么这样设计而不是那样？」→ `.agents/notes/`（决策记录，按主题归档）
 - 「原始 zip 和现在的差别？」→ `../../upstream.patch`（或 `git diff teacher-baseline main`）
 
