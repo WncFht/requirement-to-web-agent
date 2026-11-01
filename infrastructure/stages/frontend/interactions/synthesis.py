@@ -1,6 +1,7 @@
 """Step 11: simple trigger/action design followed by shared event P/Q inference."""
 
 import json
+import os
 
 from infrastructure.stages.frontend.interactions.contracts import validate_contract
 from infrastructure.stages.frontend.interactions.prompts import DECOMPOSE, CONTRACT
@@ -38,6 +39,17 @@ def propose(model, instructions, request, validate, console, label, max_attempts
             return validate(response), response
         except ValueError as error:
             correction = {"error": str(error), "previous_response": response}
+            if (
+                "existing_interactions" in request
+                and os.getenv("ARC_LEGACY_INTERACTION_RETRY", "0") != "1"
+            ):
+                correction["retry_base"] = (
+                    "The rejected proposal was NOT applied. Retry against the original "
+                    "accepted existing_interactions, including ALL new triggers/events "
+                    "needed by this leaf, not just a delta against previous_response. "
+                    "Retain earlier accepted associations. Do not copy another page's "
+                    "session/lifecycle API into this leaf if it causes excess DB reads."
+                )
             if isinstance(error, InteractionCoverageError):
                 correction["obligation_coverage"] = error.feedback
             if isinstance(error, json.JSONDecodeError):

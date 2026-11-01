@@ -28,6 +28,7 @@ from infrastructure.stages.frontend.interactions.design import (
     empty_interactions,
     validate_interactions,
 )
+from infrastructure.stages.frontend.interactions.synthesis import propose
 from infrastructure.stages.frontend.interactions.implementation import (
     scenario_context,
     test_run_status,
@@ -509,6 +510,20 @@ class FrontendFlow(unittest.TestCase):
             "container", None, label="Gender", role="radiogroup"
         )
         validate_reference_controls(ui, context)
+
+    def test_interaction_retry_explains_that_rejected_records_are_not_accepted(self):
+        accepted = {"triggers": {}, "events": {"old": {"description": "accepted"}}}
+        request = {"existing_interactions": deepcopy(accepted)}
+        model = Mock()
+        model.generate_json.side_effect = [{"rejected": True}, {"complete": True}]
+        validator = Mock(side_effect=[ValueError("excess reads"), "accepted result"])
+        result, response = propose(
+            model, "instructions", request, validator, Mock(), "test"
+        )
+        self.assertEqual(result, "accepted result")
+        self.assertEqual(response, {"complete": True})
+        self.assertEqual(request["existing_interactions"], accepted)
+        self.assertIn("NOT applied", request["correction"]["retry_base"])
 
     def test_radio_presence_distinguishes_option_value_and_shared_selection(self):
         ui = deepcopy(self.ui)
