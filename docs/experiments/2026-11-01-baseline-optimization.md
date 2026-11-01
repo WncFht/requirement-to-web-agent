@@ -145,7 +145,10 @@ await page.reload();
 | teacher-original-1101-v2 | 424,915 | 后端 14 条通过，Stage 10 UI 失败；未完成应用被独立反例验收 0/14 拒绝 |
 | teacher-original-1101-v3 | 251,506 | Stage 08；将未知凭据字面量与完整 JSON 响应判相等，断言恒假 |
 | teacher-original-1101-v4 | 343,212 | 后端 13 条、UI 9 条通过；Stage 06 失败续跑后，Stage 11 交互提案耗尽三次 |
+| teacher-original-1101-v5 | 369,551 | Stage 08；保密断言禁止 password_hash 键，却主动把含该键的对象传入同一断言 |
 
 数字与安全元数据归 [teacher-original-validation.json](teacher-original-validation.json)，原始日志、设计、冻结测试和生成源码按逐文件哈希归档在课程侧 artifacts/optimization-runs；失败测试未改写。v4 的 UI IR 还把老师显式要求的 Gender radiogroup 设计为 select，说明内部 UI 全绿不能代替老师测试。v4 生成中发生契约审计修正，也不能视为验收源码始终不变的受控测量。
 
-已实施修正包括：冻结前拒绝两类恒假后端断言；完整登录态可见性提示；只读外部测试供给及 radiogroup/select 冲突准入；radio 静态选项值与共享选择 checked 状态的正确存在性断言；API 叶子义务边界说明；交互重试明确基于已接受状态而非被拒提案增量。全部保留原阶段 gate，并分别提供环境回退开关。当前 70 项编译器测试、17 项维护测试通过；第五轮从全新目录验证固定 v2 验收，尚不能据这些局部结果宣布稳定或性能收益。
+已实施修正包括：冻结前拒绝两类恒假后端断言；完整登录态可见性提示；只读外部测试供给及 radiogroup/select 冲突准入；radio 静态选项值与共享选择 checked 状态的正确存在性断言；API 叶子义务边界说明；交互重试明确基于已接受状态而非被拒提案增量。全部保留原阶段 gate，并分别提供环境回退开关。当前 70 项编译器测试、17 项维护测试通过；第五轮继续出现新的自相矛盾测试，说明两条静态准入不是通用可满足性证明。后续正确性基线从全新目录恢复模型默认思考模式（ARC_DISABLE_THINKING=0），仍使用固定 v2 验收；不能提前宣布稳定或性能收益。
+
+五次失败的源码、冻结测试和原始审计在逐文件核验归档后删除了重复工作副本；浏览器诊断、阶段控制台与调用聚合另存 teacher-original-diagnostics.tar.gz，清理清单归课程侧 artifacts/optimization-runs/teacher-validation-cleanup.json。只清理这些已结束目录，正在运行的 reasoning 目录保留。

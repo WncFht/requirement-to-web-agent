@@ -122,6 +122,37 @@
       "backend_tdd": "GREEN",
       "ui_checks": "GREEN",
       "frontend_e2e": null
+    },
+    {
+      "run": "teacher-original-1101-v5",
+      "status": "FAILED",
+      "last_stage": "08",
+      "reason": "Secret-leak helper forbids password_hash key but is explicitly invoked on an object containing that key",
+      "generation_metadata": {
+        "code_revision": "2f984c066bd84bb06c6d887dcb2a840188dc1bbc",
+        "input_kind": "teacher original, byte-identical",
+        "predecessor_failed_run": "teacher-original-1101-v4",
+        "ARC_DISABLE_THINKING": "1",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4",
+        "model": "deepseek-flash",
+        "node": "22.23.2",
+        "acceptance_version": 2,
+        "fresh_generation": true,
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "f1806b1f94dc549899d42c173019b6eae32357ca61d8164fb6593f83dc117bea",
+        "fixed_acceptance_sha256": "b28c46fcd1ee660ec70d4d594a238aa366f57246807cc4bc69926d1c9baa0cf4",
+        "acceptance_files_sha256": {
+          "setup.ts": "8ca72acab19bdf22241f5d6c60071d0e2f173378cfdfabf9ced3365f2f32653b",
+          "context.ts": "66119abec3af5878f8514e4998f6437fe0c76dc26137ad2df80a7ae433a75fa4",
+          "fixed.spec.ts": "b28c46fcd1ee660ec70d4d594a238aa366f57246807cc4bc69926d1c9baa0cf4"
+        }
+      },
+      "sdk_calls": 40,
+      "tokens_total": 369551,
+      "archive": "artifacts/optimization-runs/teacher-original-1101-v5.tar.gz",
+      "backend_tdd": "FAILED",
+      "ui_checks": null,
+      "frontend_e2e": null
     }
   ]
 }
