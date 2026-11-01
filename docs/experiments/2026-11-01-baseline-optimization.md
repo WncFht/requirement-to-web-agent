@@ -4,9 +4,9 @@
 > 输入说明：编译对象是 `input/requirements.yaml`（198 行 / 9.3KB / 8 场景 / 9 步，含会话恢复与
 > 未知会话两个场景）。注意不要与 plusplus 另一变体 `example/smoke`（131 行 / 7 场景 / 21 步 /
 > 59 处 role=）混淆——两份是同一 smoke 的不同方言，本报告所有数字对应前者。
-> baseline 原始产物在 JI 仓库 `notes/4810/lab6/baseline-teammate/`（gitignored，jsonl 保留 gz）。
+> baseline 原始产物在 JI 仓库 `notes/4810/lab6/artifacts/teammate-baseline/`（gitignored，jsonl 保留 gz）。
 
-在队友 Windows baseline（`baseline-teammate/`，34/34 全绿、约 82 分钟（含失败尝试）、2,141,102 token）的基础上，
+在队友 Windows baseline（`artifacts/teammate-baseline/`，34/34 全绿、约 82 分钟（含失败尝试）、2,141,102 token）的基础上，
 对本仓库 `source/` 的需求编译器做了一轮「度量 → 根因 → 优化 → 复测」。全部修改记录于
 课程侧 `upstream.patch`，实验报告与 slides 见 课程侧 `report/main.pdf` 与 课程侧 `slides/main.pdf`。
 
@@ -19,27 +19,27 @@
 
 ## 五项修改（按各项列出的开关回退）
 
-| # | 修改 | 文件 |
-| --- | --- | --- |
-| A | Stage 12 非末次创建调用上下文瘦身：files 收窄到 3 个接线文件 + 相关页面源码，contracts/apis 收窄到目标事件；终验调用与测试生成保留完整上下文（`ARC_FULL_CONTEXT=1` 回退） | `infrastructure/stages/frontend/interactions/implementation.py` |
-| B | agent 反馈去噪：剥 ANSI、截断超长字符串 | `infrastructure/shared/agent/loop.py`（`compact_feedback`） |
-| C | 瞬态传输错误退避重试（连接/超时/5xx/限流，10/30/90s，`ARC_MODEL_TRANSPORT_RETRIES`） | `infrastructure/shared/models/text.py` |
-| D | Stage 09 每接受一个叶子需求即 checkpoint（`ui_design_progress.json`）；重跑跳过已完成需求；3 次提案耗尽改为记账后继续，最后统一报错（`ARC_UI_DESIGN_FRESH=1` 强制全新） | `infrastructure/stages/frontend/ui/synthesis.py` |
-| E | `run_all.py --resume`（main.py 透传）：按哨兵产物跳过已完成阶段，08/12 额外要求 status GREEN | `run_all.py`、`main.py` |
+| #   | 修改                                                                                                                                                                      | 文件                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| A   | Stage 12 非末次创建调用上下文瘦身：files 收窄到 3 个接线文件 + 相关页面源码，contracts/apis 收窄到目标事件；终验调用与测试生成保留完整上下文（`ARC_FULL_CONTEXT=1` 回退） | `infrastructure/stages/frontend/interactions/implementation.py` |
+| B   | agent 反馈去噪：剥 ANSI、截断超长字符串                                                                                                                                   | `infrastructure/shared/agent/loop.py`（`compact_feedback`）     |
+| C   | 瞬态传输错误退避重试（连接/超时/5xx/限流，10/30/90s，`ARC_MODEL_TRANSPORT_RETRIES`）                                                                                      | `infrastructure/shared/models/text.py`                          |
+| D   | Stage 09 每接受一个叶子需求即 checkpoint（`ui_design_progress.json`）；重跑跳过已完成需求；3 次提案耗尽改为记账后继续，最后统一报错（`ARC_UI_DESIGN_FRESH=1` 强制全新）   | `infrastructure/stages/frontend/ui/synthesis.py`                |
+| E   | `run_all.py --resume`（main.py 透传）：按哨兵产物跳过已完成阶段，08/12 额外要求 status GREEN                                                                              | `run_all.py`、`main.py`                                         |
 
 上游 50/50 单元测试通过。开发中发现并修正一处 resume 哨兵误判：
 `backend/src/db/tables` 在脚手架中即存在（空目录），改判为「目录内至少一个 .sql」。
 
 ## 结果（同输入、同模型 deepseek-flash；baseline 为跨机器参考）
 
-| 指标 | baseline | 优化后 | 变化 |
-| --- | ---: | ---: | ---: |
-| 总 token | 2,141,102 | 928,299 | **−56.6%** |
-| 输入 / 输出 | 1,576,030 / 565,072 | 859,534 / 68,765 | −45.5% / −87.8% |
-| Stage 12 token | 1,468,588 | 590,804 | −59.8% |
-| 单次创建调用输入（均值） | 59,139 | 27,596 | −53.3% |
-| 各阶段最后成功尝试的 wall 总和 | 4,481.8 s | 489.8 s | −89.1%（跨机器，排除失败重试与最终构建） |
-| 正确性 | 34/34 | 后端 14/14、UI 9/9、E2E 11/11 | 全绿 |
+| 指标                           |            baseline |                        优化后 |                                     变化 |
+| ------------------------------ | ------------------: | ----------------------------: | ---------------------------------------: |
+| 总 token                       |           2,141,102 |                       928,299 |                               **−56.6%** |
+| 输入 / 输出                    | 1,576,030 / 565,072 |              859,534 / 68,765 |                          −45.5% / −87.8% |
+| Stage 12 token                 |           1,468,588 |                       590,804 |                                   −59.8% |
+| Stage 12 每次调用平均输入（含测试生成）       |              59,139 |                        27,596 |                                   −53.3% |
+| 各阶段最后成功尝试的 wall 总和 |           4,481.8 s |                       489.8 s | −89.1%（跨机器，排除失败重试与最终构建） |
+| 正确性                         |               34/34 | 后端 14/14、UI 9/9、E2E 11/11 |                                     全绿 |
 
 输出目录 `work/opt-1101`（git 忽略），逐阶段聚合与 `model_calls.jsonl` 完整保留。
 额外做了独立 API 冒烟（构建产物起服务器，绕开 Playwright）：
@@ -59,7 +59,7 @@ register 201 / session 200 / 重复注册 409 / login 201，全部符合契约�
 
 - 报告：课程侧 `report/main.pdf`（7 页，含背景、根因、五项优化、结果、复现指南）
 - Slides：课程侧 `slides/main.pdf`（15 帧 Beamer）
-- 队友 baseline 原始产物：`baseline-teammate/`（原始 32MB jsonl 不入库，保留 gz 压缩版）
+- 队友 baseline 原始产物：`artifacts/teammate-baseline/`（原始 32MB jsonl 不入库，保留 gz 压缩版）
 
 ## 格式化与版本化（2026-11-01 补充）
 
@@ -81,9 +81,9 @@ register 201 / session 200 / 重复注册 409 / login 201，全部符合契约�
 `34fc0a8` 的 OPT-F 完整尝试位于课程侧 `work/optf-1101`，Stage 12 REQ-2 在 18 轮修复后失败，未执行生产构建。总 token 2,089,717；Stage 12 为 1,610,093。前置后端 9/9、UI 9/9 GREEN 不代表注册与会话 API 的组合正确。
 
 | 输入缓存命中率 | baseline | 首轮优化 | OPT-F（失败运行） |
-| --- | ---: | ---: | ---: |
-| 全流程 | 51.6% | 36.3% | 36.5% |
-| Stage 12 | 59.2% | 44.2% | 35.9% |
+| -------------- | -------: | -------: | ----------------: |
+| 全流程         |    51.6% |    36.3% |             36.5% |
+| Stage 12       |    59.2% |    44.2% |             35.9% |
 
 原缓存提案把全流程 36.3% 写成 Stage 12，现已纠正。OPT-F 没有达到 Stage 12 至少 50% 的原验收要求；失败、重试次数和不同生成轨迹也使单轮数据无法隔离键序的因果效果，仍保留 proposed。
 
@@ -113,7 +113,10 @@ node --import tsx ../../source/docs/experiments/optf-session-probe.mjs .
 
 ```ts
 await page.evaluate(() => {
-  window.__ARC_UI_FIXTURE__ = { page: "registration", data: { "register.submitting": true } };
+    window.__ARC_UI_FIXTURE__ = {
+        page: "registration",
+        data: { "register.submitting": true },
+    };
 });
 await page.reload();
 ```
@@ -122,4 +125,12 @@ await page.reload();
 
 新增的 `validate_e2e_source` 在冻结前拒绝保留的 UI fixture 标识符，已经用原失败套件和回归测试验证拒绝。原冻结测试和失败工件没有改写。`ARC_LEGACY_E2E_SOURCE_CHECK=1` 恢复此前的 fixture 准入行为，原 loopback URL 检查仍生效。新规则尚未经过另一轮完整模型生成，因此不把此修复写成端到端 GREEN。
 
-两次 OPT-G 尝试的安全运行元数据、原始审计日志、IR、源码及冻结测试已归档在课程侧 `artifacts/optimization-runs/`，清单为 `artifacts/optimization-runs.json`。归档逐文件解压哈希验证后才删除四套运行目录中的可重建依赖；IR、源码、冻结测试与原始日志在工作目录中继续保留。恢复归档后需安装依赖，不能把缺少 node_modules 的目录当作可直接运行的应用。
+两次 OPT-G 尝试的安全运行元数据、原始审计日志、IR、源码及冻结测试已归档在课程侧 `artifacts/optimization-runs/`，清单为 `artifacts/optimization-runs.json`。归档逐文件解压哈希验证后才删除四套运行目录中的可重建依赖；IR、源码、冻结测试与原始日志由归档保留，重复工作副本已在逐文件校验后清理。恢复归档后需安装依赖，不能把缺少 node_modules 的目录当作可直接运行的应用。
+
+## 报告与交接材料
+
+课程侧 `report/main.pdf` 与 `slides/main.pdf` 已按完整改动清单、负结果与可比性限制更新，不再只是首轮结果快照。共享的 `change-effects.json` 维护工作项与效果分类；`scripts/prepare_materials.py` 从这些数据和既有调用聚合生成报告/Slides 的数字与图，避免手工重复数字。
+
+原记录中的 log 路径是测量时的工作位置；当前队友文件在课程侧 `artifacts/teammate-baseline/`，模型日志与阶段日志均保留压缩原件。恢复原始优化快照使用 `artifacts/optimization-runs/` 的校验归档，不能把历史失败工件冒充新的完整运行。
+
+源码差异可以相对 teacher-baseline 核验，但队友编译器提交号未知，不能证明所有较早工程修正都是队友没有的功能。Stage 12 的 59,139/27,596 是阶段输入除以 21 次返回的均值，包含测试生成，旧“单次创建调用”标签已纠正。

@@ -21,7 +21,10 @@ def successful_stage_times(path):
     """Sum last successful attempts, excluding failures and earlier successes."""
     values = {}
     stage = None
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8-sig") as stream:
+        lines = stream.read().splitlines()
+    for line in lines:
         found = re.search(r"\[DONE\] Stage (\d+)", line)
         if found:
             stage = found.group(1)
@@ -87,6 +90,8 @@ def summarize(path: Path) -> dict:
     for suffix in ("model_calls.jsonl.gz", "model_calls.jsonl"):
         if path.name.endswith(suffix):
             wall_log = path.with_name(path.name.removesuffix(suffix) + "compiler.log")
+            if not wall_log.is_file():
+                wall_log = wall_log.with_suffix(wall_log.suffix + ".gz")
             if wall_log.is_file():
                 result["successful_stage_wall_time"] = successful_stage_times(wall_log)
             break

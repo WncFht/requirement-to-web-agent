@@ -1,0 +1,6 @@
+{
+  "source": "figure-viz/assets/mpl/fvstyle.py",
+  "sha256": "a9670b726e4890688bad9bec5cf5f39dcc6a1604ceebff8043c26cee95726581",
+  "purpose": "Vendored palette and rendered-figure audit for portable report reproduction",
+  "modified": false
+}

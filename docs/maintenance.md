@@ -59,3 +59,13 @@ git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.tx
 ```
 
 工具拒绝覆盖既有归档或清单，逐文件解压校验后才允许 `--prune-dependencies` 删除所选运行的 node_modules。它不会判断进程是否仍在运行，调用者必须先确认退出；凭据与数据库不进入归档。为保留已有汇总清单，后续批次使用独立的 `--manifest` 文件名，不能覆盖旧批次清单。运行归档包含编译输入对应的生成源码和工件；需求 YAML 与参考截图归源码 bundle，输入哈希归 experiment.json。
+
+## 报告、目录与可分享交接包
+
+课程侧根 README 是交接入口；旧上传脚本、截图、验收与阶段快照归 `archive/2026-10-29/`，松散日志压缩后归 `archive/logs/`，旧图解和私有本地数据只保留在忽略的 `archive/local-drafts/`。当前报告与 Slides 保留原 `report/`、`slides/` 入口。
+
+从 Lab6 根目录运行 `bash tools/build-materials.sh`：共享 JSON 生成数字与图，再编译两份 PDF。图表依赖固定在 `requirements-figures.txt`，fvstyle 调色板与审计实现按哈希封存在 `scripts/vendor/`；不依赖接手者安装全局 skill。Python 工具链跳过该第三方快照，产品代码验收不受影响。
+
+源码提交干净后运行 `bash tools/build-handoff.sh --date 2026-11-01`，导出当前历史，重建材料，并创建忽略的 `dist/` 分享包。默认 handoff 包包含源码 Git bundle、可编辑报告/Slides、构建工具与恢复入口；evidence 包只追加队友原始记录与优化运行快照。两包有独立 manifest，解压到同一根目录不会覆盖彼此清单。`artifacts/handoff-build.json` 保存体积、哈希与版本。
+
+打包器只选择明确的交付文件，拒绝凭据/环境/依赖/运行目录，逐文件校验归档内容；源 bundle、共享数字和当前源码提交不一致时拒绝打包。默认不分享 archive 的旧提交包、私有数据库或草稿。源码 snapshot 文件与 source.json 的历史指针由导出工具同步。

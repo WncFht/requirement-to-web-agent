@@ -16,6 +16,6 @@
 
 - 一次性运行日志与终端面板不属于本目录；其结论摘录进实验报告并注明运行目录。
 - 课程侧记录（10-29 打包上传、验收流程）保留在 JI 课程仓库 `notes/4810/lab6/`，此处不维护副本。
-- baseline 原始产物（队友 Windows 运行）位于 JI 仓库 `notes/4810/lab6/baseline-teammate/`
+- baseline 原始产物（队友 Windows 运行）位于 JI 仓库 `notes/4810/lab6/artifacts/teammate-baseline/`
   （原始 jsonl 不入库，保留 gz）；实验报告以路径引用之。
 - 篇幅预算见 `scripts/doc-policy.json`；超限先拆归属，不做摘要压缩。

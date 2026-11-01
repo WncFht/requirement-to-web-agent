@@ -31,5 +31,7 @@
       "retained_archive": "artifacts/optimization-runs/optg2-1101.tar.gz",
       "manifest": "artifacts/optimization-runs.json"
     }
-  ]
+  ],
+  "handoff_cleanup_manifest": "archive/cleanup-2026-11-01.json",
+  "handoff_cleanup": "Verified run copies removed; private and unarchived drafts retained locally and excluded from sharing"
 }

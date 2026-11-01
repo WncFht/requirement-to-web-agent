@@ -11,3 +11,5 @@
 
 - 开发里程碑与版本 → [history.md](history.md)
 - 检查、实验与清理约定 → [maintenance.md](maintenance.md)
+
+- 报告与分享材料 → 课程侧 `../report/`、`../slides/` 与 `../README.md`；构建见 [维护指南](maintenance.md)

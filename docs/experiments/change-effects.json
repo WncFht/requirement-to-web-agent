@@ -1,0 +1,87 @@
+{
+  "comparison": {
+    "source_reference": "teacher-baseline",
+    "teammate_source_revision": "unknown",
+    "measurement_reference": "teammate Windows baseline",
+    "scope": "Verified local compiler changes and observed run effects; not a complete source diff against teammate code"
+  },
+  "changes": [
+    {
+      "id": "R",
+      "title": "既有工程修正",
+      "change": "超时、思考模式、select/Cookie 断言、平台入口与显式测试复用",
+      "effect": "10 月 29 日历史运行通过；其中 3 条 E2E 为人工补写。队友源码版本未知，不声称这些项是相对队友独有。",
+      "status": "历史证据"
+    },
+    {
+      "id": "A",
+      "title": "Stage 12 上下文瘦身",
+      "change": "单事件创建只供给相关页面、接线文件和目标契约/API；终验保留全量",
+      "effect": "首轮 Stage 12 输入 1,241,920 → 579,516 token（−53.3%）；组合运行通过，不是隔离消融。",
+      "status": "有观测收益"
+    },
+    {
+      "id": "B",
+      "title": "反馈去噪与长度控制",
+      "change": "剥离 ANSI，限制过长字符串与列表",
+      "effect": "已进入成功组合运行；没有独立量化其 token、时间或成功率贡献。",
+      "status": "已实施"
+    },
+    {
+      "id": "C",
+      "title": "传输退避重试",
+      "change": "连接、超时、服务端与限流错误按 10/30/90 秒退避",
+      "effect": "运行日志记录重试恢复；耗尽仍失败。未单独量化节省。",
+      "status": "已实施"
+    },
+    {
+      "id": "D",
+      "title": "Stage 09 checkpoint",
+      "change": "逐需求保存已验证 UI 设计，重跑只补未完成需求",
+      "effect": "保留已完成设计，避免整阶段作废；没有独立收益实验。",
+      "status": "已实施"
+    },
+    {
+      "id": "E",
+      "title": "流水线断点续跑",
+      "change": "按哨兵跳过完成阶段；08/12 额外要求 GREEN",
+      "effect": "已用于中断恢复；修正空 SQL 目录误判。哨兵存在不等于语义正确。",
+      "status": "已实施"
+    },
+    {
+      "id": "F",
+      "title": "缓存友好调序",
+      "change": "稳定字段与已有文件前置，新文件追加",
+      "effect": "OPT-F 的 Stage 12 缓存命中 35.9%，首轮为 44.2%，未达 50% 目标；该次运行失败。",
+      "status": "未通过验收"
+    },
+    {
+      "id": "G",
+      "title": "结构化修复反馈",
+      "change": "保留报告对象，仅去掉经精确比较确认的重复 output",
+      "effect": "17 份历史反馈从 48,006 降至 18,821 字符（−60.8%）；不等于总 token 收益。",
+      "status": "局部验证"
+    },
+    {
+      "id": "H",
+      "title": "首次反馈完整性",
+      "change": "把初始报告字典作为一条反馈，不再只传字段名",
+      "effect": "单元测试与真实请求均确认完整报告已供给；未独立量化性能。",
+      "status": "修复已验证"
+    },
+    {
+      "id": "I",
+      "title": "E2E fixture 准入",
+      "change": "冻结前拒绝 E2E 引用编译器专用 UI fixture 标识符",
+      "effect": "真实失败套件被新检查拒绝，回归测试通过；尚未重新跑完整模型生成。",
+      "status": "待完整复测"
+    },
+    {
+      "id": "M",
+      "title": "维护、历史与归档",
+      "change": "接入维护技能、hook、检查、Git 历史和逐文件校验归档",
+      "effect": "59 项编译器测试、15 项维护测试通过；源码与证据可恢复，不是运行性能收益。",
+      "status": "工程交付"
+    }
+  ]
+}

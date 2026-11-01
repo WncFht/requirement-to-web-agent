@@ -62,6 +62,27 @@ def main():
     (artifacts / "compiler-export.json").write_text(
         json.dumps(manifest, indent=2) + "\n"
     )
+    provenance = output / "source.json"
+    if provenance.is_file():
+        data = json.loads(provenance.read_text())
+        checkpoint = subprocess.run(
+            ["git", "describe", "--tags", "--exact-match", "HEAD"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        data.setdefault("compiler_history", {}).update(
+            {
+                "revision": manifest["source_revision"],
+                "checkpoint": checkpoint.stdout.strip()
+                if checkpoint.returncode == 0
+                else None,
+                "bundle": manifest["bundle"],
+                "manifest": "artifacts/compiler-export.json",
+            }
+        )
+        provenance.write_text(json.dumps(data, ensure_ascii=False, indent=4) + "\n")
     print(json.dumps(manifest, indent=2))
 
 

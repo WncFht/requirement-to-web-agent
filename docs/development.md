@@ -6,7 +6,7 @@
 - Node 22（mise：`~/.local/share/mise/installs/node/22.23.2/bin`）。**构建产物必须用
   Node 22 运行**——系统 Node 24 的 ABI 与已编译的 better-sqlite3 不符（ERR_DLOPEN_FAILED）
 - 模型 key 在 `.env`（gitignored）：`OPENAI_API_KEY` / `OPENAI_BASE_URL` / `MODEL`
-- npm 镜像与 Playwright 下载 host 参见 `../run-stage.sh`
+- npm 镜像与 Playwright 下载 host 参见 `../tools/run-stage.sh`
 
 ## 全流程运行
 
@@ -20,15 +20,15 @@
 
 ## 环境变量
 
-| 变量 | 默认 | 作用 |
-| --- | --- | --- |
-| `ARC_LEGACY_E2E_SOURCE_CHECK` | 0 | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
-| `ARC_FULL_FEEDBACK` | 0 | =1 恢复旧的字符串修复反馈与重复 output |
-| `ARC_FULL_CONTEXT` | 0 | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照） |
-| `ARC_UI_DESIGN_FRESH` | 0 | =1 强制 Stage 09 忽略 checkpoint 全新设计 |
-| `ARC_MODEL_TRANSPORT_RETRIES` | 2 | 瞬态传输错误额外重试次数（退避 10/30/90s） |
-| `ARC_REUSE_E2E_TESTS` | 0 | =1 复用既有 E2E 测试（重新校验，不重新生成） |
-| `ARC_DISABLE_THINKING` | 1（deepseek 自动） | 关闭 DeepSeek 思考模式 |
+| 变量                          | 默认               | 作用                                                             |
+| ----------------------------- | ------------------ | ---------------------------------------------------------------- |
+| `ARC_LEGACY_E2E_SOURCE_CHECK` | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
+| `ARC_FULL_FEEDBACK`           | 0                  | =1 恢复旧的字符串修复反馈与重复 output                           |
+| `ARC_FULL_CONTEXT`            | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）              |
+| `ARC_UI_DESIGN_FRESH`         | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                        |
+| `ARC_MODEL_TRANSPORT_RETRIES` | 2                  | 瞬态传输错误额外重试次数（退避 10/30/90s）                       |
+| `ARC_REUSE_E2E_TESTS`         | 0                  | =1 复用既有 E2E 测试（重新校验，不重新生成）                     |
+| `ARC_DISABLE_THINKING`        | 1（deepseek 自动） | 关闭 DeepSeek 思考模式                                           |
 
 ## 度量
 

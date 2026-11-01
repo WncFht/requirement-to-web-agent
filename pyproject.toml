@@ -16,6 +16,9 @@ dependencies = [
 [tool.uv]
 package = false
 
+[tool.ruff]
+extend-exclude = ["scripts/vendor"]
+
 [tool.ruff.lint]
 # This independent teacher-code repository keeps its unittest conventions.
 # Add syntax/undefined-name checks without rewriting frozen teaching sources.
