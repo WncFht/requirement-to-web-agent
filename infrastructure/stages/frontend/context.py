@@ -31,6 +31,36 @@ def validate_reference_controls(design, context):
     if os.getenv("ARC_LEGACY_REFERENCE_TESTS", "0") == "1":
         return
     sources = "\n".join(context.get("reference_tests", {}).values())
+    if os.getenv("ARC_LEGACY_IDENTITY_DISPLAY", "0") != "1" and re.search(
+        r"getByText\(\s*account\.username\s*,\s*\{\s*exact:\s*true", sources
+    ):
+        from infrastructure.stages.frontend.ui.design import page_elements, visible
+
+        defaults = {
+            key: binding["initial"] for key, binding in design["bindings"].items()
+        }
+        for pid, page in design["pages"].items():
+            if page["route"] != "/":
+                continue
+            elements = page_elements(design, pid)
+            for fixture in page["fixtures"].values():
+                values = defaults | fixture
+                candidates = {
+                    key
+                    for key, value in values.items()
+                    if re.search(r"(?:^|[._])username$", key, re.I)
+                    and isinstance(value, str)
+                    and value
+                }
+                if candidates and not any(
+                    node["type"] in {"text", "heading"}
+                    and candidates.intersection(node.get("data", []))
+                    and visible(design, uid, values)
+                    for uid, node in elements.items()
+                ):
+                    raise ValueError(
+                        "External signed-in homepage contract requires the exact account.username to be visible. This fixture has nonempty username data but no visible text/heading bound to it. Add an actual username display on '/' when signed in; static 'My account/My 12306' text does not display the username. Preserve signed-out and loading/failure visibility."
+                    )
     groups = set(
         re.findall(
             r"""getByRole\(\s*['"]radiogroup['"]\s*,\s*\{\s*name:\s*['"]([^'"]+)['"]""",
