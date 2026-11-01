@@ -5,3 +5,13 @@
 运行器在 `scripts/accept_teacher.py`，固定场景在本目录。每次运行必须核验 teacher input 哈希、记录适配器和测试源码哈希；结构适配器只连接生成的表/字段、Cookie 与路径，不改变断言。无法确定结构时显式失败，不跳过测试。现有后端/UI/E2E/构建 gate 均保留。
 
 只有生成全流程和独立验收均通过才可标稳定；视觉相似度不由这些行为断言证明。pending 扩展独立测量。
+
+## 运行命令
+
+```sh
+.venv/bin/python scripts/accept_teacher.py ../work/<完整生成目录> --attempt initial
+```
+
+需要 Node 22 和该产物的依赖。每次 attempt 使用不同目录，原始测试、报告、结构适配器和断言哈希均保留，不覆盖失败证据。默认从 schema、API 和 Cookie 常量确定表字段/路径；识别不唯一时以 `--adapter <已审阅JSON>` 明确配置，不能通过改断言来迁就应用。
+
+全量期望为老师 4 条 + 固定 10 条，没有 skip/flaky/error；完成后重跑生产构建，并核查原有后端、UI、生成 E2E gate。`--allow-incomplete` 只用于诊断，不可据此标稳定。固定 F04 为失败/未决会话读取做隔离故障注入，用于验证原始输入的故障语义；不会写入 UI fixture 或生产数据库。

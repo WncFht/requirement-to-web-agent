@@ -52,3 +52,9 @@ cd <输出目录> && PORT=3309 npm start   # 或使用生成的 deploy.sh
 - 输出目录之间不复用 `.arc` 工件；对比实验必须使用全新输出目录
 
 维护检查、版本与实验管理见 [maintenance.md](maintenance.md)。
+
+## 老师原版稳定验收
+
+默认 `input/` 已恢复教师 ZIP 原字节，哈希归 `input/source.json`；旧 pending 输入迁到 `examples/registration-pending/`，必须分开运行和记录。完整生成后额外运行 `scripts/accept_teacher.py`，命令及准入标准见 [固定验收](../acceptance/README.md)。现有阶段 GREEN 和独立验收/最终构建同时通过，才可记录为稳定运行。
+
+`ARC_LEGACY_TEST_SANITY=1` 回退后端冻结前新增的恒假 header 断言检查；原有类型、RED/GREEN 和回归仍保留。该开关不影响固定的老师独立验收。

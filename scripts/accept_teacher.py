@@ -180,19 +180,26 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--adapter", type=Path)
     parser.add_argument(
+        "--attempt",
+        default="initial",
+        help="Unique evidence label; previous attempts are never overwritten",
+    )
+    parser.add_argument(
         "--allow-incomplete",
         action="store_true",
         help="Diagnostic run only; never marks stable",
     )
     args = parser.parse_args()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", args.attempt):
+        parser.error("--attempt must contain lowercase letters, digits and hyphens")
     output = args.output.resolve()
     manifest = verify_input()
-    result_dir = output / ".arc/teacher-acceptance"
-    result_dir.mkdir(parents=True, exist_ok=True)
+    result_dir = output / ".arc/teacher-acceptance" / args.attempt
+    result_dir.mkdir(parents=True, exist_ok=False)
     adapter = (
         json.loads(args.adapter.read_text()) if args.adapter else make_adapter(output)
     )
-    tests = output / "frontend/tests/fixed"
+    tests = output / "frontend/tests" / ("fixed-" + args.attempt)
     if tests.exists():
         raise ValueError(
             "Fixed acceptance evidence exists; archive it explicitly before rerunning"
@@ -211,8 +218,10 @@ def main():
             raise ValueError("Teacher test copy mismatch")
     config = CONFIG_SOURCE.replace(
         'testDir: "./tests/e2e"',
-        'testDir: "./tests/fixed", globalSetup: "./tests/fixed/setup.ts"',
-    ).replace('outputDir: "./test-results/e2e"', 'outputDir: "./test-results/fixed"')
+        f'testDir: "./tests/{tests.name}", globalSetup: "./tests/{tests.name}/setup.ts"',
+    ).replace(
+        'outputDir: "./test-results/e2e"', f'outputDir: "./test-results/{tests.name}"'
+    )
     (output / "frontend/playwright.fixed.config.ts").write_text(config)
     first, second = free_port(), free_port()
     while first == second:
