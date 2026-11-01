@@ -24,6 +24,7 @@ from infrastructure.stages.frontend.interactions.testing import (
     require_behavioral_red,
     test_path,
     validate_e2e_source,
+    backend_cookie_names,
 )
 from infrastructure.stages.frontend.interactions.runtime import sync_interactions
 from infrastructure.stages.frontend.ui.runtime import prepare_frontend
@@ -290,7 +291,7 @@ def run_interaction_tdd(
             if compiled["returncode"]:
                 raise ValueError(compiled["output"])
             source = (output / relative).read_text(encoding="utf-8-sig")
-            validate_e2e_source(source)
+            validate_e2e_source(source, backend_cookie_names(output))
             behavior = checks.tests([relative])
             status = test_run_status(behavior)
             return {"typecheck": compiled, "behavior": behavior, "status": status}
@@ -300,6 +301,10 @@ def run_interaction_tdd(
             "schema": schema["entities"],
             "test_path": relative if (output / relative).is_file() else None,
             "max_tests": max_tests,
+            "backend_cookie_transport": {
+                "names": backend_cookie_names(output),
+                "evidence": "Literal cookie producers in the tested backend source. Use their exact name for valid existing-session setup; do not guess from prose.",
+            },
         }
         if (
             os.getenv("ARC_REUSE_E2E_TESTS", "0") == "1"
@@ -323,7 +328,7 @@ def run_interaction_tdd(
                     writable=editable_sources(output, "frontend/src"),
                     references=[
                         FIXTURE,
-                        *source_paths(output, "backend/src/db"),
+                        *source_paths(output, "backend/src"),
                         *source_paths(output, "frontend/src"),
                         *(path for path in regression_files if path != relative),
                     ],

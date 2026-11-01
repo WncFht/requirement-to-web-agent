@@ -16,7 +16,24 @@ from infrastructure.stages.frontend.ui.testing import (
 from infrastructure.shared.project.entrypoints import selected_path
 
 
-def validate_e2e_source(source: str) -> None:
+def backend_cookie_names(output):
+    """Expose literal cookie producers from the tested backend as bounded setup evidence."""
+    names = set()
+    for path in (output / "backend/src").rglob("*.ts"):
+        source = path.read_text(encoding="utf-8-sig")
+        constants = dict(
+            re.findall(
+                r"""const\s+(\w+)\s*=\s*["']([A-Za-z_][A-Za-z0-9_-]*)["']""", source
+            )
+        )
+        for variable in re.findall(r"`\$\{(\w+)\}=\$\{", source):
+            if variable in constants:
+                names.add(constants[variable])
+        names.update(re.findall(r"""[`"']([A-Za-z_][A-Za-z0-9_-]*)=\$\{""", source))
+    return sorted(names)
+
+
+def validate_e2e_source(source: str, cookie_names=None) -> None:
     """Reject known invalid E2E setup before freezing a generated test suite."""
     if re.search(r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?", source):
         raise ValueError(
@@ -33,6 +50,32 @@ def validate_e2e_source(source: str) -> None:
             "compiler-owned UI presence tests. Replace fixture injection with "
             "a real browser interaction scenario before this suite is frozen."
         )
+    if not cookie_names or os.getenv("ARC_LEGACY_E2E_COOKIE_NAMES", "0") == "1":
+        return
+    tests = list(
+        re.finditer(
+            r"""\btest\(\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')""", source
+        )
+    )
+    for index, match in enumerate(tests):
+        title = (match.group(1) or match.group(2)).lower()
+        if not re.search(r"\b(valid|existing|seeded)\s+session\b", title) or re.search(
+            r"\b(invalid|unknown|unrecognized|expired|missing)\s+(session|cookie|credential)\b",
+            title,
+        ):
+            continue
+        body = source[
+            match.end() : tests[index + 1].start()
+            if index + 1 < len(tests)
+            else len(source)
+        ]
+        for cookies in re.findall(r"\.addCookies\(\s*\[(.*?)\]\s*\)", body, re.DOTALL):
+            names = re.findall(r"""\bname\s*:\s*["']([^"']+)["']""", cookies)
+            if names and not set(names).intersection(cookie_names):
+                raise ValueError(
+                    f"Positive existing-session setup uses Cookie {names}, but tested backend producers use {cookie_names}. "
+                    "Use the real backend cookie name with the seeded credential before freezing; do not change production handlers to accommodate this test."
+                )
 
 
 def test_path(rid, output=None):
