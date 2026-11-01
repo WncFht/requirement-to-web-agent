@@ -13,3 +13,5 @@
 - 检查、实验与清理约定 → [maintenance.md](maintenance.md)
 
 - 报告与分享材料 → 课程侧 `../report/`、`../slides/` 与 `../README.md`；构建见 [维护指南](maintenance.md)
+
+- 老师原版的固定验收 → [acceptance/README.md](../acceptance/README.md)

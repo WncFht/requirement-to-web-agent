@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "input": "input/requirements.yaml",
+  "teacher_tests": ["input/tests/REQ-1.spec.ts", "input/tests/REQ-2.spec.ts"],
+  "teacher_requirement_mapping": {"REQ-1.spec.ts": "REQ-2 registration", "REQ-2.spec.ts": "REQ-3 login"},
+  "fixed_checks": [
+    "Teacher four browser workflows run unchanged with a preseeded existing account",
+    "Signed-out home links and no database mutation",
+    "Existing session restored after refresh with no database mutation",
+    "Unknown session rejected with no database mutation",
+    "Unresolved or failed session lookup never leaves cached authenticated identity",
+    "Registration stores all required traveler fields, a verifiable hash and no confirmation password",
+    "Registration creates one usable session and survives reload",
+    "Duplicate username creates no account/session and changes no rows",
+    "Username comparison preserves exact case",
+    "Correct login creates only a session and changes no account data",
+    "Incorrect password creates no session and changes no rows",
+    "Required accessible labels, password concealment, agreement and buttons"
+  ],
+  "preserved_gates": ["compiler unit tests", "backend tests", "UI presence", "generated E2E", "production build"],
+  "visual_scope": "Reference layout reviewed separately; automated behavioral success is not pixel equivalence",
+  "pending_extension": "Not part of teacher-original acceptance; tested separately under examples/registration-pending"
+}
