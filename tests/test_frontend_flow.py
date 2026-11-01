@@ -7,7 +7,11 @@ import unittest
 from unittest.mock import Mock, patch
 
 from infrastructure.stages.requirements.tree import RequirementTree
-from infrastructure.stages.frontend.context import load_ui_context, reference_tests
+from infrastructure.stages.frontend.context import (
+    load_ui_context,
+    reference_tests,
+    validate_reference_controls,
+)
 from infrastructure.stages.frontend.ui.design import (
     apply_proposal,
     empty_design,
@@ -15,7 +19,10 @@ from infrastructure.stages.frontend.ui.design import (
     validate_design,
 )
 from infrastructure.stages.frontend.ui.synthesis import synthesize_ui
-from infrastructure.stages.frontend.ui.testing import presentation_run_status
+from infrastructure.stages.frontend.ui.testing import (
+    presentation_run_status,
+    existence_suite,
+)
 from infrastructure.stages.frontend.interactions.contracts import validate_contract
 from infrastructure.stages.frontend.interactions.design import (
     empty_interactions,
@@ -488,6 +495,46 @@ class FrontendFlow(unittest.TestCase):
         self.assertEqual(tree.leaves, self.tree.leaves)
         self.assertEqual(images, {})
         self.assertNotIn("concatenated_steps", contexts["REQ-A"])
+
+    def test_external_radio_group_cannot_be_replaced_by_select(self):
+        ui = {"elements": {"gender": node("select", None, label="Gender")}}
+        context = {
+            "reference_tests": {
+                "helpers.ts": "page.getByRole('radiogroup', { name: 'Gender', exact: true })"
+            }
+        }
+        with self.assertRaisesRegex(ValueError, "radiogroup"):
+            validate_reference_controls(ui, context)
+        ui["elements"]["gender"] = node(
+            "container", None, label="Gender", role="radiogroup"
+        )
+        validate_reference_controls(ui, context)
+
+    def test_radio_presence_distinguishes_option_value_and_shared_selection(self):
+        ui = deepcopy(self.ui)
+        ui["bindings"]["gender"] = binding("string", "Male", "Selected option")
+        for option in ["Male", "Female"]:
+            ui["elements"]["radio-" + option] = node(
+                "input",
+                "UI-FORM",
+                ["gender"],
+                input_type="radio",
+                value=option,
+                label=option,
+            )
+        suite = existence_suite(ui, "editor")
+        self.assertIn('getByTestId("radio-Female")).toHaveValue("Female")', suite)
+        self.assertIn('getByTestId("radio-Female")).not.toBeChecked()', suite)
+        self.assertIn('getByTestId("radio-Male")).toBeChecked()', suite)
+        with patch.dict("os.environ", {"ARC_LEGACY_RADIO_ASSERTIONS": "1"}):
+            legacy = existence_suite(ui, "editor")
+            self.assertIn('getByTestId("radio-Female")).toHaveValue("Male")', legacy)
+
+    def test_radio_design_requires_its_static_option_value(self):
+        with self.assertRaisesRegex(ValueError, "prop.value"):
+            validate_reference_controls(
+                {"elements": {"x": node("input", None, input_type="radio")}}, {}
+            )
 
     def test_supplied_reference_tests_remain_exact_and_can_be_disabled(self):
         tests = self.output / "tests"

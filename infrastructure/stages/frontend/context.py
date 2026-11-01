@@ -26,6 +26,33 @@ def reference_tests(input_dir):
     }
 
 
+def validate_reference_controls(design, context):
+    """Reject a select where a supplied external contract requires a radio group."""
+    if os.getenv("ARC_LEGACY_REFERENCE_TESTS", "0") == "1":
+        return
+    sources = "\n".join(context.get("reference_tests", {}).values())
+    groups = set(
+        re.findall(
+            r"""getByRole\(\s*['"]radiogroup['"]\s*,\s*\{\s*name:\s*['"]([^'"]+)['"]""",
+            sources,
+        )
+    )
+    for uid, node in design["elements"].items():
+        prop = node.get("prop", {})
+        if node["type"] == "select" and prop.get("label") in groups:
+            raise ValueError(
+                f"External interaction contract requires radiogroup {prop['label']!r}; "
+                f"{uid} is a select. Use a labeled container with prop.role=radiogroup "
+                "and input children with input_type=radio, static prop.value and a shared selection binding."
+            )
+        if (
+            node["type"] == "input"
+            and prop.get("input_type") == "radio"
+            and not isinstance(prop.get("value"), str)
+        ):
+            raise ValueError(f"Radio input {uid} needs a static string prop.value")
+
+
 def load_ui_design(arc_dir, tree, images):
     """Validate the saved design without rerunning synthesis or imposing a new fixture budget."""
     from infrastructure.stages.frontend.ui.design import (

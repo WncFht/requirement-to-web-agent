@@ -24,6 +24,7 @@
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
 | `ARC_LEGACY_E2E_SOURCE_CHECK` | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
 | `ARC_LEGACY_REFERENCE_TESTS` | 0 | =1 不向前端设计/实现提供 input/tests 外部交互契约 |
+| `ARC_LEGACY_RADIO_ASSERTIONS` | 0 | =1 回退 radio 存在性测试的选项值/checked 分离断言 |
 | `ARC_LEGACY_API_SCOPE` | 0 | =1 回退 API 分解中叶子需求边界与 excess 修正提示 |
 | `ARC_LEGACY_UI_PREDICATES` | 0 | =1 回退完整可见性谓词提示；UI IR 与 gate 不变 |
 | `ARC_LEGACY_TEST_SANITY` | 0 | =1 回退后端恒假 header 断言的冻结前准入检查 |

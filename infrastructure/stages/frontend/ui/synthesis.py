@@ -19,13 +19,17 @@ from infrastructure.stages.frontend.ui.proposals import (
     INSTRUCTIONS as EXAMPLE_INSTRUCTIONS,
 )
 from infrastructure.shared.rag.pages import PageRetriever
+from infrastructure.stages.frontend.context import validate_reference_controls
 from infrastructure.utils.files import save_json
 
 VISIBILITY_RULES = """Check every fixture's derived visibility against the requirement BEFORE returning.
 Supplied reference_tests are read-only external interaction contracts. Honor their
 exact accessible labels, roles and routes when choosing controls. Date entry queried
 as a textbox needs a textbox-compatible control; do not infer a different role from
-the screenshot. Treat filenames as historical labels, matching tests to behavior.
+the screenshot. A radiogroup is a labeled container (prop.role=radiogroup), with
+input children input_type=radio, prop.value for each option and one shared selection
+binding; a select is not interchangeable with that externally required role.
+Treat filenames as historical labels, matching tests to behavior.
 A visibility predicate represents the whole business condition, not just readiness.
 If display requires two conditions, use a dedicated boolean binding representing the
 combined condition and document how events maintain it; a single {var,equals} rule
@@ -191,6 +195,7 @@ def synthesize_ui(
                     max_fixtures,
                 )
                 bind_requirement_image_pages(updated, requirement, rid)
+                validate_reference_controls(updated, requirement)
                 break
             except ValueError as error:
                 correction = {"error": str(error), "previous_response": response}

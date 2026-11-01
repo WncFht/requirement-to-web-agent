@@ -130,6 +130,18 @@ def existence_suite(design: dict, pid: str) -> str:
                             f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();"
                         )
                     elif (
+                        kind == "input"
+                        and prop.get("input_type") == "radio"
+                        and os.getenv("ARC_LEGACY_RADIO_ASSERTIONS", "0") != "1"
+                    ):
+                        value = prop["value"]
+                        lines.append(
+                            f"  await expect({locator}).toHaveValue({json.dumps(value)});"
+                        )
+                        lines.append(
+                            f"  await expect({locator}){'' if initial == value else '.not'}.toBeChecked();"
+                        )
+                    elif (
                         kind in {"input", "select"}
                         and isinstance(initial, (str, int, float))
                         and not isinstance(initial, bool)

@@ -46,6 +46,9 @@ relative import. React/ReactDOM and Tailwind CSS are available; do not add depen
 Put data-testid=<stable UI ID> on the ACTUAL element, including the page root. A test ID
 on a decorative wrapper does not substitute for the input/button/select/image itself.
 Use semantic HTML and associated labels. Use prop.input_type and exact option/label text.
+Honor prop.role on labeled containers. Radio inputs use the static prop.value and
+defaultChecked when their shared selection binding equals that value; group them
+with a shared native name. Decorative required asterisks must be aria-hidden.
 All designed UI elements must be represented, including structural containers. Static
 text and visual evidence supply layout and style; do not paste a screenshot as the UI.
 Read frontend values from data[var]; use type assertions as needed. Use defaultValue
