@@ -193,6 +193,66 @@ def effects(records, successful_only):
     return result
 
 
+def successful_pair_effects(records):
+    """Retain valid within-block pairs without requiring unrelated arms to pass.
+
+    This is a secondary, success-conditional view. Failure-inclusive arm costs
+    and all-attempt factorial effects remain the primary treatment accounting.
+    """
+    blocks = {}
+    for row in records:
+        blocks.setdefault(row["block"], {})[row["arm"]] = row
+    contrasts = {
+        "context_with_prefix_off": ("00", "10"),
+        "context_with_prefix_on": ("01", "11"),
+        "prefix_with_context_off": ("00", "01"),
+        "prefix_with_context_on": ("10", "11"),
+        "optimized_vs_control": ("00", "11"),
+    }
+    result = {}
+    for label, (control, treatment) in contrasts.items():
+        used, excluded = [], []
+        for block, group in sorted(blocks.items()):
+            if control not in group or treatment not in group:
+                excluded.append({"block": block, "reason": "missing_pair_member"})
+            elif not group[control]["success"] or not group[treatment]["success"]:
+                excluded.append({"block": block, "reason": "unsuccessful_pair_member"})
+            else:
+                used.append(block)
+        measurements = {}
+        for name in (
+            "total_tokens",
+            "uncached_input_tokens",
+            "generation_wall_seconds",
+            "attempt_wall_seconds",
+        ):
+            pairs = [
+                (
+                    metric(blocks[block][control], name),
+                    metric(blocks[block][treatment], name),
+                )
+                for block in used
+            ]
+            measurements[name] = {
+                "treatment_minus_control": block_interval([b - a for a, b in pairs]),
+                "treatment_control_ratio": block_interval(
+                    [b / a for a, b in pairs if a > 0]
+                ),
+                "zero_denominator_blocks": [
+                    block for block, (a, _) in zip(used, pairs, strict=True) if a <= 0
+                ],
+            }
+        result[label] = {
+            "control_arm": control,
+            "treatment_arm": treatment,
+            "used_blocks": used,
+            "excluded_blocks": excluded,
+            "metrics": measurements,
+            "interpretation": "Secondary paired successful-output comparison, potentially selected by treatment-dependent success. It does not establish overall reliability, failure-inclusive cost improvement or a causal effect among all attempts.",
+        }
+    return result
+
+
 def summarize(root):
     protocol = json.loads((root / "protocol.json").read_text())
     records, missing = [], []
@@ -222,6 +282,7 @@ def summarize(root):
         "arms": arms,
         "blocked_all_attempt_effects": effects(records, False),
         "blocked_all_four_successful_effects": effects(records, True),
+        "blocked_successful_pair_effects": successful_pair_effects(records),
         "failures": [
             {
                 "name": row["name"],

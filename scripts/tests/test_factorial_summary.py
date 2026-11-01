@@ -8,7 +8,13 @@ from tempfile import TemporaryDirectory
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from summarize_factorial_campaign import arm_summary, effects, summarize, wilson
+from summarize_factorial_campaign import (
+    arm_summary,
+    effects,
+    successful_pair_effects,
+    summarize,
+    wilson,
+)
 from analyze_cache_prefixes import alternative, common_prefix
 
 
@@ -102,6 +108,40 @@ class FactorialSummaryTests(unittest.TestCase):
             path.write_text(json.dumps(row))
             with self.assertRaisesRegex(ValueError, "predeclared"):
                 summarize(root)
+
+    def test_successful_pair_survives_unrelated_failure_but_retains_selection_warning(
+        self,
+    ):
+        rows = [
+            record(arm="00", tokens=100),
+            record(arm="10", accepted=False, tokens=200),
+            record(arm="01", tokens=90),
+            record(arm="11", tokens=60),
+        ]
+        result = successful_pair_effects(rows)
+        pair = result["optimized_vs_control"]
+        self.assertEqual(pair["used_blocks"], [1])
+        self.assertEqual(
+            pair["metrics"]["total_tokens"]["treatment_control_ratio"]["mean"],
+            0.6,
+        )
+        self.assertIn("selected", pair["interpretation"])
+        self.assertEqual(result["context_with_prefix_on"]["used_blocks"], [1])
+        excluded = result["context_with_prefix_off"]
+        self.assertEqual(excluded["used_blocks"], [])
+        self.assertEqual(
+            excluded["excluded_blocks"],
+            [{"block": 1, "reason": "unsuccessful_pair_member"}],
+        )
+
+    def test_successful_pair_distinguishes_missing_and_zero_denominators(self):
+        rows = [record(arm="00", tokens=0), record(arm="11", tokens=60)]
+        result = successful_pair_effects(rows)
+        missing = result["context_with_prefix_off"]
+        self.assertEqual(missing["excluded_blocks"][0]["reason"], "missing_pair_member")
+        tokens = result["optimized_vs_control"]["metrics"]["total_tokens"]
+        self.assertIsNone(tokens["treatment_control_ratio"])
+        self.assertEqual(tokens["zero_denominator_blocks"], [1])
 
     def test_offline_reorder_preserves_information_and_reports_character_prefix_only(
         self,
