@@ -24,6 +24,23 @@ class BackendAdmissionTests(unittest.TestCase):
             "function hasCookie(x) { return Boolean(x.cookie); } assert.ok(!hasCookie(headers));"
         )
 
+    def test_json_serialization_cannot_equal_unquoted_credential(self):
+        for assertion in (
+            'assert.equal("cred-unknown", JSON.stringify(body));',
+            "assert.strictEqual(JSON.stringify(body), 'cred-unknown');",
+        ):
+            with (
+                self.subTest(assertion=assertion),
+                self.assertRaisesRegex(ValueError, "non-JSON"),
+            ):
+                validate_backend_test(assertion)
+
+    def test_valid_json_and_negative_membership_are_allowed(self):
+        validate_backend_test("assert.equal(JSON.stringify(body), '{}');")
+        validate_backend_test(
+            'assert.equal(JSON.stringify(body).includes("cred-unknown"), false);'
+        )
+
     @patch.dict(os.environ, {"ARC_LEGACY_TEST_SANITY": "1"})
     def test_legacy_flag_restores_previous_admission(self):
         validate_backend_test(BAD)
