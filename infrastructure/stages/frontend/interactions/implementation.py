@@ -36,6 +36,7 @@ from infrastructure.stages.frontend.interactions.design import (
 from infrastructure.stages.frontend.interactions.creation_context import (
     creation_context,
 )
+from infrastructure.stages.frontend.ui.label_contracts import label_instructions
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.utils.files import save_json
 from infrastructure.stages.frontend.ui.design import page_context, page_elements
@@ -474,7 +475,7 @@ def run_interaction_tdd(
 
                 agent = run_file_agent(
                     model,
-                    IMPLEMENT_INSTRUCTIONS,
+                    IMPLEMENT_INSTRUCTIONS + "\n" + label_instructions(),
                     task,
                     workspace,
                     implementation_gate if final_call else creation_gate,

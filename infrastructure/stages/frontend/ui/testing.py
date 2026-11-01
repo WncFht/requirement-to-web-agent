@@ -100,6 +100,12 @@ def existence_suite(design: dict, pid: str) -> str:
                     lines.append(
                         f"  await expect({locator}).toHaveAccessibleName({json.dumps(prop['label'])});"
                     )
+                    if os.getenv("ARC_LEGACY_LABEL_LOCATORS", "0") != "1":
+                        lines.append(
+                            f"  await expect(page.getByTestId({json.dumps(page['root'])})"
+                            f".getByLabel({json.dumps(prop['label'])}, {{ exact: true }}))"
+                            f'.toHaveAttribute("data-testid", {json.dumps(uid)});'
+                        )
                 if "placeholder" in prop:
                     if kind == "select":
                         lines.append(
