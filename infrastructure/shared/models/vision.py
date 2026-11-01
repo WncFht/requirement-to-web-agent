@@ -21,7 +21,7 @@ class VisualModel:
         base_url = os.getenv("VISUAL_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
         if not self.name or not api_key:
             raise ValueError("Set MODEL and OPENAI_API_KEY in compiler/.env; the model must accept images")
-        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=120, max_retries=2, http_client=http_client())
+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=600, max_retries=2, http_client=http_client())
 
     def analyze(self, image: Path) -> dict:
         """Send one supported reference image and validate the returned layout, elements, and style evidence."""

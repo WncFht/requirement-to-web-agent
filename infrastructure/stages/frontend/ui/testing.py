@@ -65,7 +65,10 @@ def existence_suite(design: dict, pid: str) -> str:
                 if prop.get("label"):
                     lines.append(f'  await expect({locator}).toHaveAccessibleName({json.dumps(prop["label"])});')
                 if "placeholder" in prop:
-                    lines.append(f'  await expect({locator}).toHaveAttribute("placeholder", {json.dumps(prop["placeholder"])});')
+                    if kind == "select":
+                        lines.append(f'  await expect({locator}.getByRole("option", {{ name: {json.dumps(prop["placeholder"])}, exact: true }})).toHaveCount(1);')
+                    else:
+                        lines.append(f'  await expect({locator}).toHaveAttribute("placeholder", {json.dumps(prop["placeholder"])});')
                 if kind in {"input", "checkbox"}:
                     input_type = "checkbox" if kind == "checkbox" else prop.get("input_type", "text")
                     lines.append(f'  await expect({locator}).toHaveAttribute("type", {json.dumps(input_type)});')

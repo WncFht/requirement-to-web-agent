@@ -5,9 +5,11 @@ the event implementation. Complete that requirement before advancing; include
 accepted scenarios and UI presence tests in regression checks."""
 
 import json
+import re
+import os
 
 from infrastructure.shared.agent.files import FileWorkspace, source_paths, editable_sources
-from infrastructure.shared.agent.loop import run_file_agent
+from infrastructure.shared.agent.loop import compact_feedback, run_file_agent
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.stages.frontend.interactions.e2e_runtime import FIXTURE, prepare_e2e
 from infrastructure.stages.frontend.interactions.testing import E2EChecks, require_behavioral_red, test_path
@@ -55,7 +57,11 @@ TEST_INSTRUCTIONS = '''Write a few real Playwright E2E tests BEFORE implementati
 For a new suite, choose a .spec.ts path under task.new_file.directory; otherwise edit test_path.
 Import {test,expect,fixturePasswordHash} from frontend/tests/e2e/support/context.ts,
 using the correct relative .js import from your chosen file path.
-Use literal test("title",async ({page,database})=>{...}) calls, at most max_tests total.
+Use literal test("title",async ({page,database,baseURL})=>{...}) calls, at most max_tests total.
+The test host and port are dynamically allocated. Never hardcode localhost, 127.0.0.1
+or a port in a URL. Use relative paths for page.goto and use baseURL! for Cookie.url.
+Cookies for localhost are not sent to 127.0.0.1. Do not change application code to
+compensate for a test Cookie attached to the wrong host.
 The support fixture automatically resets an isolated real SQLite DB before every case.
 Seed Given records with parameterized SQL and supplied real table definitions; fixture
 passwords use fixturePasswordHash. database is a better-sqlite3 connection, not a mock.
@@ -145,6 +151,10 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
     activate and repair the current event handlers before advancing. Regress
     accepted E2E/UI tests, build the app, and update the caller's report."""
     output = arc_dir.parent.resolve()
+    # Creation calls carry a slim context by default: one target event, the
+    # compiler-owned wiring files and this requirement's page sources. Set
+    # ARC_FULL_CONTEXT=1 to restore the unsimplified per-call context (A/B runs).
+    slim_context = os.getenv("ARC_FULL_CONTEXT", "0") != "1"
     prepare_frontend(output)
     prepare_e2e(output, backend)
     sync_interactions(output, ui, interactions, backend, [])
@@ -195,19 +205,26 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
             compiled = generation_checks()
             if compiled["returncode"]:
                 raise ValueError(compiled["output"])
+            source = (output / relative).read_text(encoding="utf-8-sig")
+            if re.search(r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?", source):
+                raise ValueError("The generated test hardcodes a loopback host. Use the baseURL fixture for Cookie.url and relative page.goto paths; the runner uses a random port on 127.0.0.1.")
             behavior = checks.tests([relative])
             status = test_run_status(behavior)
             return {"typecheck": compiled, "behavior": behavior, "status": status}
 
         test_context = {**context, "schema": schema["entities"], "test_path": relative if (output / relative).is_file() else None,
             "max_tests": max_tests}
-        agent = run_file_agent(model, TEST_INSTRUCTIONS, test_context,
-            FileWorkspace.for_target(output, "e2e_test", rid, existing=relative,
-                writable=editable_sources(output, "frontend/src"),
-                references=[FIXTURE, *source_paths(output, "backend/src/db"),
-                    *source_paths(output, "frontend/src"),
-                    *(path for path in regression_files if path != relative), *ui_files]),
-            test_gate, max_turns, console, label + " / Test Generation")
+        if os.getenv("ARC_REUSE_E2E_TESTS", "0") == "1" and (output / relative).is_file():
+            agent = {"turns": 0, "checks": test_gate()}
+            console.show(label + " | Reuse existing tests", "Revalidate the existing suite; no test-generation model call.")
+        else:
+            agent = run_file_agent(model, TEST_INSTRUCTIONS, test_context,
+                FileWorkspace.for_target(output, "e2e_test", rid, existing=relative,
+                    writable=editable_sources(output, "frontend/src"),
+                    references=[FIXTURE, *source_paths(output, "backend/src/db"),
+                        *source_paths(output, "frontend/src"),
+                        *(path for path in regression_files if path != relative)]),
+                test_gate, max_turns, console, label + " / Test Generation")
         report["requirements"][rid]["test_turns"] = agent["turns"]
         report["requirements"][rid]["test_path"] = relative
 
@@ -245,12 +262,35 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
             # Each creation call has one unambiguous target. The final call runs
             # complete acceptance, with all current handlers available for repair.
             for index, new_event in enumerate(missing or [None]):
+                final_call = not missing or index == len(missing) - 1
                 event_paths = {eid: selected_path(output, "event", eid) for eid in sorted(targets)}
-                task = {**context, "implementation_paths": event_paths, "page_paths": page_paths}
-                writable = set(editable_sources(output, "frontend/src"))
-                references = source_paths(output, "frontend/src") + regression_files + ui_files + ["frontend/package.json", "frontend/tsconfig.json"]
-                workspace = (FileWorkspace.for_target(output, "event", new_event, references, writable)
-                    if new_event else FileWorkspace(output, writable, references))
+                if slim_context and new_event is not None and not final_call:
+                    # Creation calls implement exactly one new handler. Supply only the
+                    # compiler-owned wiring, this requirement's page sources and the
+                    # target event's contracts/APIs; other handlers' behavior is already
+                    # captured by the events/contracts/task descriptions. The final call
+                    # of the requirement keeps the full context for cross-file repairs.
+                    target_event_ids = [new_event]
+                    called = {aid for eid in target_event_ids for aid in api_ids(context["events"].get(eid, {}))}
+                    task = {**context, "target_event_ids": target_event_ids,
+                        "contracts": {eid: contract for eid in target_event_ids
+                            if (contract := context["contracts"].get(eid)) is not None},
+                        "backend_apis": {aid: backend["apis"][aid] for aid in sorted(called)
+                            if aid in backend["apis"]},
+                        "implementation_paths": event_paths, "page_paths": page_paths}
+                    references = [relative for relative in ("frontend/src/ui-runtime.ts",
+                        "frontend/src/ui-api.ts", "frontend/src/ui-events.ts")
+                        if (output / relative).is_file()]
+                    editable = set(editable_sources(output, "frontend/src"))
+                    writable = {relative for relative in page_paths.values()
+                        if relative and relative in editable}
+                    workspace = FileWorkspace.for_target(output, "event", new_event, references, writable)
+                else:
+                    task = {**context, "implementation_paths": event_paths, "page_paths": page_paths}
+                    writable = set(editable_sources(output, "frontend/src"))
+                    references = source_paths(output, "frontend/src") + regression_files + ui_files + ["frontend/package.json", "frontend/tsconfig.json"]
+                    workspace = (FileWorkspace.for_target(output, "event", new_event, references, writable)
+                        if new_event else FileWorkspace(output, writable, references))
 
                 def creation_gate():
                     sync_interactions(output, ui, interactions, backend, active)
@@ -259,10 +299,9 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
                         raise ValueError(compiled["output"])
                     return {"typecheck": compiled}
 
-                final_call = not missing or index == len(missing) - 1
                 agent = run_file_agent(model, IMPLEMENT_INSTRUCTIONS, task, workspace,
                     implementation_gate if final_call else creation_gate, max_turns, console,
-                    label + (f" / Create {new_event}" if new_event else " / Interaction Implementation"), feedback=current)
+                    label + (f" / Create {new_event}" if new_event else " / Interaction Implementation"), feedback=compact_feedback(current))
                 total_turns += agent["turns"]
             agent["turns"] = total_turns
         accepted.append(rid)

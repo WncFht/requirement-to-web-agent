@@ -2,11 +2,15 @@
 
 import json
 import os
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
-from openai import OpenAI, OpenAIError
+from openai import APIConnectionError, APITimeoutError, InternalServerError, OpenAI, OpenAIError, RateLimitError
 from infrastructure.utils.presentation.model_io import http_client, invoke
+
+TRANSIENT_ERRORS = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
+BACKOFF_SECONDS = (10, 30, 90)
 
 
 class TextModel:
@@ -28,12 +32,14 @@ class TextModel:
         self.client = OpenAI(
             api_key=api_key,
             base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
-            timeout=120, max_retries=2,
+            timeout=600, max_retries=2,
             http_client=http_client(),
         )
 
     def _request(self, **arguments):
         """Apply one output budget to JSON calls, with legacy endpoint compatibility."""
+        if os.getenv("ARC_DISABLE_THINKING", "0") == "1":
+            arguments["extra_body"] = {"thinking": {"type": "disabled"}}
         try:
             response = invoke(self.client, {**arguments, self._token_parameter: self.max_output_tokens})
         except OpenAIError as error:
@@ -54,18 +60,39 @@ class TextModel:
         return response
 
     def generate_json(self, instructions: str, payload: dict) -> dict:
-        """Request one ordinary JSON object; stage code owns examples and structural/semantic validation."""
+        """Request one ordinary JSON object; stage code owns examples and structural/semantic validation.
+
+        Transient transport failures (connection, timeout, 5xx, rate limit) are retried
+        with exponential backoff so one network blip does not abort a whole stage."""
+        arguments = {
+            "model": self.name,
+            "messages": [
+                {"role": "system", "content": instructions.rstrip() + "\nReturn exactly one JSON object without Markdown."},
+                {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
+            ],
+            "response_format": {"type": "json_object"},
+        }
         try:
-            response = self._request(
-                model=self.name,
-                messages=[
-                    {"role": "system", "content": instructions.rstrip() + "\nReturn exactly one JSON object without Markdown."},
-                    {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
-                ],
-                response_format={"type": "json_object"},
-            )
-        except OpenAIError as error:
-            raise RuntimeError(f"Text model request failed: {error}") from error
+            attempts = 1 + max(0, int(os.getenv("ARC_MODEL_TRANSPORT_RETRIES", "2") or 0))
+        except ValueError:
+            attempts = 3
+        response, last_error = None, None
+        for attempt in range(attempts):
+            try:
+                response = self._request(**arguments)
+                break
+            except TRANSIENT_ERRORS as error:
+                last_error = error
+                if attempt == attempts - 1:
+                    break
+                wait = BACKOFF_SECONDS[min(attempt, len(BACKOFF_SECONDS) - 1)]
+                print(f"Text model transport issue ({type(error).__name__}); "
+                    f"retrying {attempt + 1}/{attempts - 1} in {wait}s", flush=True)
+                time.sleep(wait)
+            except OpenAIError as error:
+                raise RuntimeError(f"Text model request failed: {error}") from error
+        if response is None:
+            raise RuntimeError(f"Text model request failed after {attempts} attempts: {last_error}") from last_error
         if response.choices and getattr(response.choices[0].message, "refusal", None):
             raise ValueError(f"Text model refused the request: {response.choices[0].message.refusal}")
         if not response.choices or not response.choices[0].message.content:
