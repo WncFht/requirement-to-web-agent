@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from infrastructure.stages.frontend.interactions.e2e_runtime import CONFIG_SOURCE
 from infrastructure.utils.processes import capture_process
+from infrastructure.utils.processes import npm_command
 
 ALIASES = {
     "username": {"username"},
@@ -256,6 +257,13 @@ def main():
         and not any(stats.get(key) for key in ["unexpected", "skipped", "flaky"])
         and not report.get("errors")
     )
+    built = (
+        capture_process([*npm_command(), "run", "build"], cwd=output, timeout=300)
+        if green
+        else None
+    )
+    if built is not None:
+        (result_dir / "production-build.txt").write_text(built["output"])
     summary = {
         "status": "GREEN" if green else "FAILED",
         "stats": stats,
@@ -268,11 +276,14 @@ def main():
         "preserved_gates": gates,
         "diagnostic_only": args.allow_incomplete,
         "all_preserved_gates_green": all(value == "GREEN" for value in gates.values()),
+        "production_build_passed": built is not None and built["returncode"] == 0,
     }
     (result_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary, indent=2))
     if not green:
         raise SystemExit(1)
+    if not summary["production_build_passed"]:
+        raise SystemExit("Independent checks passed but final production build failed")
     if not args.allow_incomplete and not summary["all_preserved_gates_green"]:
         raise SystemExit("Independent checks passed but pipeline gates are incomplete")
 

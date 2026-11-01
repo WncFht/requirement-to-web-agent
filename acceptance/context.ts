@@ -43,6 +43,12 @@ export function snapshot() {
   } finally { db.close(); }
 }
 export const test = base.extend<{ fixedState: void }>({
-  fixedState: [async ({}, use) => { reset(); await use(); reset(); }, { auto: true }],
+  fixedState: [async ({ page }, use) => {
+    reset();
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
+    try { await use(); expect(errors).toEqual([]); }
+    finally { reset(); }
+  }, { auto: true }],
 });
 export { expect };
