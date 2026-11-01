@@ -47,12 +47,15 @@ def block_interval(values):
     sampled = sorted(mean(sample) for sample in product(values, repeat=len(values)))
     return {
         "mean": mean(values),
+        "n_blocks": len(values),
         "block_values": values,
         "bootstrap_95_percentile_interval": [
             quantile(sampled, 0.025),
             quantile(sampled, 0.975),
-        ],
-        "warning": "Exploratory with only three blocks: interval is unstable; it is not a guarantee of reproducible speedup or a large-sample significance test.",
+        ]
+        if len(values) > 1
+        else None,
+        "warning": "A single block has no estimated uncertainty interval; with two or three blocks bootstrap intervals remain exploratory and unstable. Neither establishes reproducible speedup or large-sample significance.",
     }
 
 

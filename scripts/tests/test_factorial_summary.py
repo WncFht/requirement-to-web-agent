@@ -10,6 +10,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from summarize_factorial_campaign import (
     arm_summary,
+    block_interval,
     effects,
     successful_pair_effects,
     summarize,
@@ -40,6 +41,15 @@ def record(arm="00", block=1, accepted=True, tokens=100, seconds=10):
 
 
 class FactorialSummaryTests(unittest.TestCase):
+    def test_single_successful_block_does_not_create_zero_width_confidence(self):
+        result = block_interval([0.8])
+        self.assertEqual(result["mean"], 0.8)
+        self.assertEqual(result["n_blocks"], 1)
+        self.assertIsNone(result["bootstrap_95_percentile_interval"])
+        multiple = block_interval([0.8, 1.2, 1.0])
+        self.assertEqual(multiple["n_blocks"], 3)
+        self.assertIsNotNone(multiple["bootstrap_95_percentile_interval"])
+
     def test_failed_attempt_cost_is_included_and_no_success_is_not_free(self):
         result = arm_summary(
             [
