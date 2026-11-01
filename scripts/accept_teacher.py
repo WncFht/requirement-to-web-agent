@@ -140,6 +140,12 @@ def make_adapter(output):
     cookies = set()
     for path in (output / "backend/src").rglob("*.ts"):
         text = path.read_text()
+        constants = dict(
+            re.findall(r"const\s+(\w+)\s*=\s*[\"']([A-Za-z_][A-Za-z0-9_-]*)[\"']", text)
+        )
+        for variable in re.findall(r"`\$\{(\w+)\}=\$\{", text):
+            if variable in constants:
+                cookies.add(constants[variable])
         for match in re.finditer(r"(?:[`\"'])([a-zA-Z_][a-zA-Z0-9_-]*)=\$\{", text):
             cookies.add(match.group(1))
     if len(cookies) != 1 or len(paths) != 1:
