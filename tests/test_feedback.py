@@ -44,6 +44,9 @@ class FeedbackTests(unittest.TestCase):
         self.assertEqual(compact_feedback(report)["output"], "server startup failed")
         report["output"] = json.dumps({"failed": 1})
         self.assertIn("output", compact_feedback(report))
+        self.assertIn(
+            "output", compact_feedback({"count": 1, "output": '{"count": true}'})
+        )
 
     @patch.dict(os.environ, {"ARC_FULL_FEEDBACK": "1"})
     def test_opt_out_restores_legacy_exception_feedback(self):

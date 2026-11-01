@@ -45,7 +45,9 @@ def compact_feedback(value, limit=4000, width=8):
                 pass
             else:
                 fields = {key: item for key, item in value.items() if key != "output"}
-                if decoded == fields:
+                if json.dumps(decoded, sort_keys=True) == json.dumps(
+                    fields, sort_keys=True
+                ):
                     value = fields
         return {
             key: compact_feedback(item, limit, width) for key, item in value.items()
@@ -76,7 +78,12 @@ def run_file_agent(
     """Refresh task paths and files each round; accept edits only after the gate passes."""
     if max_turns < 1:
         raise ValueError("--max-turns must be positive")
-    feedback = [] if feedback is None else [compact_feedback(item) for item in feedback]
+    if feedback is None:
+        feedback = []
+    elif isinstance(feedback, dict) and os.getenv("ARC_FULL_FEEDBACK", "0") != "1":
+        feedback = [compact_feedback(feedback)]
+    else:
+        feedback = [compact_feedback(item) for item in feedback]
     for turn in range(1, max_turns + 1):
         console.show(
             f"{label} | Edit round {turn}/{max_turns}",

@@ -100,3 +100,5 @@ node --import tsx ../../source/docs/experiments/optf-session-probe.mjs .
 保留 gate 的结构化报告，避免先转成 Python 字典字符串、再经过 JSON 转义；只有当 `output` 解码后与其他全部字段完全相等时才移除这份重复副本。断言、失败数量与位置仍传给模型，原始审计日志保持完整。`ARC_FULL_FEEDBACK=1` 恢复旧的模型反馈格式。
 
 从 OPT-F 日志提取的 17 份可完整解析失败报告，序列化反馈从 48,006 字符降至 18,821 字符，减少 60.8%；见 [feedback-replay.json](feedback-replay.json)。这是历史反馈的字符重放测量，不是模型 token、端到端耗时或成功率的测量。全流程验证结果另按实际运行状态更新。
+
+初始反馈另有独立缺陷：调用者传入的报告字典被循环按键展开，首轮仅收到 `typecheck/e2e/ui` 等字段名。已补齐完整字典传输与回归断言。首次 OPT-G 尝试在 Stage 08 被主动中断，保留在 `work/optg-1101`；修改后的完整验证使用新目录，不复用该次产物。

@@ -99,6 +99,7 @@ class FileAgentTests(unittest.TestCase):
         self.assertEqual(result, {"turns": 3, "checks": {"green": True}})
         requests = [call.args[1] for call in model.generate_json.call_args_list]
         self.assertEqual(set(requests[0]), {"task", "files", "feedback"})
+        self.assertEqual(requests[0]["feedback"], [{"initial": "RED"}])
         self.assertEqual(
             requests[0]["files"][relative], {"content": None, "writable": True}
         )
