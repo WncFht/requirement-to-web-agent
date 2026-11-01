@@ -4,10 +4,10 @@ from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from infrastructure.stages.requirements.tree import RequirementTree
-from infrastructure.stages.frontend.context import load_ui_context
+from infrastructure.stages.frontend.context import load_ui_context, reference_tests
 from infrastructure.stages.frontend.ui.design import (
     apply_proposal,
     empty_design,
@@ -488,6 +488,29 @@ class FrontendFlow(unittest.TestCase):
         self.assertEqual(tree.leaves, self.tree.leaves)
         self.assertEqual(images, {})
         self.assertNotIn("concatenated_steps", contexts["REQ-A"])
+
+    def test_supplied_reference_tests_remain_exact_and_can_be_disabled(self):
+        tests = self.output / "tests"
+        tests.mkdir()
+        content = "// Historical ID; exact accessible contract\n"
+        (tests / "REQ-old.spec.ts").write_text(content)
+        self.assertEqual(
+            reference_tests(self.output), {"tests/REQ-old.spec.ts": content}
+        )
+        with patch.dict("os.environ", {"ARC_LEGACY_REFERENCE_TESTS": "1"}):
+            self.assertEqual(reference_tests(self.output), {})
+
+    def test_reference_tests_are_available_without_filename_requirement_mapping(self):
+        save_json(self.arc / "requirements.json", self.raw)
+        save_json(self.arc / "visual_analysis.json", {})
+        (self.output / "tests").mkdir()
+        save_text(self.output / "tests/old-id.spec.ts", "external contract")
+        _, _, contexts = load_ui_context(self.arc, self.output)
+        for context in contexts.values():
+            self.assertEqual(
+                context["reference_tests"],
+                {"tests/old-id.spec.ts": "external contract"},
+            )
 
     def test_frontend_calls_are_checked_by_database_fields(self):
         validate_interactions(

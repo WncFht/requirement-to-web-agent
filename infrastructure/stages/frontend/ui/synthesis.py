@@ -22,6 +22,10 @@ from infrastructure.shared.rag.pages import PageRetriever
 from infrastructure.utils.files import save_json
 
 VISIBILITY_RULES = """Check every fixture's derived visibility against the requirement BEFORE returning.
+Supplied reference_tests are read-only external interaction contracts. Honor their
+exact accessible labels, roles and routes when choosing controls. Date entry queried
+as a textbox needs a textbox-compatible control; do not infer a different role from
+the screenshot. Treat filenames as historical labels, matching tests to behavior.
 A visibility predicate represents the whole business condition, not just readiness.
 If display requires two conditions, use a dedicated boolean binding representing the
 combined condition and document how events maintain it; a single {var,equals} rule

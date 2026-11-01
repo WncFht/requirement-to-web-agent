@@ -1,6 +1,7 @@
 """Frontend inputs retain image/page evidence alongside normalized requirements."""
 
 import json
+import os
 import re
 
 from infrastructure.stages.backend.context import load_context
@@ -11,6 +12,18 @@ from infrastructure.stages.backend.primitives import validate_design
 from infrastructure.stages.database.obligations.records import field_symbols
 
 REFERENCE = re.compile(r"\\ref\[image\]\(([^)]+)\)")
+
+
+def reference_tests(input_dir):
+    """Expose supplied interaction contracts as read-only evidence, never generated tests."""
+    if os.getenv("ARC_LEGACY_REFERENCE_TESTS", "0") == "1":
+        return {}
+    root = input_dir.resolve()
+    return {
+        path.relative_to(root).as_posix(): path.read_text(encoding="utf-8-sig")
+        for path in sorted((root / "tests").rglob("*.ts"))
+        if path.resolve().is_relative_to(root) and path.is_file()
+    }
 
 
 def load_ui_design(arc_dir, tree, images):
@@ -62,6 +75,7 @@ def load_ui_context(arc_dir, input_dir):
 
     visit(raw)
     contexts = {}
+    supplied_tests = reference_tests(input_dir)
     for rid in tree.requirements:
         node = nodes[rid]
         direct = {key: value for key, value in node.items() if key != "children"}
@@ -77,6 +91,8 @@ def load_ui_context(arc_dir, input_dir):
             "steps": [tree.steps[sid] for sid in tree.own_steps[rid]],
             "images": {key: images[key] for key in sorted(refs) if key in images},
         }
+        if supplied_tests:
+            contexts[rid]["reference_tests"] = supplied_tests
     return tree, images, contexts
 
 
