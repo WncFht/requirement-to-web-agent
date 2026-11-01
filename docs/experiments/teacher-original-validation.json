@@ -153,6 +153,61 @@
       "backend_tdd": "FAILED",
       "ui_checks": null,
       "frontend_e2e": null
+    },
+    {
+      "run": "teacher-original-1101-reasoning",
+      "status": "INTERRUPTED",
+      "last_stage": "08",
+      "reason": {
+        "status": "INTERRUPTED",
+        "stage": "08",
+        "reason": "No returned backend test-generation response; switch to separately recorded fast generation plus contradiction review",
+        "pending_call_id": "b257048104f4469087023897e4490983",
+        "pending_seconds_before_interrupt": 511.3,
+        "unreturned_request_usage": "unknown; not assumed zero",
+        "successor": "teacher-original-1101-reviewed"
+      },
+      "generation_metadata": {
+        "code_revision": "8ec3fb1254e8f268702112d8de30d799c1fa802c",
+        "input_kind": "teacher original, byte-identical",
+        "predecessor_failed_run": "teacher-original-1101-v5",
+        "ARC_DISABLE_THINKING": "0",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4",
+        "model": "deepseek-flash",
+        "node": "22.23.2",
+        "acceptance_version": 2,
+        "fresh_generation": true,
+        "purpose": "Correctness-first baseline with reasoning restored; not a performance comparison",
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "f1806b1f94dc549899d42c173019b6eae32357ca61d8164fb6593f83dc117bea",
+        "fixed_acceptance_sha256": "b28c46fcd1ee660ec70d4d594a238aa366f57246807cc4bc69926d1c9baa0cf4",
+        "acceptance_files_sha256": {
+          "setup.ts": "8ca72acab19bdf22241f5d6c60071d0e2f173378cfdfabf9ced3365f2f32653b",
+          "context.ts": "66119abec3af5878f8514e4998f6437fe0c76dc26137ad2df80a7ae433a75fa4",
+          "fixed.spec.ts": "b28c46fcd1ee660ec70d4d594a238aa366f57246807cc4bc69926d1c9baa0cf4"
+        }
+      },
+      "returned_sdk_calls": 17,
+      "returned_tokens_total": 97129,
+      "archive": "artifacts/optimization-runs/teacher-original-1101-reasoning.tar.gz"
     }
-  ]
+  ],
+  "test_review_probes": {
+    "archive": "artifacts/optimization-runs/test-review-probe.tar.gz",
+    "negative": {
+      "elapsed_seconds": 2.710583093110472,
+      "result": {
+        "status": "CONTRADICTORY",
+        "reason": "The test constructs an object literal containing a `password_hash` property and then asserts that the serialized body does not include the string \"password_hash\". Any valid implementation of the function receives that exact object, so JSON.stringify will always include the key \"password_hash\", making the assertion fail regardless of implementation. The test is self-contradictory."
+      }
+    },
+    "positive": {
+      "elapsed_seconds": 1.354262979933992,
+      "result": {
+        "status": "NO_CONTRADICTION_FOUND",
+        "reason": "assertNoSecretLeak serializes the constructed object {username:\"new_traveler\"} with JSON.stringify, yielding a string that does not include \"password_hash\". The helper is applied only to a public response-like object, not to a DB record containing the stored hash. This is consistent with the contract requiring only a public username response while the password hash remains stored privately."
+      }
+    },
+    "scope": "Contradiction review controls, not full-run acceptance or formal proof"
+  }
 }
