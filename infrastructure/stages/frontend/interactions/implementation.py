@@ -33,6 +33,9 @@ from infrastructure.stages.frontend.interactions.design import (
     event_ids,
     relevant_pages,
 )
+from infrastructure.stages.frontend.interactions.creation_context import (
+    creation_context,
+)
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.utils.files import save_json
 from infrastructure.stages.frontend.ui.design import page_context, page_elements
@@ -427,6 +430,20 @@ def run_interaction_tdd(
                     workspace = FileWorkspace.for_target(
                         output, "event", new_event, references, writable
                     )
+                    if os.getenv("ARC_EVENT_CONTEXT", "0") == "1":
+                        task = creation_context(
+                            context, new_event, event_paths, page_paths
+                        )
+                        workspace = FileWorkspace.for_target(
+                            output,
+                            "event",
+                            new_event,
+                            references=[
+                                path
+                                for path in references
+                                if path != "frontend/src/ui-events.ts"
+                            ],
+                        )
                 else:
                     task = {
                         **context,
