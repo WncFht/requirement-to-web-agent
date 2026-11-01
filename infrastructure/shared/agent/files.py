@@ -64,6 +64,9 @@ class FileWorkspace:
         self.output = output.resolve()
         self.writable = set(writable)
         self.files = self.writable | set(references)
+        # Supply order: initial files sorted (stable across rounds), files created
+        # later appended at the end so the serialized prefix stays cacheable.
+        self.order = sorted(self.files)
         self.observed = {}
         self.new_file = new_file
         self.target = new_file
@@ -148,10 +151,15 @@ class FileWorkspace:
         return target
 
     def state(self) -> dict:
-        """Refresh all supplied contents before each model request."""
+        """Refresh all supplied contents before each model request.
+
+        Supply order follows self.order: initial files first (sorted), files
+        created during the loop appended. This keeps the serialized prefix
+        stable across rounds for prompt-cache hits."""
         self.observed = {
             path: read_source(self.path(path)) if self.path(path).is_file() else None
-            for path in sorted(self.files)
+            for path in self.order
+            if path in self.files
         }
         return {
             path: {"content": content, "writable": path in self.writable}
@@ -212,4 +220,5 @@ class FileWorkspace:
         if created is not None:
             self.writable.add(created)
             self.files.add(created)
+            self.order.append(created)
             self.new_file = None

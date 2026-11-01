@@ -391,20 +391,26 @@ def run_interaction_tdd(
                         for aid in api_ids(context["events"].get(eid, {}))
                     }
                     task = {
-                        **context,
-                        "target_event_ids": target_event_ids,
-                        "contracts": {
-                            eid: contract
-                            for eid in target_event_ids
-                            if (contract := context["contracts"].get(eid)) is not None
-                        },
+                        # Cache-friendly key order: stable context first, per-call
+                        # selections last, so the serialized prefix stays valid
+                        # across the requirement's creation calls.
+                        "page_subtrees": context["page_subtrees"],
+                        "triggers": context["triggers"],
+                        "events": context["events"],
+                        "requirement": context["requirement"],
+                        "implementation_paths": event_paths,
+                        "page_paths": page_paths,
                         "backend_apis": {
                             aid: backend["apis"][aid]
                             for aid in sorted(called)
                             if aid in backend["apis"]
                         },
-                        "implementation_paths": event_paths,
-                        "page_paths": page_paths,
+                        "contracts": {
+                            eid: contract
+                            for eid in target_event_ids
+                            if (contract := context["contracts"].get(eid)) is not None
+                        },
+                        "target_event_ids": target_event_ids,
                     }
                     references = [
                         relative

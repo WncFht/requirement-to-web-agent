@@ -53,8 +53,12 @@ def run_file_agent(
             response = model.generate_json(
                 instructions + "\n\n" + FILE_EDIT_RULES,
                 {
-                    "task": files.task_state(task),
+                    # Cache-friendly key order: files are the most stable section
+                    # (wiring + pages), task changes per target selection, feedback
+                    # changes every round. DeepSeek prefix caching follows the
+                    # serialized order, so volatile content must come last.
                     "files": files.state(),
+                    "task": files.task_state(task),
                     "feedback": feedback,
                 },
             )
