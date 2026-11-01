@@ -2,6 +2,7 @@
 
 import json
 import os
+from infrastructure.shared.models.context_order import stable_first
 from infrastructure.stages.frontend.interactions.read_failures import (
     read_failure_instructions,
 )
@@ -165,6 +166,8 @@ def synthesize_interactions(
                 )
             },
         }
+
+        request = stable_first(request, ("frontend_data", "page_inventory"))
 
         def accept(value):
             require_fields(value, {"contract"}, "Event contract response")

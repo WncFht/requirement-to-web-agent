@@ -10,6 +10,7 @@ from infrastructure.shared.project.entrypoints import (
 )
 from infrastructure.utils.files import read_source, save_bytes, save_text
 from infrastructure.utils.paths import check_path_case, relative_path
+from infrastructure.shared.models.context_order import file_order
 
 EXCLUDED = {
     "node_modules",
@@ -64,9 +65,9 @@ class FileWorkspace:
         self.output = output.resolve()
         self.writable = set(writable)
         self.files = self.writable | set(references)
-        # Supply order: initial files sorted (stable across rounds), files created
+        # Supply order: initial files deterministically ordered (stable across rounds), files created
         # later appended at the end so the serialized prefix stays cacheable.
-        self.order = sorted(self.files)
+        self.order = file_order(self.files, self.writable)
         self.observed = {}
         self.new_file = new_file
         self.target = new_file
@@ -153,7 +154,7 @@ class FileWorkspace:
     def state(self) -> dict:
         """Refresh all supplied contents before each model request.
 
-        Supply order follows self.order: initial files first (sorted), files
+        Supply order follows self.order: initial files first (stable wiring first when enabled), files
         created during the loop appended. This keeps the serialized prefix
         stable across rounds for prompt-cache hits."""
         self.observed = {
