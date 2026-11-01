@@ -6,14 +6,12 @@ from contextlib import ExitStack
 from pathlib import Path
 
 import yaml
-
-from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.shared.models.vision import VisualModel
+from infrastructure.stages.requirements.tree import RequirementTree
+from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.utils.files import save_json, save_text
 from infrastructure.utils.presentation.console import DemoConsole
 from infrastructure.utils.presentation.logging import console_log
-from infrastructure.utils.files import save_json, save_text
-from infrastructure.stages.requirements.tree import RequirementTree
-
 
 OSC8_OPEN = "\x1b]8;;"
 OSC8_CLOSE = "\x1b]8;;\x1b\\"

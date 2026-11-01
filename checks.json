@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "checks": [
+    {
+      "id": "note-format",
+      "command": [
+        "python3",
+        "scripts/notes_guard.py",
+        "--root",
+        "."
+      ],
+      "modes": [
+        "docs",
+        "ci"
+      ],
+      "needs": [],
+      "timeout": 60,
+      "allow_failure": false
+    }
+  ]
+}

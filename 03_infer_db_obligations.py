@@ -4,21 +4,22 @@ import json
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.shared.models.text import TextModel
 from infrastructure.stages.database.obligations.records import (
     field_symbols,
     validate_inference,
     validate_obligations,
 )
-from infrastructure.utils.presentation.console import DemoConsole
-from infrastructure.utils.presentation.formatting import format_schema
-from infrastructure.utils.presentation.logging import console_log
-from infrastructure.utils.presentation.formatting import format_obligations
-from infrastructure.stages.requirements.tree import RequirementTree
 from infrastructure.stages.database.schema import validate_schema
+from infrastructure.stages.requirements.tree import RequirementTree
+from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.utils.files import save_json
-
+from infrastructure.utils.presentation.console import DemoConsole
+from infrastructure.utils.presentation.formatting import (
+    format_obligations,
+    format_schema,
+)
+from infrastructure.utils.presentation.logging import console_log
 
 # --- Extension point 03A: obligation inference policy --------------------------
 # Rewrite how requirement text maps to reads/writes, especially failure paths,

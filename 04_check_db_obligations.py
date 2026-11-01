@@ -3,20 +3,20 @@
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.stages.database.obligations.records import (
     field_symbols,
     validate_obligations,
 )
-from infrastructure.utils.presentation.console import DemoConsole
-from infrastructure.utils.presentation.logging import console_log
-from infrastructure.stages.requirements.tree import RequirementTree
 from infrastructure.stages.database.schema import validate_schema
+from infrastructure.stages.requirements.tree import RequirementTree
+from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.utils.files import read_artifact
+from infrastructure.utils.presentation.console import DemoConsole
 from infrastructure.utils.presentation.formatting import (
     format_obligations,
     format_requirement_schema_relations,
 )
+from infrastructure.utils.presentation.logging import console_log
 
 
 def check_db_obligations(arc_dir: Path, pause: bool = False) -> dict:

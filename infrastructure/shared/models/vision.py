@@ -8,6 +8,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI, OpenAIError
+
 from infrastructure.utils.presentation.model_io import http_client, invoke
 
 

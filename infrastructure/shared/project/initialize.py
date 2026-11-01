@@ -1,10 +1,9 @@
 """Create a minimal React/Express/SQLite workspace without replacing user files."""
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 from infrastructure.utils.files import save_json
-
 
 DEFAULT_STACK = "react-express-sqlite"
 

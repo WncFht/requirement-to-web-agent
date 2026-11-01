@@ -1,11 +1,35 @@
 """Small lexical retrieval engine shared by schema and API retrieval."""
 
-from collections import Counter
 import math
 import re
+from collections import Counter
 
 STOP_WORDS = set(
-    "a an the and or of to in on for is are be by with as from this that it then when given".split()
+    [
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "of",
+        "to",
+        "in",
+        "on",
+        "for",
+        "is",
+        "are",
+        "be",
+        "by",
+        "with",
+        "as",
+        "from",
+        "this",
+        "that",
+        "it",
+        "then",
+        "when",
+        "given",
+    ]
 )
 
 

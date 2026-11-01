@@ -1,6 +1,7 @@
 """Coarse API RAG over descriptions and field-level read/write obligations."""
 
 from copy import deepcopy
+
 from infrastructure.shared.rag.bm25 import rank
 
 

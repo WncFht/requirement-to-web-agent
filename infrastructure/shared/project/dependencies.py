@@ -1,7 +1,7 @@
 """Install the generated workspace's npm dependencies before each TDD run."""
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from threading import Thread
 
 from infrastructure.utils.processes import npm_command, start_process, stop_process

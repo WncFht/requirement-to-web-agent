@@ -4,17 +4,16 @@ import json
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.shared.models.structure import object_fields, string_list
 from infrastructure.shared.models.text import TextModel
+from infrastructure.shared.rag.schema import SchemaRetriever
+from infrastructure.stages.database.schema import apply_patch
+from infrastructure.stages.requirements.tree import RequirementTree
+from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.utils.files import save_json
 from infrastructure.utils.presentation.console import DemoConsole
 from infrastructure.utils.presentation.formatting import format_changes, format_schema
 from infrastructure.utils.presentation.logging import console_log
-from infrastructure.shared.rag.schema import SchemaRetriever
-from infrastructure.stages.requirements.tree import RequirementTree
-from infrastructure.stages.database.schema import apply_patch
-from infrastructure.utils.files import save_json
-from infrastructure.shared.models.structure import object_fields, string_list
-
 
 # --- Extension point 02A: schema discovery policy ------------------------------
 # Experiment with entity boundaries, reuse decisions, and constraint inference.

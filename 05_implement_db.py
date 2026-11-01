@@ -4,20 +4,19 @@ import json
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.shared.models.text import TextModel
 from infrastructure.stages.database.order import (
     implementation_groups,
     table_dependencies,
 )
 from infrastructure.stages.database.runtime import initializer_source
+from infrastructure.stages.database.schema import validate_schema
 from infrastructure.stages.database.validation import validate_response
-from infrastructure.shared.models.text import TextModel
+from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.utils.files import save_text
 from infrastructure.utils.presentation.console import DemoConsole
 from infrastructure.utils.presentation.formatting import format_schema
 from infrastructure.utils.presentation.logging import console_log
-from infrastructure.stages.database.schema import validate_schema
-from infrastructure.utils.files import save_text
-
 
 # --- Extension point 05A: SQL lowering policy ---------------------------------
 # The model writes concrete DDL; Python enforces file ownership and validates the
@@ -165,7 +164,7 @@ def implement_db(arc_dir: Path, pause: bool = False) -> dict:
                 f"{label} | 4. Table implementation saved",
                 (
                     f"{target}\n\nSQL proposal saved. Executable behavior is checked by application tests."
-                    + "\nValue CHECK constraints and application-only rules remain available for semantic review."
+                    "\nValue CHECK constraints and application-only rules remain available for semantic review."
                 ),
             )
     # --- Pass boundary: activate only a completely validated table set --------

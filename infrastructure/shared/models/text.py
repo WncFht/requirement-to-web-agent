@@ -14,6 +14,7 @@ from openai import (
     OpenAIError,
     RateLimitError,
 )
+
 from infrastructure.utils.presentation.model_io import http_client, invoke
 
 TRANSIENT_ERRORS = (

@@ -3,14 +3,14 @@
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.utils.cli import create_parser, resolve_directories
-from infrastructure.utils.presentation.console import DemoConsole
-from infrastructure.utils.presentation.logging import console_log
 from infrastructure.shared.project.initialize import (
     DEFAULT_STACK,
     STACKS,
     initialize_project,
 )
+from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.utils.presentation.console import DemoConsole
+from infrastructure.utils.presentation.logging import console_log
 
 
 def project_initialization(

@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from infrastructure.shared.rag.bm25 import rank, tokenize
+from infrastructure.shared.rag.bm25 import rank
 
 
 class SchemaRetriever:
