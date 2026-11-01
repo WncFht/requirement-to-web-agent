@@ -216,11 +216,22 @@ def main():
             and sha(tests / "teacher" / Path(relative).name) != expected
         ):
             raise ValueError("Teacher test copy mismatch")
-    config = CONFIG_SOURCE.replace(
-        'testDir: "./tests/e2e"',
-        f'testDir: "./tests/{tests.name}", globalSetup: "./tests/{tests.name}/setup.ts"',
-    ).replace(
-        'outputDir: "./test-results/e2e"', f'outputDir: "./test-results/{tests.name}"'
+    config = (
+        CONFIG_SOURCE.replace(
+            'testDir: "./tests/e2e"',
+            f'testDir: "./tests/{tests.name}", globalSetup: "./tests/{tests.name}/setup.ts"',
+        )
+        .replace(
+            'outputDir: "./test-results/e2e"',
+            f'outputDir: "./test-results/{tests.name}"',
+        )
+        .replace("--config vite.e2e.config.ts", "--config vite.fixed.config.ts")
+    )
+    (output / "frontend/vite.fixed.config.ts").write_text(
+        'import { defineConfig, mergeConfig } from "vite";\n'
+        'import base from "./vite.config";\n'
+        "export default mergeConfig(base, defineConfig({ server: { proxy: { "
+        '"/api": process.env.ARC_BACKEND_URL! } } }));\n'
     )
     (output / "frontend/playwright.fixed.config.ts").write_text(config)
     first, second = free_port(), free_port()
