@@ -16,6 +16,9 @@ sys.path.insert(0, str(ROOT))
 from infrastructure.stages.frontend.interactions.e2e_runtime import CONFIG_SOURCE
 from infrastructure.utils.processes import capture_process
 from infrastructure.utils.processes import npm_command
+from infrastructure.stages.frontend.interactions.cookie_transport import (
+    observe_cookie_transport,
+)
 
 ALIASES = {
     "username": {"username"},
@@ -138,17 +141,16 @@ def make_adapter(output):
         if api["signature"]["method"] == "GET"
         and ("session" in json.dumps(api).lower())
     ]
-    cookies = set()
-    for path in (output / "backend/src").rglob("*.ts"):
-        text = path.read_text()
-        constants = dict(
-            re.findall(r"const\s+(\w+)\s*=\s*[\"']([A-Za-z_][A-Za-z0-9_-]*)[\"']", text)
+    contracts = json.loads((output / ".arc/backend_contracts.json").read_text())["apis"]
+    observed = observe_cookie_transport(output, contracts)
+    if observed["status"] == "DISABLED":
+        from infrastructure.stages.frontend.interactions.testing import (
+            backend_cookie_names,
         )
-        for variable in re.findall(r"`\$\{(\w+)\}=\$\{", text):
-            if variable in constants:
-                cookies.add(constants[variable])
-        for match in re.finditer(r"(?:[`\"'])([a-zA-Z_][a-zA-Z0-9_-]*)=\$\{", text):
-            cookies.add(match.group(1))
+
+        cookies = set(backend_cookie_names(output))
+    else:
+        cookies = set(observed["names"])
     if len(cookies) != 1 or len(paths) != 1:
         raise ValueError(
             f"Cannot identify unique session cookie/path: cookies={sorted(cookies)}, paths={paths}; provide --adapter"

@@ -26,6 +26,9 @@ from infrastructure.stages.frontend.interactions.testing import (
     validate_e2e_source,
     backend_cookie_names,
 )
+from infrastructure.stages.frontend.interactions.cookie_transport import (
+    observe_cookie_transport,
+)
 from infrastructure.stages.frontend.interactions.runtime import sync_interactions
 from infrastructure.stages.frontend.ui.runtime import prepare_frontend
 from infrastructure.stages.frontend.ui.testing import (
@@ -235,6 +238,18 @@ def run_interaction_tdd(
     install_dependencies(output)
     checks, ui_checks = E2EChecks(output, max_tests), FrontendChecks(output)
     checks.install_browser()
+    observed_transport = observe_cookie_transport(output, backend["apis"])
+    cookie_names = (
+        backend_cookie_names(output)
+        if observed_transport["status"] == "DISABLED"
+        else observed_transport["names"]
+    )
+    admission_names = (
+        cookie_names
+        if os.getenv("ARC_LEGACY_E2E_COOKIE_NAMES", "0") != "1"
+        and observed_transport["status"] != "DISABLED"
+        else None
+    )
     ui_files = [ui_test_path(pid) for pid in ui["pages"]]
     baseline = ui_checks.tests(ui_files)
     require_green(baseline)
@@ -291,8 +306,8 @@ def run_interaction_tdd(
             if compiled["returncode"]:
                 raise ValueError(compiled["output"])
             source = (output / relative).read_text(encoding="utf-8-sig")
-            validate_e2e_source(source, backend_cookie_names(output))
-            behavior = checks.tests([relative])
+            validate_e2e_source(source, cookie_names)
+            behavior = checks.tests([relative], cookie_names=admission_names)
             status = test_run_status(behavior)
             return {"typecheck": compiled, "behavior": behavior, "status": status}
 
@@ -302,8 +317,8 @@ def run_interaction_tdd(
             "test_path": relative if (output / relative).is_file() else None,
             "max_tests": max_tests,
             "backend_cookie_transport": {
-                "names": backend_cookie_names(output),
-                "evidence": "Literal cookie producers in the tested backend source. Use their exact name for valid existing-session setup; do not guess from prose.",
+                "names": cookie_names,
+                "evidence": "Cookie names actually stored by Chromium from responses captured while replaying the passing backend tests in isolation. Empty string is a real empty Cookie name: use name='', value=the seeded credential. An empty list means no Cookie was observed; create a session through real registration/login instead of guessing. Never put a credential into both Cookie.name and Cookie.value.",
             },
         }
         if (

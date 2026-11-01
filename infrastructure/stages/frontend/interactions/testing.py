@@ -1,6 +1,7 @@
 """Real-app browser checks and executable E2E RED/GREEN gates."""
 
 from hashlib import sha256
+import json
 import os
 from pathlib import Path
 import re
@@ -70,7 +71,7 @@ def validate_e2e_source(source: str, cookie_names=None) -> None:
             else len(source)
         ]
         for cookies in re.findall(r"\.addCookies\(\s*\[(.*?)\]\s*\)", body, re.DOTALL):
-            names = re.findall(r"""\bname\s*:\s*["']([^"']+)["']""", cookies)
+            names = re.findall(r"""\bname\s*:\s*["']([^"']*)["']""", cookies)
             if names and not set(names).intersection(cookie_names):
                 raise ValueError(
                     f"Positive existing-session setup uses Cookie {names}, but tested backend producers use {cookie_names}. "
@@ -119,7 +120,7 @@ class E2EChecks(FrontendChecks):
             else ("src/main.tsx",),
         )
 
-    def tests(self, files):
+    def tests(self, files, *, cookie_names=None):
         """Run only selected E2E specs with an owned temporary database, clean it up, ."""
         if not files:
             raise ValueError("Do not run empty E2E suites")
@@ -134,6 +135,9 @@ class E2EChecks(FrontendChecks):
         # it after timeout/interruption, so test databases never persist.
         with TemporaryDirectory(prefix="arc-e2e-owner-") as temporary:
             env = {**os.environ, "ARC_E2E_TEMP_ROOT": temporary}
+            env.pop("ARC_E2E_EXPECTED_COOKIE_NAMES", None)
+            if cookie_names is not None:
+                env["ARC_E2E_EXPECTED_COOKIE_NAMES"] = json.dumps(cookie_names)
             print(
                 "Playwright E2E | real backend + isolated database | "
                 + ", ".join(files),

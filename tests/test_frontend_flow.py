@@ -369,7 +369,7 @@ class FrontendFlow(unittest.TestCase):
         }
         ui_checks.tests.return_value = green
 
-        def test_events(files):
+        def test_events(files, **kwargs):
             if all(
                 selected_path(self.output, "event", eid)
                 for eid in self.interactions["events"]
@@ -391,6 +391,11 @@ class FrontendFlow(unittest.TestCase):
             patch.object(implementation, "install_dependencies"),
             patch.object(implementation, "E2EChecks", return_value=checks),
             patch.object(implementation, "FrontendChecks", return_value=ui_checks),
+            patch.object(
+                implementation,
+                "observe_cookie_transport",
+                return_value={"status": "OBSERVED", "names": ["session_id"]},
+            ),
         ):
             report = implementation.run_interaction_tdd(
                 self.arc,

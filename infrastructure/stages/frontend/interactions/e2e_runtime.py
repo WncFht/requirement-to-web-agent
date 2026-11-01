@@ -7,6 +7,9 @@ their data. Business handlers and scenario assertions are generated separately."
 import json
 
 from infrastructure.utils.files import save_text
+from infrastructure.stages.frontend.interactions.cookie_transport import (
+    COOKIE_GUARD_SOURCE,
+)
 
 CONFIG = "frontend/playwright.e2e.config.ts"
 FIXTURE = "frontend/tests/e2e/support/context.ts"
@@ -81,6 +84,7 @@ import { basename, dirname } from "node:path";
 import { createDatabaseClient } from "../../../../backend/src/db/client.js";
 import { initializeDatabase } from "../../../../backend/src/db/initialize.js";
 export { fixturePasswordHash } from "../../../../backend/tests/support/context.js";
+import { installCookieGuard } from "./cookies.js";
 export const test = base.extend<{ database: Database.Database; applicationErrors: void }>({
   database: [async ({}, use) => {
     const path = process.env.ARC_E2E_DB_FILE;
@@ -98,14 +102,16 @@ export const test = base.extend<{ database: Database.Database; applicationErrors
       await use(connection);
     } finally { connection.close(); }
   }, { auto: true }],
-  applicationErrors: [async ({ page, database }, use) => {
+  applicationErrors: [async ({ page, database }, use, testInfo) => {
     void database;
     const errors: string[] = [];
     page.on("pageerror", error => errors.push("E2E_RUNTIME_ERROR: " + error.message));
     page.on("requestfailed", request => {
       if (new URL(request.url()).pathname.startsWith("/api/")) errors.push("E2E_NETWORK_ERROR: " + request.url());
     });
-    await use();
+    const names=process.env.ARC_E2E_EXPECTED_COOKIE_NAMES;
+    const restore=names === undefined ? () => {} : installCookieGuard(page.context(),testInfo.title,JSON.parse(names));
+    try { await use(); } finally { restore(); }
     if (errors.length) throw new Error(errors.join("\\n"));
   }, { auto: true }],
 });
@@ -120,6 +126,7 @@ def prepare_e2e(output, backend):
         RUNNER: RUNNER_SOURCE,
         VITE_CONFIG: 'import { defineConfig, mergeConfig } from "vite";\nimport base from "./vite.config";\nexport default mergeConfig(base, defineConfig({ server: { proxy: { "/api": process.env.ARC_BACKEND_URL! } } }));\n',
         FIXTURE: FIXTURE_SOURCE,
+        "frontend/tests/e2e/support/cookies.ts": COOKIE_GUARD_SOURCE,
     }
     for relative, source in sources.items():
         save_text(output / relative, source)

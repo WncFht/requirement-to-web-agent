@@ -7,7 +7,14 @@ import json
 import math
 from pathlib import Path
 
-CONTAINERS = {"entrypoint", "pipeline", "pipeline_stage", "stage_session", "stage_skip"}
+CONTAINERS = {
+    "entrypoint",
+    "pipeline",
+    "pipeline_stage",
+    "stage_session",
+    "stage_skip",
+    "cookie_transport_probe",
+}
 
 
 def summarize(path):
