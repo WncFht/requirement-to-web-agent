@@ -18,3 +18,14 @@ repos:
         entry: ruff format --check
         language: system
         types: [python]
+      - id: python-safety
+        name: Check Python syntax and undefined names
+        entry: ruff check
+        language: system
+        types: [python]
+      - id: secrets
+        name: Check staged source for credentials
+        entry: gitleaks git --pre-commit --staged --redact --no-banner
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -15,3 +15,8 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[tool.ruff.lint]
+# This independent teacher-code repository keeps its unittest conventions.
+# Add syntax/undefined-name checks without rewriting frozen teaching sources.
+select = ["E9", "F63", "F7", "F82"]

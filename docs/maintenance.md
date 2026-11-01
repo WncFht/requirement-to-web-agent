@@ -10,7 +10,7 @@
 
 ## 本地准备与检查
 
-在源码根目录执行：
+本机需有 `uv`、`ruff`、`pre-commit` 和 `gitleaks` 命令；Python 开发依赖的版本见 `requirements-dev.txt`。在源码根目录执行：
 
 ```sh
 uv pip install --python .venv/bin/python -r requirements-dev.txt
@@ -18,7 +18,7 @@ pre-commit install
 .venv/bin/python scripts/run_checks.py --config scripts/checks.json --mode ci
 ```
 
-提交 hook 检查暂存快照里的文档链接、技能与 Notes 格式及冻结记录；Python 改动执行编译器测试与 Ruff 格式检查。提交前先运行 `ruff format <修改的文件>`，再审阅并暂存。hook 不自动改写文件。全量维护工具行为测试由 `--mode ci` 执行；模型端到端实验单独运行，不在提交时自动消耗模型调用。
+提交 hook 检查暂存快照里的文档链接、技能与 Notes 格式及冻结记录；Python 改动执行编译器测试、Ruff 格式及语法/未定义名称检查；gitleaks 检查暂存源码的凭据模式。独立源码仓库保留教师的 unittest 风格，只新增能直接阻断运行错误的 lint 规则，避免继承外层 JI 的全规则并批量改写教师代码。提交前先运行 `ruff format <修改的文件>`，再审阅并暂存。hook 不自动改写文件。全量维护工具行为测试由 `--mode ci` 执行；模型端到端实验单独运行，不在提交时自动消耗模型调用。
 
 文档检查只接受仓库内可解析的本地链接。外层课程产物使用代码路径说明；原始运行证据在源码仓库外，通过实验报告记录路径与哈希。`scripts/doc-policy.json` 是篇幅预算来源，`scripts/checks.json` 是检查命令来源。检查通过不证明模型生成的应用满足需求，也不代表远端合并保护已经启用。
 
