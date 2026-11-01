@@ -1,6 +1,7 @@
 """Step 06: decompose APIs, allocate obligations, and design fixed I/O interfaces."""
 
 import json
+import os
 from contextlib import ExitStack
 from pathlib import Path
 
@@ -72,6 +73,18 @@ Do not return precondition or postcondition; step 07 adds those to the fixed int
 Each API may directly implement its business operation with database access.
 Further decomposition into DB Access Primitives is an extension point, not this task.
 If correction is supplied, fix the error and return one complete JSON object.
+"""
+
+SCOPE_RULES = """An excess coverage error requires removing the extra obligation from the current
+allocation, not merely covering the missing side. Do not attach a retrieved API just
+because this operation navigates to a page owned by another leaf requirement; that
+page's restoration/read API stays assigned to its own requirement. Preserve its
+existing definition and earlier allocation. Newly created IDs, input values and
+cookie credentials returned from the current write operation are not database reads.
+When a shared API would introduce excess reads, keep this leaf's operation separate.
+Before responding, calculate both read and write unions for requirement_apis and
+compare with obligations exactly, including excess, without changing the supplied
+obligations or weakening previously validated requirements.
 """
 
 
@@ -146,7 +159,15 @@ def decompose_backend_apis(arc_dir: Path, pause: bool = False, top_k: int = 6) -
                 "Decompose operations, allocate R/W, and design signature/request/response; validate coverage and interfaces.",
             )
             try:
-                response = model.generate_json(INSTRUCTIONS, request)
+                response = model.generate_json(
+                    INSTRUCTIONS
+                    + (
+                        ""
+                        if os.getenv("ARC_LEGACY_API_SCOPE", "0") == "1"
+                        else "\n" + SCOPE_RULES
+                    ),
+                    request,
+                )
                 updated = apply_decomposition(
                     design,
                     response,
