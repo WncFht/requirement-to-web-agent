@@ -6,7 +6,10 @@ included in its checks. Tests and compiler-owned wiring are supplied as read-onl
 
 import json
 from pathlib import Path
-from infrastructure.stages.frontend.ui.label_contracts import label_instructions
+from infrastructure.stages.frontend.ui.label_contracts import (
+    label_instructions,
+    radio_group_instructions,
+)
 
 from infrastructure.shared.agent.files import (
     FileWorkspace,
@@ -168,7 +171,7 @@ def implement_ui(
             )
             agent = run_file_agent(
                 model,
-                INSTRUCTIONS + "\n" + label_instructions(),
+                INSTRUCTIONS + "\n" + label_instructions() + radio_group_instructions(),
                 context,
                 workspace,
                 implementation_gate,

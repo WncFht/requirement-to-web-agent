@@ -3,6 +3,18 @@
 import os
 
 
+def radio_group_instructions():
+    if os.getenv("ARC_LEGACY_RADIO_CONTAINMENT", "0") == "1":
+        return ""
+    return """A prop.role=radiogroup element is the common semantic wrapper CONTAINING its radio inputs.
+Put that group's data-testid, role=radiogroup and exact aria-label on this wrapper,
+not on a left-hand label column with the inputs in a sibling column outside it.
+getByTestId(group).getByRole('radio',{name: optionLabel,exact:true}) must resolve
+to the actual corresponding radio input. Preserve native radio names/values,
+labels, checked state, IR hierarchy and frozen tests during all later repairs.
+"""
+
+
 def label_instructions():
     """Keep the historical prompt available alongside the additional label gate."""
     if os.getenv("ARC_LEGACY_LABEL_LOCATORS", "0") == "1":

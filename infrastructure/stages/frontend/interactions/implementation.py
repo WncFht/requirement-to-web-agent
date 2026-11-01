@@ -44,7 +44,10 @@ from infrastructure.stages.frontend.interactions.design import (
 from infrastructure.stages.frontend.interactions.creation_context import (
     creation_context,
 )
-from infrastructure.stages.frontend.ui.label_contracts import label_instructions
+from infrastructure.stages.frontend.ui.label_contracts import (
+    label_instructions,
+    radio_group_instructions,
+)
 from infrastructure.stages.frontend.interactions.read_failures import (
     check_read_failures,
     read_failure_instructions,
@@ -539,6 +542,7 @@ def run_interaction_tdd(
                     IMPLEMENT_INSTRUCTIONS
                     + "\n"
                     + label_instructions()
+                    + radio_group_instructions()
                     + "\n"
                     + read_failure_instructions(),
                     task,

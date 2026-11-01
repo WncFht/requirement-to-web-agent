@@ -56,6 +56,45 @@ def test_path(pid: str) -> str:
     return f"frontend/tests/ui/{pid}.spec.ts"
 
 
+def radio_group_assertions(design, page, elements, values):
+    """A semantic group must own its real controls, not only a decorative label."""
+    if os.getenv("ARC_LEGACY_RADIO_CONTAINMENT", "0") == "1":
+        return []
+    lines = []
+    for gid, group in elements.items():
+        prop = group.get("prop", {})
+        if prop.get("role") != "radiogroup" or not visible(design, gid, values):
+            continue
+        scope = f"page.getByTestId({json.dumps(gid)})"
+        if prop.get("label"):
+            lines.append(
+                f'  await expect(page.getByTestId({json.dumps(page["root"])}).getByRole("radiogroup", {{ name: {json.dumps(prop["label"])}, exact: true }})).toHaveAttribute("data-testid", {json.dumps(gid)});'
+            )
+        else:
+            lines.append(
+                f'  await expect({scope}).toHaveAttribute("role", "radiogroup");'
+            )
+        for uid, node in elements.items():
+            if node.get("prop", {}).get("input_type") != "radio" or not visible(
+                design, uid, values
+            ):
+                continue
+            parent = node.get("parent")
+            while parent in elements and parent != gid:
+                parent = elements[parent].get("parent")
+            if parent == gid:
+                label = node["prop"].get("label")
+                locator = (
+                    f'{scope}.getByRole("radio", {{ name: {json.dumps(label)}, exact: true }})'
+                    if label
+                    else f"{scope}.getByTestId({json.dumps(uid)})"
+                )
+                lines.append(
+                    f'  await expect({locator}).toHaveAttribute("data-testid", {json.dumps(uid)});'
+                )
+    return lines
+
+
 def existence_suite(design: dict, pid: str) -> str:
     """Render deterministic presence tests for key visible UI elements across the page's designed display fixtures."""
     page = design["pages"][pid]
@@ -83,6 +122,7 @@ def existence_suite(design: dict, pid: str) -> str:
                 "  try {",
             ]
         )
+        lines.extend(radio_group_assertions(design, page, elements, values))
         for uid, node in elements.items():
             kind = node.get("type", "page" if uid == page["root"] else "container")
             if kind not in KEY_TYPES:
