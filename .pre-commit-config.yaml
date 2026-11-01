@@ -1,0 +1,20 @@
+repos:
+  - repo: local
+    hooks:
+      - id: maintenance-index
+        name: Check staged documentation and decisions
+        entry: .venv/bin/python scripts/staged_checks.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: compiler-tests
+        name: Compiler unit tests
+        entry: .venv/bin/python -m unittest discover -s tests -q
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: python-format
+        name: Check changed Python formatting
+        entry: ruff format --check
+        language: system
+        types: [python]

@@ -1,0 +1,60 @@
+# 架构参考：需求编译器（Lab 6 改良版）
+
+本文回答「编译器整体怎么工作、每个阶段吃进吐出什么、哪些是模型哪些是确定性代码」。
+运行方式见 [development.md](development.md)；逐阶段 token 度量见
+[experiments/2026-11-01-baseline-optimization.md](experiments/2026-11-01-baseline-optimization.md)。
+
+## 总体形态
+
+规格编译器：`requirements.yaml` + 参考截图 → React/Express/SQLite 网站。
+13 个阶段脚本（`00`–`12`，`run_all.py` 顺序执行）共享输出目录下的 `.arc/*.json` 工件链；
+每个阶段的输出是下一阶段的输入，链路逐层可追溯。
+
+## 阶段与工件链
+
+| 阶段 | 工作 | 主要产物（`.arc/`） | 模型 |
+| --- | --- | --- | --- |
+| 00 | React/Express/SQLite npm workspaces 骨架 | project/report.json | 否 |
+| 01 | 需求树解析 + 视觉分析参考截图 | requirements.json、visual_analysis.json | 是（视觉） |
+| 02 | 数据库实体/字段/关系 | db_schema.json | 是 |
+| 03–04 | 字段级读写义务推断 + 守恒校验 | db_obligations.json | 03 是 |
+| 05 | 建表 SQL 与初始化代码 | backend/src/db/tables/*.sql | 是 |
+| 06–07 | 后端 API 拆分 + P/Q 契约 | backend_apis.json、backend_contracts.json | 是 |
+| 08 | 契约冻结为测试（RED）→ 实现（GREEN） | backend_tdd.json | 是 |
+| 09 | 页面/元素/绑定/显示状态设计（增量 + RAG） | ui_design.json | 是 |
+| 10 | 存在性测试 + 页面实现 | ui_checks.json | 是 |
+| 11 | 触发器/事件/事件契约 | ui_interactions.json | 是 |
+| 12 | 逐需求 E2E 冻结 → 逐事件实现 → 回归 | frontend_e2e.json | 是 |
+
+## 关键机制
+
+- **文件编辑协议**（`infrastructure/shared/agent/`）：模型返回
+  `{"edits":[{path,content}]}` 整文件批编辑；`FileWorkspace` 校验路径合法性、
+  原子写入失败回滚、每次请求重新供给文件内容。`run_file_agent` 是有界修复循环：
+  生成 → gate → 失败反馈 → 重试。
+- **义务守恒**：需求（父）的读写义务必须被其 API 集合（子）完整覆盖；
+  04 号脚本做机器校验，是"编译对了没有"的第一道确定性判据。
+- **契约冻结测试**：08/12 先把 P/Q 与场景冻结为可执行测试（RED），实现以
+  通过冻结测试为完成定义——模型没有"我觉得做完了"的话语权。
+- **确定性接线**：工件校验、运行时接线和测试执行由代码完成；数据库、API、页面与事件提案依赖模型。
+- **失败语义**：单阶段失败由 `guarded` 转为警告继续（部分阶段）或中止流水线；
+  `run_all.py --resume` 按哨兵产物跳过已完成阶段（08/12 须 status GREEN）。
+
+## 性能优化落点（详见实验报告）
+
+| 优化 | 位置 | 触发/回退 |
+| --- | --- | --- |
+| Stage 12 创建调用上下文瘦身 | `interactions/implementation.py` | `ARC_FULL_CONTEXT=1` 回退 |
+| agent 反馈去噪（ANSI/截断） | `shared/agent/loop.py` | 常开 |
+| 瞬态传输退避重试 | `shared/models/text.py` | `ARC_MODEL_TRANSPORT_RETRIES` |
+| Stage 09 逐需求设计 checkpoint | `frontend/ui/synthesis.py` | `ARC_UI_DESIGN_FRESH=1` 全新 |
+| 流水线断点续跑 | `run_all.py`、`main.py` | `--resume` |
+
+## 仓库布局
+
+- `00`–`12_*.py`：阶段脚本（教师内容，语义冻结）
+- `infrastructure/`：编译器库——`shared/agent`（编辑协议与循环）、`shared/models`
+  （text/vision 客户端）、`stages/*`（各 pass）、`shared/rag`（页面检索）、`utils`、`project/templates`
+- `input/`：smoke 需求 + 参考截图 + 教师参考 E2E
+- `tests/`：编译器自带 50 项单元测试
+- `main.py`：平台入口（run_all → db:init → build → deploy.sh）

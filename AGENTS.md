@@ -2,7 +2,7 @@
 
 把 `requirements.yaml`（需求 + 参考截图）编译为可运行 React/Express/SQLite 网站的规格编译器。
 原始基线来自 Canvas Lab 6 zip（git tag `teacher-baseline`）；当前 HEAD 在其上叠加了
-鲁棒性修正（2026-10-29）与性能优化（2026-11-01），全部改动见 `upstream.patch`。
+鲁棒性修正（2026-10-29）与性能优化（2026-11-01），版本以本仓库 Git 历史为准；课程侧 `../upstream.patch` 是导出的源码补丁。
 
 ## 硬性规则
 
@@ -16,7 +16,7 @@
 ## 常用入口
 
 ```sh
-.venv/bin/python -m unittest discover -s tests -q        # 编译器自带 50 项测试
+.venv/bin/python -m unittest discover -s tests -q        # 编译器单元测试
 .venv/bin/python main.py input -o ../work/<目录> --resume # 全流程（可断点续跑）
 .venv/bin/python -u <NN 脚本> --input input --output ../work/<目录>  # 单阶段
 ```
@@ -27,6 +27,6 @@
 
 - 所有权地图：`docs/AGENTS.md`；读者导航：`docs/README.md`
 - 实验报告：`docs/experiments/`；长期决策：`.agents/notes/`（遵循 maintain-decision-notes）
-- 上游 diff：`upstream.patch`（相对 teacher-baseline，含 ruff 格式化；语义审阅加 `-w`）
+- 上游 diff：`../upstream.patch`（相对 teacher-baseline 的源码导出；生成方式见维护指南）
 
 维护规则与技能来自 agent-maintenance 工具包（引入于 2026-11-01）；规则本体见 `.agents/`。

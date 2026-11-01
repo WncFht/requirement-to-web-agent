@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/WncFht/agent-maintenance",
+  "revision": "527af880f6feb0e352cae42b2c7601dc443b2b70",
+  "adopted": "2026-11-01",
+  "scope": "Three maintenance skills, shared references, templates, notes and selected Python checks. Project owns hook/CI configuration.",
+  "upstream_script_sha256": {
+    "run_checks.py": "fc45c7430eb4af05f24e98f963fc463f8ac8084c8be782b609b7a9be788416bc",
+    "check_docs.py": "819522f1e07e8e7aae4ba856f768c688f001a56a516315878454a610c57b9cbc",
+    "doc_checks.py": "3d4f845a3c7937318c381c171625d9bc09f46e9fd47ceff2691caacd8734d690",
+    "staged_checks.py": "07c504bd2f1cee31fce6e4c21f111edae8df810a13f09db87d22ac2e35449def",
+    "notes_guard.py": "a8d33871c8f92e6673061ec958ad1d18e4c43508765408ec7091a767a83ab690",
+    "check_archive.py": "6a5f85b5af1a4d3abbb0cc5ca0ad1a0b5db4d9efbefcb5b13f07439bb1656c52"
+  }
+}
