@@ -9,11 +9,19 @@ INTERFACE_KEYS = {"signature", "request", "response"}
 
 def validate_interface(api):
     """Check container/value types, without route, JSON Schema or status policy checks."""
-    object_fields(api, {"signature": dict, "request": dict, "response": dict}, "API interface")
-    object_fields(api["signature"], {"name": str, "method": str, "path": str}, "signature")
+    object_fields(
+        api, {"signature": dict, "request": dict, "response": dict}, "API interface"
+    )
+    object_fields(
+        api["signature"], {"name": str, "method": str, "path": str}, "signature"
+    )
     object_fields(api["response"], {"success": dict, "errors": list}, "response")
     for branch in [api["response"]["success"], *api["response"]["errors"]]:
-        object_fields(branch, {"status": int, "body": (dict, bool), "headers": (dict, bool)}, "response branch")
+        object_fields(
+            branch,
+            {"status": int, "body": (dict, bool), "headers": (dict, bool)},
+            "response branch",
+        )
 
 
 def validate_contract(api):
@@ -39,7 +47,9 @@ def validate_contracts(value, design):
         object_fields(api, {"read": list, "write": list}, aid)
         for mode in ("read", "write"):
             string_list(api[mode], f"{aid}.{mode}")
-            if aid in design["apis"] and set(api[mode]) != set(design["apis"][aid][mode]):
+            if aid in design["apis"] and set(api[mode]) != set(
+                design["apis"][aid][mode]
+            ):
                 raise ValueError(f"API DB obligations changed: {aid}.{mode}")
     for rid, expected_ids in design["requirements"].items():
         ids = string_list(value["requirements"].get(rid, []), f"requirements.{rid}")
@@ -48,5 +58,9 @@ def validate_contracts(value, design):
             raise ValueError(f"Unknown APIs in obligation chain: {sorted(unknown)}")
         expected = union(design["apis"][aid] for aid in expected_ids)
         actual = union(value["apis"][aid] for aid in ids)
-        if any(difference(expected, actual).values()) or any(difference(actual, expected).values()):
-            raise ValueError(f"Contract DB obligations do not match API decomposition: {rid}")
+        if any(difference(expected, actual).values()) or any(
+            difference(actual, expected).values()
+        ):
+            raise ValueError(
+                f"Contract DB obligations do not match API decomposition: {rid}"
+            )

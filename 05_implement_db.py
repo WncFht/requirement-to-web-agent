@@ -5,7 +5,10 @@ from contextlib import ExitStack
 from pathlib import Path
 
 from infrastructure.utils.cli import create_parser, resolve_directories
-from infrastructure.stages.database.order import implementation_groups, table_dependencies
+from infrastructure.stages.database.order import (
+    implementation_groups,
+    table_dependencies,
+)
 from infrastructure.stages.database.runtime import initializer_source
 from infrastructure.stages.database.validation import validate_response
 from infrastructure.shared.models.text import TextModel
@@ -47,11 +50,19 @@ and return one complete JSON object with path and content.
 def implement_db(arc_dir: Path, pause: bool = False) -> dict:
     source = arc_dir / "db_schema.json"
     if not source.is_file():
-        raise ValueError("Run 02_build_db_schema.py first to create .arc/db_schema.json")
+        raise ValueError(
+            "Run 02_build_db_schema.py first to create .arc/db_schema.json"
+        )
     output_dir = arc_dir.parent.resolve()
-    for required in ("backend/package.json", "backend/src/db/client.ts", "backend/src/db/initialize.ts"):
+    for required in (
+        "backend/package.json",
+        "backend/src/db/client.ts",
+        "backend/src/db/initialize.ts",
+    ):
         if not (output_dir / required).is_file():
-            raise ValueError("Run 00_project_initialization.py first to initialize the project structure")
+            raise ValueError(
+                "Run 00_project_initialization.py first to initialize the project structure"
+            )
     schema = json.loads(source.read_text(encoding="utf-8-sig"))
     validate_schema(schema)
     console = DemoConsole(pause)
@@ -61,7 +72,10 @@ def implement_db(arc_dir: Path, pause: bool = False) -> dict:
     groups = implementation_groups(schema)
     order = [name for group in groups for name in group]
     dependencies = table_dependencies(schema)
-    print("Table implementation order: " + (" -> ".join(order) or "(No tables.)"), flush=True)
+    print(
+        "Table implementation order: " + (" -> ".join(order) or "(No tables.)"),
+        flush=True,
+    )
     model = TextModel() if order else None
     implementations = {}
     for group in groups:
@@ -69,27 +83,54 @@ def implement_db(arc_dir: Path, pause: bool = False) -> dict:
             entity = schema["entities"][name]
             label = f"{len(implementations) + 1}/{len(order)} {name}"
             cycle = len(group) > 1 or name in dependencies[name]
-            console.show(f"{label} | 1. Table and dependency plan", (
-                "Order: " + " -> ".join(order)
-                + "\nReferences: " + (", ".join(dependencies[name]) or "(none)")
-                + ("\nCyclic group (SQLite forward references): " + ", ".join(group) if cycle else "")
-                + "\n\n" + format_schema({name: entity})
-            ))
+            console.show(
+                f"{label} | 1. Table and dependency plan",
+                (
+                    "Order: "
+                    + " -> ".join(order)
+                    + "\nReferences: "
+                    + (", ".join(dependencies[name]) or "(none)")
+                    + (
+                        "\nCyclic group (SQLite forward references): "
+                        + ", ".join(group)
+                        if cycle
+                        else ""
+                    )
+                    + "\n\n"
+                    + format_schema({name: entity})
+                ),
+            )
             referenced = {
-                target: {"schema": schema["entities"][target], "implementation": implementations.get(target)}
+                target: {
+                    "schema": schema["entities"][target],
+                    "implementation": implementations.get(target),
+                }
                 for target in dependencies[name]
             }
-            console.show(f"{label} | 2. Referenced table implementations", (
-                "\n\n".join(
-                    f"{target}:\n" + (item["implementation"]["path"] + "\n" + item["implementation"]["content"]
-                    if item["implementation"] else "Not implemented yet; target schema is supplied for the forward reference.\n" + format_schema({target: item["schema"]}))
-                    for target, item in referenced.items()
-                ) or "(No referenced tables.)"
-            ))
+            console.show(
+                f"{label} | 2. Referenced table implementations",
+                (
+                    "\n\n".join(
+                        f"{target}:\n"
+                        + (
+                            item["implementation"]["path"]
+                            + "\n"
+                            + item["implementation"]["content"]
+                            if item["implementation"]
+                            else "Not implemented yet; target schema is supplied for the forward reference.\n"
+                            + format_schema({target: item["schema"]})
+                        )
+                        for target, item in referenced.items()
+                    )
+                    or "(No referenced tables.)"
+                ),
+            )
             # --- Extension point 05C: generation context and correction -------
             expected_path = f"backend/src/db/tables/{name}.sql"
             request = {
-                "entity_name": name, "entity": entity, "output_path": expected_path,
+                "entity_name": name,
+                "entity": entity,
+                "output_path": expected_path,
                 "referenced_tables": referenced,
             }
             for attempt in range(1, 4):
@@ -101,19 +142,32 @@ def implement_db(arc_dir: Path, pause: bool = False) -> dict:
                     break
                 except ValueError as error:
                     if attempt == 3:
-                        raise ValueError(f"Table implementation failed for {name} after 3 attempts: {error}") from error
+                        raise ValueError(
+                            f"Table implementation failed for {name} after 3 attempts: {error}"
+                        ) from error
                     print(f"Retrying {name} ({attempt + 1}/3): {error}", flush=True)
-                    request["correction"] = {"error": str(error), "previous_response": response}
-            console.show(f"{label} | 3. Model file proposal (validated)", expected_path + "\n\n" + content)
+                    request["correction"] = {
+                        "error": str(error),
+                        "previous_response": response,
+                    }
+            console.show(
+                f"{label} | 3. Model file proposal (validated)",
+                expected_path + "\n\n" + content,
+            )
             target = output_dir / expected_path
             if not target.resolve().is_relative_to(output_dir):
-                raise ValueError(f"Implementation path escapes the output directory: {expected_path}")
+                raise ValueError(
+                    f"Implementation path escapes the output directory: {expected_path}"
+                )
             save_text(target, content.rstrip() + "\n")
             implementations[name] = proposal
-            console.show(f"{label} | 4. Table implementation saved", (
-                f"{target}\n\nSQL proposal saved. Executable behavior is checked by application tests."
-                + "\nValue CHECK constraints and application-only rules remain available for semantic review."
-            ))
+            console.show(
+                f"{label} | 4. Table implementation saved",
+                (
+                    f"{target}\n\nSQL proposal saved. Executable behavior is checked by application tests."
+                    + "\nValue CHECK constraints and application-only rules remain available for semantic review."
+                ),
+            )
     # --- Pass boundary: activate only a completely validated table set --------
     # The executable loader is the order registry; no extra manifest is retained.
     initializer = output_dir / "backend/src/db/initialize.ts"

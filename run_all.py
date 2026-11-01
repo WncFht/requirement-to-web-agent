@@ -33,7 +33,10 @@ STEPS = (
 # always rerun (they are cheap, self-resuming or act as pure checkers).
 SENTINELS = {
     "00_project_initialization.py": ("package.json",),
-    "01_explore_requirement.py": (".arc/requirements.json", ".arc/visual_analysis.json"),
+    "01_explore_requirement.py": (
+        ".arc/requirements.json",
+        ".arc/visual_analysis.json",
+    ),
     "02_build_db_schema.py": (".arc/db_schema.json",),
     "03_infer_db_obligations.py": (".arc/db_obligations.json",),
     "04_check_db_obligations.py": (),
@@ -68,7 +71,12 @@ def step_completed(output: Path, step: str) -> bool:
     if green_path is None:
         return True
     try:
-        return json.loads((output / green_path).read_text(encoding="utf-8-sig")).get("status") == "GREEN"
+        return (
+            json.loads((output / green_path).read_text(encoding="utf-8-sig")).get(
+                "status"
+            )
+            == "GREEN"
+        )
     except (OSError, ValueError):
         return False
 
@@ -76,22 +84,48 @@ def step_completed(output: Path, step: str) -> bool:
 def main() -> None:
     configure_console()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=COMPILER_DIR / "input", help="Requirement/image directory")
-    parser.add_argument("--output", type=Path, required=True, help="Shared output directory for all steps")
-    parser.add_argument("--resume", action="store_true",
-        help="Skip steps whose artifacts already exist (08/12 additionally require status GREEN)")
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=COMPILER_DIR / "input",
+        help="Requirement/image directory",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Shared output directory for all steps",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip steps whose artifacts already exist (08/12 additionally require status GREEN)",
+    )
     args = parser.parse_args()
     try:
         input_dir, output_dir = resolve_directories(args)
         if not input_dir.is_dir():
             raise ValueError(f"Input directory does not exist: {input_dir}")
-        show_panel("Requirement compiler | Pipeline", f"Input: {input_dir}\nOutput: {output_dir}\nStages to run: {len(STEPS)}\nResume: {args.resume}")
+        show_panel(
+            "Requirement compiler | Pipeline",
+            f"Input: {input_dir}\nOutput: {output_dir}\nStages to run: {len(STEPS)}\nResume: {args.resume}",
+        )
         for index, step in enumerate(STEPS, 1):
             if args.resume and step_completed(output_dir, step):
-                show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", "Artifacts already complete; skipping (--resume).")
+                show_panel(
+                    f"[{index}/{len(STEPS)}] {stage_label(step)}",
+                    "Artifacts already complete; skipping (--resume).",
+                )
                 continue
             show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", f"Running {step}")
-            command = [sys.executable, str(COMPILER_DIR / step), "--input", str(input_dir), "--output", str(output_dir)]
+            command = [
+                sys.executable,
+                str(COMPILER_DIR / step),
+                "--input",
+                str(input_dir),
+                "--output",
+                str(output_dir),
+            ]
             if step == "01_explore_requirement.py":
                 command.append("--no-browse")
             process = start_process(
@@ -106,7 +140,10 @@ def main() -> None:
             if code:
                 raise subprocess.CalledProcessError(code, [sys.executable, step])
     except subprocess.CalledProcessError as error:
-        parser.exit(error.returncode if error.returncode > 0 else 1, f"Pipeline stopped: {step} failed.\n")
+        parser.exit(
+            error.returncode if error.returncode > 0 else 1,
+            f"Pipeline stopped: {step} failed.\n",
+        )
     except (OSError, ValueError) as error:
         parser.exit(1, f"Execution failed: {error}\n")
     except KeyboardInterrupt:

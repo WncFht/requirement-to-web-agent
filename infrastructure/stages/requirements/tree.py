@@ -8,6 +8,7 @@ import json
 # ownership, and correct postorder are shared contracts of steps 02 through 04.
 class RequirementTree:
     """Normalized requirement and scenario indexes with explicit step ownership and traversal order."""
+
     def __init__(self, root: dict) -> None:
         """Index requirements and scenario steps while validating IDs and ownership.
 
@@ -21,7 +22,11 @@ class RequirementTree:
 
         def identifier(node, kind):
             """Read a requirement, scenario or step ID from the JSON document."""
-            if not isinstance(node, dict) or not isinstance(node.get("id"), str) or not node["id"].strip():
+            if (
+                not isinstance(node, dict)
+                or not isinstance(node.get("id"), str)
+                or not node["id"].strip()
+            ):
                 raise ValueError(f"Each {kind} must have a nonempty string id")
             return node["id"]
 
@@ -38,15 +43,24 @@ class RequirementTree:
             description = node.get("description", "")
             if isinstance(description, dict):
                 description = description.get("text", "")
-            if not isinstance(description, str) or not isinstance(node.get("name", ""), str):
+            if not isinstance(description, str) or not isinstance(
+                node.get("name", ""), str
+            ):
                 raise ValueError(f"Invalid name or description: {rid}")
-            self.requirements[rid] = {"id": rid, "name": node.get("name", ""), "description": description}
+            self.requirements[rid] = {
+                "id": rid,
+                "name": node.get("name", ""),
+                "description": description,
+            }
             self.own_steps[rid] = []
             for scenario in items(node, "scenarios"):
                 sid = identifier(scenario, "scenario")
                 for step in items(scenario, "steps"):
                     step_id = identifier(step, "step")
-                    record = {"id": step_id, "scenario": {"id": sid, "name": scenario.get("name", "")}}
+                    record = {
+                        "id": step_id,
+                        "scenario": {"id": sid, "name": scenario.get("name", "")},
+                    }
                     for key in ("Given", "When", "Then"):
                         record[key] = step.get(key, step.get(key.lower(), ""))
                         if not isinstance(record[key], str):
@@ -75,5 +89,7 @@ class RequirementTree:
             lines.append(f"Step {step_id}")
             lines.extend(f"{key}: {step[key]}" for key in ("Given", "When", "Then"))
             if step["references"]:
-                lines.append("References: " + json.dumps(step["references"], ensure_ascii=False))
+                lines.append(
+                    "References: " + json.dumps(step["references"], ensure_ascii=False)
+                )
         return "\n".join(lines)

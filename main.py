@@ -12,8 +12,11 @@ def main():
     parser.add_argument("requirement_path", type=Path)
     parser.add_argument("-o", "--output-dir", type=Path, required=True)
     parser.add_argument("--port", type=int, default=3000)
-    parser.add_argument("--resume", action="store_true",
-        help="Skip pipeline steps whose artifacts already exist (08/12 require status GREEN)")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip pipeline steps whose artifacts already exist (08/12 require status GREEN)",
+    )
     args = parser.parse_args()
     source = Path(__file__).resolve().parent
     inputs = args.requirement_path.expanduser().resolve()

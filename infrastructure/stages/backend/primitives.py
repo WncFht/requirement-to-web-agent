@@ -7,6 +7,7 @@ from infrastructure.stages.database.obligations.rules import difference, union
 from infrastructure.stages.backend.contracts import validate_registry
 from infrastructure.shared.models.structure import object_fields, string_list
 
+
 class ObligationCoverageError(ValueError):
     """Structured feedback for the next API decomposition attempt."""
 
@@ -24,15 +25,28 @@ class ObligationCoverageError(ValueError):
 def coverage(required: dict, apis: list[dict]) -> dict:
     """Return missing and excess read/write fields relative to the selected API obligation union."""
     combined = union(apis)
-    return {"missing": difference(required, combined), "excess": difference(combined, required)}
+    return {
+        "missing": difference(required, combined),
+        "excess": difference(combined, required),
+    }
 
 
 def validate_design(design, obligations, symbols, complete=True, tree=None):
     """Check API JSON shape and requirement-to-API read/write coverage only."""
     object_fields(design, {"apis": dict, "requirements": dict}, "API design")
     for aid, api in design["apis"].items():
-        object_fields(api, {"description": str, "read": list, "write": list,
-            "signature": dict, "request": dict, "response": dict}, aid)
+        object_fields(
+            api,
+            {
+                "description": str,
+                "read": list,
+                "write": list,
+                "signature": dict,
+                "request": dict,
+                "response": dict,
+            },
+            aid,
+        )
         validate_record(api, symbols, aid)
     validate_registry(design["apis"], conditions=False)
     for rid, ids in design["requirements"].items():
@@ -53,11 +67,21 @@ def validate_design(design, obligations, symbols, complete=True, tree=None):
             raise ObligationCoverageError(rid, required, union(assigned), report)
 
 
-def apply_decomposition(design: dict, response: dict, rid: str, retrieved: dict, obligations: dict, symbols: set[str], tree=None) -> dict:
+def apply_decomposition(
+    design: dict,
+    response: dict,
+    rid: str,
+    retrieved: dict,
+    obligations: dict,
+    symbols: set[str],
+    tree=None,
+) -> dict:
     """Apply one requirement's retrieved-API reuse and new API proposal to a copy, then validate before returning it."""
     object_fields(response, {"apis": dict, "requirement_apis": list}, "API proposal")
     result = deepcopy(design)
     result["apis"].update(deepcopy(response["apis"]))
-    result["requirements"][rid] = string_list(response["requirement_apis"], "requirement_apis")
+    result["requirements"][rid] = string_list(
+        response["requirement_apis"], "requirement_apis"
+    )
     validate_design(result, obligations, symbols, complete=False, tree=tree)
     return result

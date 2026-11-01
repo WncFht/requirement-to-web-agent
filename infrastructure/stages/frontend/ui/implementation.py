@@ -7,12 +7,22 @@ included in its checks. Tests and compiler-owned wiring are supplied as read-onl
 import json
 from pathlib import Path
 
-from infrastructure.shared.agent.files import FileWorkspace, source_paths, editable_sources
+from infrastructure.shared.agent.files import (
+    FileWorkspace,
+    source_paths,
+    editable_sources,
+)
 from infrastructure.shared.agent.loop import run_file_agent
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.stages.frontend.ui.design import owners, page_context
 from infrastructure.stages.frontend.ui.runtime import prepare_frontend, sync_pages
-from infrastructure.stages.frontend.ui.testing import FrontendChecks, existence_suite, require_green, presentation_run_status, test_path
+from infrastructure.stages.frontend.ui.testing import (
+    FrontendChecks,
+    existence_suite,
+    require_green,
+    presentation_run_status,
+    test_path,
+)
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.utils.files import save_json, save_text
 
@@ -52,8 +62,17 @@ Preserve other pages' styles. The test gate runs TypeScript, Playwright for curr
 GREEN; do not weaken tests or write an implementation that only works in tests.
 """
 
-def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_turns: int = 18,
-        images: dict | None = None, requirement_contexts: dict | None = None) -> dict:
+
+def implement_ui(
+    arc_dir: Path,
+    design: dict,
+    model,
+    console,
+    report: dict,
+    max_turns: int = 18,
+    images: dict | None = None,
+    requirement_contexts: dict | None = None,
+) -> dict:
     """Implement the complete saved UI/data design through component-existence TDD.
 
     Prepare the project and browser, generate and freeze presence tests, then
@@ -62,7 +81,10 @@ def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_
     output = arc_dir.parent.resolve()
     prepare_frontend(output)
     sync_pages(output, design)
-    console.show("UI TDD preparation | Dependencies", "Install workspace dependencies and Playwright Chromium. No backend is started.")
+    console.show(
+        "UI TDD preparation | Dependencies",
+        "Install workspace dependencies and Playwright Chromium. No backend is started.",
+    )
     install_dependencies(output)
     checks = FrontendChecks(output)
     checks.install_browser()
@@ -74,7 +96,11 @@ def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_
         relative = test_path(pid)
         suite = existence_suite(design, pid)
         save_text(output / relative, suite)
-        report["pages"][pid] = {"status": "TESTS_READY", "requirements": uses, "test_path": relative}
+        report["pages"][pid] = {
+            "status": "TESTS_READY",
+            "requirements": uses,
+            "test_path": relative,
+        }
         save_json(arc_dir / "ui_checks.json", report)
         label = f"UI {number}/{len(design['pages'])} {pid}"
         console.show(label + " | Existence tests before implementation", suite)
@@ -102,28 +128,70 @@ def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_
         current = implementation_checks()
         if current["tests"] is not None:
             report["pages"][pid]["status"] = presentation_run_status(current["tests"])
-            console.show(label + " | " + report["pages"][pid]["status"], current["tests"]["output"])
+            console.show(
+                label + " | " + report["pages"][pid]["status"],
+                current["tests"]["output"],
+            )
         save_json(arc_dir / "ui_checks.json", report)
         if current["tests"] and current["tests"]["returncode"] == 0:
             agent = {"turns": 0, "checks": current}
         else:
-            context = {"page": page_context(design, pid),
-                "requirements": [{key: value for key, value in (requirement_contexts or {}).get(rid, {"id": rid}).items() if key != "images"} for rid in uses],
-                "visual_references": {iid: (images or {})[iid] for iid in design["pages"][pid]["images"]},
-                "implementation_path": selected_path(output, "page", pid)}
-            workspace = FileWorkspace.for_target(output, "page", pid,
+            context = {
+                "page": page_context(design, pid),
+                "requirements": [
+                    {
+                        key: value
+                        for key, value in (requirement_contexts or {})
+                        .get(rid, {"id": rid})
+                        .items()
+                        if key != "images"
+                    }
+                    for rid in uses
+                ],
+                "visual_references": {
+                    iid: (images or {})[iid] for iid in design["pages"][pid]["images"]
+                },
+                "implementation_path": selected_path(output, "page", pid),
+            }
+            workspace = FileWorkspace.for_target(
+                output,
+                "page",
+                pid,
                 writable=editable_sources(output, "frontend/src"),
-                references=source_paths(output, "frontend/src") + files +
-                    ["frontend/package.json", "frontend/tsconfig.json"])
-            agent = run_file_agent(model, INSTRUCTIONS, context, workspace, implementation_gate,
-                max_turns, console, label + " / Implementation", feedback=current)
+                references=source_paths(output, "frontend/src")
+                + files
+                + ["frontend/package.json", "frontend/tsconfig.json"],
+            )
+            agent = run_file_agent(
+                model,
+                INSTRUCTIONS,
+                context,
+                workspace,
+                implementation_gate,
+                max_turns,
+                console,
+                label + " / Implementation",
+                feedback=current,
+            )
         accepted.append(pid)
-        report["pages"][pid].update({"status": "GREEN", "turns": agent["turns"],
-            "implementation_path": selected_path(output, "page", pid),
-            "checks": {key: value for key, value in agent["checks"]["tests"].items() if key != "output"}})
+        report["pages"][pid].update(
+            {
+                "status": "GREEN",
+                "turns": agent["turns"],
+                "implementation_path": selected_path(output, "page", pid),
+                "checks": {
+                    key: value
+                    for key, value in agent["checks"]["tests"].items()
+                    if key != "output"
+                },
+            }
+        )
         save_json(arc_dir / "ui_checks.json", report)
         console.show(label + " | GREEN", agent["checks"]["tests"]["output"])
-    console.show("UI final regression", "Run all current pages' existence suites and build both frontend and backend for npm start. Business triggers/events remain empty.")
+    console.show(
+        "UI final regression",
+        "Run all current pages' existence suites and build both frontend and backend for npm start. Business triggers/events remain empty.",
+    )
     final = checks.tests([test_path(pid) for pid in accepted])
     require_green(final)
     compiled = checks.typecheck([test_path(pid) for pid in accepted])
@@ -132,6 +200,15 @@ def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_
     built = checks.build()
     if built["returncode"]:
         raise ValueError(built["output"])
-    report.update({"status": "GREEN", "summary": {"pages": len(accepted), "tests": final["passed"], "failed": final["failed"]}})
+    report.update(
+        {
+            "status": "GREEN",
+            "summary": {
+                "pages": len(accepted),
+                "tests": final["passed"],
+                "failed": final["failed"],
+            },
+        }
+    )
     save_json(arc_dir / "ui_checks.json", report)
     return report

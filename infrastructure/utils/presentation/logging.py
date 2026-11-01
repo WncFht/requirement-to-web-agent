@@ -32,6 +32,7 @@ def full_detail(title: str, body: str) -> None:
 
 class TeeStream:
     """Stream wrapper that mirrors output to the terminal and the step log."""
+
     def __init__(self, terminal, log, lock) -> None:
         """Bind a terminal and log file using one lock so streamed child output remains readable."""
         self.terminal, self.log, self.lock = terminal, log, lock
@@ -66,6 +67,7 @@ def configure_console() -> None:
 def console_log(output_dir: Path):
     """Append a timestamped step session to compiler.log while mirroring stdout/stderr and recording uncaught failures."""
     from infrastructure.utils.presentation.console import show_panel
+
     output_dir.mkdir(parents=True, exist_ok=True)
     configure_console()
     with (output_dir / "compiler.log").open("a", encoding="utf-8", newline="\n") as log:
@@ -75,18 +77,36 @@ def console_log(output_dir: Path):
         with redirect_stdout(stdout), redirect_stderr(stderr):
             timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
             script = Path(sys.argv[0]).name
-            token = _session.set({"output": output_dir, "stage": stage_label(script), "lock": lock, "log": log})
+            token = _session.set(
+                {
+                    "output": output_dir,
+                    "stage": stage_label(script),
+                    "lock": lock,
+                    "log": log,
+                }
+            )
             started = monotonic()
-            show_panel(f"[START] {stage_label(script)}", f"{timestamp}\nScript: {script}\nLogs: {output_dir / 'compiler.log'}\nFull model I/O: {output_dir / 'model_calls.jsonl'}")
+            show_panel(
+                f"[START] {stage_label(script)}",
+                f"{timestamp}\nScript: {script}\nLogs: {output_dir / 'compiler.log'}\nFull model I/O: {output_dir / 'model_calls.jsonl'}",
+            )
             try:
                 yield
             except BaseException as error:
                 if not isinstance(error, SystemExit):
                     traceback.print_exc(file=log)
-                show_panel(f"[FAILED] {stage_label(script)}", f"Stopped after {monotonic() - started:.1f}s", tone="error")
+                show_panel(
+                    f"[FAILED] {stage_label(script)}",
+                    f"Stopped after {monotonic() - started:.1f}s",
+                    tone="error",
+                )
                 raise
             else:
-                show_panel(f"[DONE] {stage_label(script)}", f"Completed in {monotonic() - started:.1f}s", tone="success")
+                show_panel(
+                    f"[DONE] {stage_label(script)}",
+                    f"Completed in {monotonic() - started:.1f}s",
+                    tone="success",
+                )
             finally:
                 stdout.flush()
                 stderr.flush()

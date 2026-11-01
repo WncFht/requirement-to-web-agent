@@ -12,7 +12,14 @@ from infrastructure.utils.presentation.logging import full_detail, session_info
 
 _activity = ContextVar("compiler_activity", default="Model request")
 _render_lock = RLock()
-_COLORS = {"info": "36", "input": "34", "output": "35", "success": "32", "waiting": "33", "error": "31"}
+_COLORS = {
+    "info": "36",
+    "input": "34",
+    "output": "35",
+    "success": "32",
+    "waiting": "33",
+    "error": "31",
+}
 
 
 def current_activity() -> str:
@@ -29,8 +36,14 @@ def highlight(text: str, tone: str = "info") -> str:
 
 def display_width(text: str) -> int:
     """Measure terminal columns, including wide CJK and combining characters."""
-    return sum(0 if unicodedata.combining(char) else 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
-        for char in text)
+    return sum(
+        0
+        if unicodedata.combining(char)
+        else 2
+        if unicodedata.east_asian_width(char) in {"W", "F"}
+        else 1
+        for char in text
+    )
 
 
 def _width() -> int:
@@ -63,11 +76,19 @@ def preview(body: str, max_lines: int = 30, max_chars: int = 4200) -> str:
     return visible or "(empty)"
 
 
-def show_panel(title: str, body: str, tone: str = "info", max_lines: int = 30, max_chars: int = 4200) -> None:
+def show_panel(
+    title: str,
+    body: str,
+    tone: str = "info",
+    max_lines: int = 30,
+    max_chars: int = 4200,
+) -> None:
     """Print one framed block atomically so waiting messages cannot split its rows."""
     width = _width()
+
     def row(text):
         return "│ " + text + " " * (width - display_width(text)) + " │"
+
     # Titles wrap rather than hiding the requirement or API at the end.
     rows = [highlight("┌" + "─" * (width + 2) + "┐", tone)]
     rows.extend(highlight(row(line), tone) for line in _wrap(title, width))
@@ -141,4 +162,6 @@ class DemoConsole:
             try:
                 input("Press Enter to continue...")
             except EOFError as error:
-                raise ValueError("--pause requires an interactive input stream") from error
+                raise ValueError(
+                    "--pause requires an interactive input stream"
+                ) from error

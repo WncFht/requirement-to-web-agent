@@ -6,15 +6,28 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
-from openai import APIConnectionError, APITimeoutError, InternalServerError, OpenAI, OpenAIError, RateLimitError
+from openai import (
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+    OpenAI,
+    OpenAIError,
+    RateLimitError,
+)
 from infrastructure.utils.presentation.model_io import http_client, invoke
 
-TRANSIENT_ERRORS = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
+TRANSIENT_ERRORS = (
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+    RateLimitError,
+)
 BACKOFF_SECONDS = (10, 30, 90)
 
 
 class TextModel:
     """Transport for structured stage proposals and file-edit responses."""
+
     def __init__(self) -> None:
         """Read compiler/.env and configure the text model client; reject missing credentials or model name."""
         load_dotenv(Path(__file__).resolve().parents[3] / ".env", encoding="utf-8-sig")
@@ -32,7 +45,8 @@ class TextModel:
         self.client = OpenAI(
             api_key=api_key,
             base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
-            timeout=600, max_retries=2,
+            timeout=600,
+            max_retries=2,
             http_client=http_client(),
         )
 
@@ -41,16 +55,36 @@ class TextModel:
         if os.getenv("ARC_DISABLE_THINKING", "0") == "1":
             arguments["extra_body"] = {"thinking": {"type": "disabled"}}
         try:
-            response = invoke(self.client, {**arguments, self._token_parameter: self.max_output_tokens})
+            response = invoke(
+                self.client,
+                {**arguments, self._token_parameter: self.max_output_tokens},
+            )
         except OpenAIError as error:
             # Some compatible endpoints only support the older max_tokens name.
             # Retry only an explicit parameter rejection, not arbitrary failures.
             message = str(error).lower()
-            unsupported = any(word in message for word in ("unsupported", "unknown", "unrecognized", "not supported", "not allowed", "unexpected"))
-            if self._token_parameter != "max_completion_tokens" or getattr(error, "status_code", None) not in {400, 422} or "max_completion_tokens" not in message or not unsupported:
+            unsupported = any(
+                word in message
+                for word in (
+                    "unsupported",
+                    "unknown",
+                    "unrecognized",
+                    "not supported",
+                    "not allowed",
+                    "unexpected",
+                )
+            )
+            if (
+                self._token_parameter != "max_completion_tokens"
+                or getattr(error, "status_code", None) not in {400, 422}
+                or "max_completion_tokens" not in message
+                or not unsupported
+            ):
                 raise
             self._token_parameter = "max_tokens"
-            response = invoke(self.client, {**arguments, "max_tokens": self.max_output_tokens})
+            response = invoke(
+                self.client, {**arguments, "max_tokens": self.max_output_tokens}
+            )
         # Detect transport truncation before attempting to parse partial JSON.
         if response.choices and response.choices[0].finish_reason == "length":
             raise ValueError(
@@ -67,13 +101,19 @@ class TextModel:
         arguments = {
             "model": self.name,
             "messages": [
-                {"role": "system", "content": instructions.rstrip() + "\nReturn exactly one JSON object without Markdown."},
+                {
+                    "role": "system",
+                    "content": instructions.rstrip()
+                    + "\nReturn exactly one JSON object without Markdown.",
+                },
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
             ],
             "response_format": {"type": "json_object"},
         }
         try:
-            attempts = 1 + max(0, int(os.getenv("ARC_MODEL_TRANSPORT_RETRIES", "2") or 0))
+            attempts = 1 + max(
+                0, int(os.getenv("ARC_MODEL_TRANSPORT_RETRIES", "2") or 0)
+            )
         except ValueError:
             attempts = 3
         response, last_error = None, None
@@ -86,15 +126,22 @@ class TextModel:
                 if attempt == attempts - 1:
                     break
                 wait = BACKOFF_SECONDS[min(attempt, len(BACKOFF_SECONDS) - 1)]
-                print(f"Text model transport issue ({type(error).__name__}); "
-                    f"retrying {attempt + 1}/{attempts - 1} in {wait}s", flush=True)
+                print(
+                    f"Text model transport issue ({type(error).__name__}); "
+                    f"retrying {attempt + 1}/{attempts - 1} in {wait}s",
+                    flush=True,
+                )
                 time.sleep(wait)
             except OpenAIError as error:
                 raise RuntimeError(f"Text model request failed: {error}") from error
         if response is None:
-            raise RuntimeError(f"Text model request failed after {attempts} attempts: {last_error}") from last_error
+            raise RuntimeError(
+                f"Text model request failed after {attempts} attempts: {last_error}"
+            ) from last_error
         if response.choices and getattr(response.choices[0].message, "refusal", None):
-            raise ValueError(f"Text model refused the request: {response.choices[0].message.refusal}")
+            raise ValueError(
+                f"Text model refused the request: {response.choices[0].message.refusal}"
+            )
         if not response.choices or not response.choices[0].message.content:
             raise ValueError("Text model returned empty content")
         content = response.choices[0].message.content.strip()

@@ -4,19 +4,20 @@ import json
 from contextlib import ExitStack
 from pathlib import Path
 
-from infrastructure.stages.backend.context import load_context, api_requirement_uses
-from infrastructure.utils.files import read_artifact
-from infrastructure.stages.backend.contracts import validate_contracts, validate_registry
-from infrastructure.stages.backend.primitives import validate_design
-from infrastructure.utils.cli import create_parser, resolve_directories
-from infrastructure.shared.models.text import TextModel
-from infrastructure.stages.database.obligations.records import field_symbols
-from infrastructure.utils.presentation.console import DemoConsole
-from infrastructure.utils.presentation.logging import console_log
-from infrastructure.utils.presentation.formatting import format_apis
-from infrastructure.utils.files import save_json
 from infrastructure.shared.models.structure import object_fields
-
+from infrastructure.shared.models.text import TextModel
+from infrastructure.stages.backend.context import api_requirement_uses, load_context
+from infrastructure.stages.backend.contracts import (
+    validate_contracts,
+    validate_registry,
+)
+from infrastructure.stages.backend.primitives import validate_design
+from infrastructure.stages.database.obligations.records import field_symbols
+from infrastructure.utils.cli import create_parser, resolve_directories
+from infrastructure.utils.files import read_artifact, save_json
+from infrastructure.utils.presentation.console import DemoConsole
+from infrastructure.utils.presentation.formatting import format_apis
+from infrastructure.utils.presentation.logging import console_log
 
 INSTRUCTIONS = """Perform Contract Inference for the selected Backend API Primitive:
 API = <signature, I, O, R, W, P, Q>. Signature, I/O and R/W are fixed by step 06.
@@ -52,37 +53,75 @@ def infer_api_contracts(arc_dir: Path, pause: bool = False) -> dict:
     # Each API has one canonical contract, inferred from all direct owners.
     for aid, selected in design["apis"].items():
         uses = api_requirement_uses(tree, design["requirements"], aid)
-        console.show(f"{aid} | 1. Shared requirement uses / fixed API", (
-            json.dumps(uses, ensure_ascii=False, indent=2)
-            + "\n\n" + format_apis({aid: selected})
-        ))
+        console.show(
+            f"{aid} | 1. Shared requirement uses / fixed API",
+            (
+                json.dumps(uses, ensure_ascii=False, indent=2)
+                + "\n\n"
+                + format_apis({aid: selected})
+            ),
+        )
         related = set(selected["read"]) | set(selected["write"])
-        related_schema = {name: {"description": entity["description"],
-            "fields": {field: value for field, value in entity["fields"].items() if f"{name}.{field}" in related}}
+        related_schema = {
+            name: {
+                "description": entity["description"],
+                "fields": {
+                    field: value
+                    for field, value in entity["fields"].items()
+                    if f"{name}.{field}" in related
+                },
+            }
             for name, entity in schema["entities"].items()
-            if any(symbol.startswith(name + ".") for symbol in related)}
-        request = {"api_id": aid, "api": selected, "all_requirement_uses": uses,
-            "related_schema": related_schema, "existing_contracts": result["apis"]}
+            if any(symbol.startswith(name + ".") for symbol in related)
+        }
+        request = {
+            "api_id": aid,
+            "api": selected,
+            "all_requirement_uses": uses,
+            "related_schema": related_schema,
+            "existing_contracts": result["apis"],
+        }
         for attempt in range(1, 4):
             response = None
             try:
                 response = model.generate_json(INSTRUCTIONS, request)
                 object_fields(response, {"contract": dict}, "contract response")
-                contract = object_fields(response["contract"], {"precondition": list, "postcondition": list}, "contract")
-                api = {**selected, "precondition": contract["precondition"], "postcondition": contract["postcondition"]}
+                contract = object_fields(
+                    response["contract"],
+                    {"precondition": list, "postcondition": list},
+                    "contract",
+                )
+                api = {
+                    **selected,
+                    "precondition": contract["precondition"],
+                    "postcondition": contract["postcondition"],
+                }
                 validate_registry({**result["apis"], aid: api})
                 break
             except ValueError as error:
                 if attempt == 3:
-                    raise ValueError(f"Contract Inference failed for {aid}: {error}") from error
+                    raise ValueError(
+                        f"Contract Inference failed for {aid}: {error}"
+                    ) from error
                 print(f"Retrying {aid} ({attempt + 1}/3): {error}", flush=True)
-                request["correction"] = {"error": str(error), "previous_response": response}
+                request["correction"] = {
+                    "error": str(error),
+                    "previous_response": response,
+                }
         result["apis"][aid] = api
-        console.show(f"{aid} | 2. Accepted precondition (P) / postcondition (Q)",
-            json.dumps({key: api[key] for key in ("precondition", "postcondition")}, ensure_ascii=False, indent=2))
+        console.show(
+            f"{aid} | 2. Accepted precondition (P) / postcondition (Q)",
+            json.dumps(
+                {key: api[key] for key in ("precondition", "postcondition")},
+                ensure_ascii=False,
+                indent=2,
+            ),
+        )
     validate_contracts(result, design)
     save_json(arc_dir / "backend_contracts.json", result)
-    print(f"Backend API contracts saved: {arc_dir / 'backend_contracts.json'}", flush=True)
+    print(
+        f"Backend API contracts saved: {arc_dir / 'backend_contracts.json'}", flush=True
+    )
     return result
 
 

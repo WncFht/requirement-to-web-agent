@@ -42,5 +42,7 @@ def read_artifact(arc_dir: Path, filename: str) -> dict:
     """Load required UTF-8 JSON, accepting the BOM sometimes added by Windows editors."""
     path = arc_dir / filename
     if not path.is_file():
-        raise ValueError(f"Missing .arc/{filename}; run the preceding compilation step first")
+        raise ValueError(
+            f"Missing .arc/{filename}; run the preceding compilation step first"
+        )
     return json.loads(path.read_text(encoding="utf-8-sig"))

@@ -36,7 +36,9 @@ def initialize_project(output_dir: Path, stack: str = DEFAULT_STACK) -> list[str
     # data are preserved; dependencies are installed separately by the TDD step.
     """Copy missing files from the chosen stack template and return their workspace-relative paths; preserve existing files."""
     if stack not in STACKS:
-        raise ValueError(f"Unknown technology stack: {stack}. Available: {', '.join(STACKS)}")
+        raise ValueError(
+            f"Unknown technology stack: {stack}. Available: {', '.join(STACKS)}"
+        )
     configuration = STACKS[stack]
     output_dir = output_dir.resolve()
     templates = configuration["templates"]
@@ -62,6 +64,8 @@ def initialize_project(output_dir: Path, stack: str = DEFAULT_STACK) -> list[str
     for relative in configuration["directories"]:
         target = output_dir / relative
         if not target.resolve().is_relative_to(output_dir):
-            raise ValueError(f"Project directory escapes the output directory: {relative}")
+            raise ValueError(
+                f"Project directory escapes the output directory: {relative}"
+            )
         target.mkdir(parents=True, exist_ok=True)
     return created

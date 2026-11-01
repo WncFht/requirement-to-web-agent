@@ -7,13 +7,16 @@ import json
 from pathlib import Path
 import re
 
-from infrastructure.shared.project.entrypoints import import_path, implementation_entrypoint
+from infrastructure.shared.project.entrypoints import (
+    import_path,
+    implementation_entrypoint,
+)
 from infrastructure.shared.project.initialize import enable_import_case_checks
 from infrastructure.utils.files import save_text
 
 PLAYWRIGHT_VERSION = "1.64.1"
 
-UI_RUNTIME = '''// Compiler-owned UI types shared by presentation and interaction stages.
+UI_RUNTIME = """// Compiler-owned UI types shared by presentation and interaction stages.
 export interface UiPageProps { data: Readonly<Record<string, unknown>> }
 
 declare global {
@@ -43,9 +46,9 @@ export interface UiEventContext {
   api(apiId: string, request?: UiApiRequest): Promise<UiApiResponse>;
 }
 export type UiEventHandler = (context: UiEventContext) => void | Promise<void>;
-'''
+"""
 
-PLAYWRIGHT_CONFIG = '''// Compiler-owned UI existence tests. No backend is started at this stage.
+PLAYWRIGHT_CONFIG = """// Compiler-owned UI existence tests. No backend is started at this stage.
 import { defineConfig } from "@playwright/test";
 
 const port = Number(process.env.ARC_UI_PORT ?? "4173");
@@ -67,7 +70,7 @@ export default defineConfig({
     url: baseURL, reuseExistingServer: false, timeout: 30000,
   },
 });
-'''
+"""
 
 
 def configure_tailwind(output: Path) -> None:
@@ -81,16 +84,21 @@ def configure_tailwind(output: Path) -> None:
     source = configuration.read_text(encoding="utf-8-sig")
     if "@tailwindcss/vite" not in source:
         if "plugins: [react()]" not in source:
-            raise ValueError("Enable @tailwindcss/vite in the custom frontend/vite.config.ts first")
+            raise ValueError(
+                "Enable @tailwindcss/vite in the custom frontend/vite.config.ts first"
+            )
         source = 'import tailwindcss from "@tailwindcss/vite";\n' + source.replace(
-            "plugins: [react()]", "plugins: [react(), tailwindcss()]")
+            "plugins: [react()]", "plugins: [react(), tailwindcss()]"
+        )
     stylesheet = output / "frontend/src/style.css"
     styles = stylesheet.read_text(encoding="utf-8-sig") if stylesheet.is_file() else ""
     # Remove only the original scaffold's global card layout; retain page styles.
-    legacy = ('body { margin: 0; font-family: system-ui, sans-serif; color: #172033; background: #f4f6fa; }\n'
-        'main { max-width: 48rem; margin: 5rem auto; padding: 2rem; background: white; border-radius: 1rem; }\n')
+    legacy = (
+        "body { margin: 0; font-family: system-ui, sans-serif; color: #172033; background: #f4f6fa; }\n"
+        "main { max-width: 48rem; margin: 5rem auto; padding: 2rem; background: white; border-radius: 1rem; }\n"
+    )
     if styles.startswith(legacy):
-        styles = styles[len(legacy):]
+        styles = styles[len(legacy) :]
     if not re.search(r'@import\s+[\'"]tailwindcss[\'"]', styles):
         styles = '@import "tailwindcss";\n' + styles
     save_text(package_path, json.dumps(package, indent=2) + "\n")
@@ -100,16 +108,26 @@ def configure_tailwind(output: Path) -> None:
 
 def prepare_frontend(output: Path) -> None:
     """Write compiler-owned UI types, application wiring, and browser-test configuration."""
-    for relative in ("package.json", "frontend/package.json", "frontend/src/main.tsx", "frontend/tsconfig.json", "frontend/vite.config.ts"):
+    for relative in (
+        "package.json",
+        "frontend/package.json",
+        "frontend/src/main.tsx",
+        "frontend/tsconfig.json",
+        "frontend/vite.config.ts",
+    ):
         if not (output / relative).is_file():
-            raise ValueError(f"Missing {relative}; run 00_project_initialization.py first")
+            raise ValueError(
+                f"Missing {relative}; run 00_project_initialization.py first"
+            )
     configure_tailwind(output)
     enable_import_case_checks(output, "frontend")
     path = output / "package.json"
     package = json.loads(path.read_text(encoding="utf-8-sig"))
     dependencies = package.setdefault("devDependencies", {})
     dependencies.setdefault("@playwright/test", PLAYWRIGHT_VERSION)
-    package.setdefault("scripts", {})["test:ui"] = "playwright test --config frontend/playwright.ui.config.ts"
+    package.setdefault("scripts", {})["test:ui"] = (
+        "playwright test --config frontend/playwright.ui.config.ts"
+    )
     save_text(path, json.dumps(package, indent=2) + "\n")
     save_text(output / "frontend/playwright.ui.config.ts", PLAYWRIGHT_CONFIG)
     save_text(output / "frontend/src/ui-runtime.ts", UI_RUNTIME)
@@ -124,15 +142,29 @@ def sync_pages(output: Path, design: dict) -> None:
         component = f"Page{number}"
         if entry:
             imported = import_path("frontend/src/App.tsx", entry["path"], extension="")
-            imports.append(f'import {{ {entry["export"]} as {component} }} from {json.dumps(imported)};')
+            imports.append(
+                f"import {{ {entry['export']} as {component} }} from {json.dumps(imported)};"
+            )
             body = f"<{component} data={{data}} />"
         else:
-            body = '<main><h1>UI implementation pending</h1></main>'
-        routes.append(f'    case {json.dumps(page["route"])}: {{\n'
-            f'      const data = initialPageData({json.dumps(pid)}, defaults);\n'
-            f'      return <div onSubmit={{event => event.preventDefault()}}>{body}</div>;\n    }}')
-    source = "// Compiler-owned routes and display data. No business triggers/events.\n" + "\n".join(imports)
-    source += "\n\nconst defaults: Record<string, unknown> = " + json.dumps(defaults, ensure_ascii=False, indent=2) + ";\n"
-    source += '\nexport function App() {\n  switch (window.location.pathname) {\n' + "\n".join(routes)
-    source += '\n    default: return <main><h1>Page not found</h1></main>;\n  }\n}\n'
+            body = "<main><h1>UI implementation pending</h1></main>"
+        routes.append(
+            f"    case {json.dumps(page['route'])}: {{\n"
+            f"      const data = initialPageData({json.dumps(pid)}, defaults);\n"
+            f"      return <div onSubmit={{event => event.preventDefault()}}>{body}</div>;\n    }}"
+        )
+    source = (
+        "// Compiler-owned routes and display data. No business triggers/events.\n"
+        + "\n".join(imports)
+    )
+    source += (
+        "\n\nconst defaults: Record<string, unknown> = "
+        + json.dumps(defaults, ensure_ascii=False, indent=2)
+        + ";\n"
+    )
+    source += (
+        "\nexport function App() {\n  switch (window.location.pathname) {\n"
+        + "\n".join(routes)
+    )
+    source += "\n    default: return <main><h1>Page not found</h1></main>;\n  }\n}\n"
     save_text(output / "frontend/src/App.tsx", source)

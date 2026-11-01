@@ -6,18 +6,30 @@ from infrastructure.stages.frontend.ui.design import page_context, page_elements
 from infrastructure.stages.database.obligations.rules import difference, union
 from infrastructure.shared.models.structure import object_fields, string_list
 
+
 class InteractionCoverageError(ValueError):
     """A rejected interaction decomposition with structured gaps for model correction."""
+
     def __init__(self, identity, required, combined, gaps):
         """Store expected obligations, the proposed union, and missing fields for bounded correction feedback."""
-        self.feedback = {"identity": identity, "required": required, "actual_union": combined, **gaps}
+        self.feedback = {
+            "identity": identity,
+            "required": required,
+            "actual_union": combined,
+            **gaps,
+        }
         super().__init__(f"Interaction Obligation Propagation failed: {self.feedback}")
 
 
 def empty_interactions(tree):
     """Create empty trigger/event registries and requirement/step ownership records for the requirement tree."""
-    return {"triggers": {}, "events": {}, "contracts": {},
-        "requirements": {rid: [] for rid in tree.requirements}, "steps": {sid: [] for sid in tree.steps}}
+    return {
+        "triggers": {},
+        "events": {},
+        "contracts": {},
+        "requirements": {rid: [] for rid in tree.requirements},
+        "steps": {sid: [] for sid in tree.steps},
+    }
 
 
 def require_fields(value, fields, label):
@@ -32,7 +44,11 @@ def text(value, label):
 def relevant_pages(ui, rid):
     """Return the UI page contexts directly used by the selected requirement."""
     selected = set(ui["requirements"][rid])
-    return {pid: page_context(ui, pid) for pid in ui["pages"] if selected.intersection(page_elements(ui, pid))}
+    return {
+        pid: page_context(ui, pid)
+        for pid in ui["pages"]
+        if selected.intersection(page_elements(ui, pid))
+    }
 
 
 def event_ids(result, tids):
@@ -63,18 +79,31 @@ def check_coverage(label, required, actual, allowed=None):
         raise InteractionCoverageError(label, required, actual, gaps)
 
 
-def validate_interactions(result, ui, tree, schema, obligations, backend, analyzed, complete=False):
+def validate_interactions(
+    result, ui, tree, schema, obligations, backend, analyzed, complete=False
+):
     """Check JSON shape and DB-field coverage of frontend calls; no UI or P/Q policy."""
-    object_fields(result, {key: dict for key in ("triggers", "events", "contracts", "requirements", "steps")}, "interactions")
+    object_fields(
+        result,
+        {
+            key: dict
+            for key in ("triggers", "events", "contracts", "requirements", "steps")
+        },
+        "interactions",
+    )
     for eid, event in result["events"].items():
         object_fields(event, {"description": str, "write": list, "actions": list}, eid)
         string_list(event["write"], f"{eid}.write")
         for action in event["actions"]:
-            object_fields(action, {"id": str, "kind": str, "description": str}, f"{eid}.action")
+            object_fields(
+                action, {"id": str, "kind": str, "description": str}, f"{eid}.action"
+            )
             if action["kind"] == "api":
                 object_fields(action, {"api": str}, "API action")
                 if action["api"] not in backend["apis"]:
-                    raise ValueError(f"Unknown API in DB obligation chain: {action['api']}")
+                    raise ValueError(
+                        f"Unknown API in DB obligation chain: {action['api']}"
+                    )
             elif action["kind"] == "navigate":
                 object_fields(action, {"page": str}, "navigation action")
     for tid, trigger in result["triggers"].items():
@@ -91,21 +120,47 @@ def validate_interactions(result, ui, tree, schema, obligations, backend, analyz
             continue
         unknown = set(tids) - set(result["triggers"])
         if unknown:
-            raise ValueError(f"Unknown triggers in DB obligation chain: {sorted(unknown)}")
+            raise ValueError(
+                f"Unknown triggers in DB obligation chain: {sorted(unknown)}"
+            )
         eids = event_ids(result, tids)
         unknown = eids - set(result["events"])
         if unknown:
-            raise ValueError(f"Unknown events in DB obligation chain: {sorted(unknown)}")
-        actual = union(event_obligations(result["events"][eid], backend) for eid in eids)
-        check_coverage(rid, obligations["requirements"][rid], actual, obligations["requirements"][rid])
+            raise ValueError(
+                f"Unknown events in DB obligation chain: {sorted(unknown)}"
+            )
+        actual = union(
+            event_obligations(result["events"][eid], backend) for eid in eids
+        )
+        check_coverage(
+            rid,
+            obligations["requirements"][rid],
+            actual,
+            obligations["requirements"][rid],
+        )
 
 
-def apply_decomposition(current, proposal, rid, ui, tree, schema, obligations, backend, analyzed):
-    object_fields(proposal, {"triggers": dict, "events": dict, "requirement_triggers": list, "step_triggers": dict}, "interaction proposal")
+def apply_decomposition(
+    current, proposal, rid, ui, tree, schema, obligations, backend, analyzed
+):
+    object_fields(
+        proposal,
+        {
+            "triggers": dict,
+            "events": dict,
+            "requirement_triggers": list,
+            "step_triggers": dict,
+        },
+        "interaction proposal",
+    )
     updated = deepcopy(current)
     for kind in ("triggers", "events"):
         updated[kind].update(deepcopy(proposal[kind]))
-    updated["requirements"][rid] = string_list(proposal["requirement_triggers"], "requirement_triggers")
+    updated["requirements"][rid] = string_list(
+        proposal["requirement_triggers"], "requirement_triggers"
+    )
     updated["steps"].update(deepcopy(proposal["step_triggers"]))
-    validate_interactions(updated, ui, tree, schema, obligations, backend, [*analyzed, rid])
+    validate_interactions(
+        updated, ui, tree, schema, obligations, backend, [*analyzed, rid]
+    )
     return updated

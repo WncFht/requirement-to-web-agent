@@ -6,7 +6,11 @@ def object_fields(value, fields, label):
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
     for key, expected in fields.items():
-        if key not in value or not isinstance(value[key], expected) or (expected is int and type(value[key]) is not int):
+        if (
+            key not in value
+            or not isinstance(value[key], expected)
+            or (expected is int and type(value[key]) is not int)
+        ):
             raise ValueError(f"Invalid JSON shape: {label}.{key}")
     return value
 

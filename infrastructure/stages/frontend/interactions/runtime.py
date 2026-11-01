@@ -7,13 +7,16 @@ compiler activates only the events accepted or currently being implemented."""
 import json
 
 from infrastructure.stages.frontend.ui.runtime import UI_RUNTIME
-from infrastructure.shared.project.entrypoints import import_path, implementation_entrypoint
+from infrastructure.shared.project.entrypoints import (
+    import_path,
+    implementation_entrypoint,
+)
 from infrastructure.utils.files import save_text
 
 EVENT_REGISTRY = "frontend/src/ui-events.ts"
 API_CLIENT = "frontend/src/ui-api.ts"
 
-CLIENT_SOURCE = '''
+CLIENT_SOURCE = """
 export async function callApi(apiId: string, request: UiApiRequest = {}): Promise<UiApiResponse> {
   const signature = catalog[apiId];
   if (!signature) throw new Error(`Unknown backend API: ${apiId}`);
@@ -37,9 +40,9 @@ export async function callApi(apiId: string, request: UiApiRequest = {}): Promis
   const body = response.status === 204 ? null : await response.json();
   return { status: response.status, body, headers: Object.fromEntries(response.headers.entries()) };
 }
-'''
+"""
 
-APP_SOURCE = '''
+APP_SOURCE = """
 export function App() {
   const [data, setData] = useState<Record<string, unknown>>(() => ({ ...defaults }));
   const live = useRef(data);
@@ -127,7 +130,7 @@ export function App() {
     {Component ? <Component key={pageId} data={display} /> : <main><h1>Page not found</h1></main>}
   </div>;
 }
-'''
+"""
 
 
 def sync_interactions(output, ui, interactions, backend, active_events):
@@ -136,7 +139,19 @@ def sync_interactions(output, ui, interactions, backend, active_events):
     active.intersection_update(interactions["events"])
     save_text(output / "frontend/src/ui-runtime.ts", UI_RUNTIME)
     client = 'import type { UiApiRequest, UiApiResponse } from "./ui-runtime";\n'
-    client += "const catalog: Record<string, { method: string; path: string }> = " + json.dumps({aid: {"method": api["signature"]["method"], "path": api["signature"]["path"]} for aid, api in backend["apis"].items()}) + ";\n"
+    client += (
+        "const catalog: Record<string, { method: string; path: string }> = "
+        + json.dumps(
+            {
+                aid: {
+                    "method": api["signature"]["method"],
+                    "path": api["signature"]["path"],
+                }
+                for aid, api in backend["apis"].items()
+            }
+        )
+        + ";\n"
+    )
     save_text(output / API_CLIENT, client + CLIENT_SOURCE)
     imports = ['import type { UiEventHandler } from "./ui-runtime";']
     registrations = []
@@ -144,26 +159,65 @@ def sync_interactions(output, ui, interactions, backend, active_events):
         entry = implementation_entrypoint(output, "event", eid)
         if entry:
             imported = import_path(EVENT_REGISTRY, entry["path"], extension="")
-            imports.append(f'import {{ {entry["export"]} as event{number} }} from {json.dumps(imported)};')
+            imports.append(
+                f"import {{ {entry['export']} as event{number} }} from {json.dumps(imported)};"
+            )
             registrations.append(f"  {json.dumps(eid)}: event{number},")
-    save_text(output / EVENT_REGISTRY, "\n".join([*imports, "", "export const handlers: Record<string, UiEventHandler> = {", *registrations, "};", ""]))
-    imports = ['import { useEffect, useRef, useState } from "react";',
+    save_text(
+        output / EVENT_REGISTRY,
+        "\n".join(
+            [
+                *imports,
+                "",
+                "export const handlers: Record<string, UiEventHandler> = {",
+                *registrations,
+                "};",
+                "",
+            ]
+        ),
+    )
+    imports = [
+        'import { useEffect, useRef, useState } from "react";',
         'import type { ComponentType, SyntheticEvent, KeyboardEvent } from "react";',
         'import type { UiPageProps, UiEventContext } from "./ui-runtime";',
-        'import { initialPageData } from "./ui-runtime";', 'import { callApi } from "./ui-api";', 'import { handlers } from "./ui-events";']
+        'import { initialPageData } from "./ui-runtime";',
+        'import { callApi } from "./ui-api";',
+        'import { handlers } from "./ui-events";',
+    ]
     pages, components = [], []
     for number, (pid, page) in enumerate(ui["pages"].items()):
         entry = implementation_entrypoint(output, "page", pid)
         if not entry:
             raise ValueError(f"Missing implemented page {pid}; complete step 10 first")
-        imports.append(f'import {{ {entry["export"]} as Page{number} }} from {json.dumps(import_path("frontend/src/App.tsx", entry["path"], extension=""))};')
+        imports.append(
+            f"import {{ {entry['export']} as Page{number} }} from {json.dumps(import_path('frontend/src/App.tsx', entry['path'], extension=''))};"
+        )
         pages.append({"id": pid, "route": page["route"], "root": page["root"]})
         components.append(f"{json.dumps(pid)}: Page{number}")
-    triggers = [{"id": tid, **{key: trigger[key] for key in ("source", "event", "action")}}
-        for tid, trigger in interactions["triggers"].items() if trigger["action"] in active]
-    source = "// Compiler-owned interaction state and trigger registration.\n" + "\n".join(imports) + "\n"
+    triggers = [
+        {"id": tid, **{key: trigger[key] for key in ("source", "event", "action")}}
+        for tid, trigger in interactions["triggers"].items()
+        if trigger["action"] in active
+    ]
+    source = (
+        "// Compiler-owned interaction state and trigger registration.\n"
+        + "\n".join(imports)
+        + "\n"
+    )
     source += "type Trigger = { id: string; source: string; event: string; action: string };\n"
-    source += "const defaults: Record<string, unknown> = " + json.dumps({var: binding["initial"] for var, binding in ui["bindings"].items()}) + ";\n"
-    source += "const pages = " + json.dumps(pages) + ";\nconst components: Record<string, ComponentType<UiPageProps>> = {" + ", ".join(components) + "};\n"
+    source += (
+        "const defaults: Record<string, unknown> = "
+        + json.dumps(
+            {var: binding["initial"] for var, binding in ui["bindings"].items()}
+        )
+        + ";\n"
+    )
+    source += (
+        "const pages = "
+        + json.dumps(pages)
+        + ";\nconst components: Record<string, ComponentType<UiPageProps>> = {"
+        + ", ".join(components)
+        + "};\n"
+    )
     source += "const triggers: Trigger[] = " + json.dumps(triggers) + ";\n"
     save_text(output / "frontend/src/App.tsx", source + APP_SOURCE)

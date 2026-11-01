@@ -8,8 +8,16 @@ import json
 import os
 from copy import deepcopy
 
-from infrastructure.stages.frontend.ui.design import INSTRUCTIONS, apply_proposal, empty_design, page_elements, validate_design
-from infrastructure.stages.frontend.ui.proposals import INSTRUCTIONS as EXAMPLE_INSTRUCTIONS
+from infrastructure.stages.frontend.ui.design import (
+    INSTRUCTIONS,
+    apply_proposal,
+    empty_design,
+    page_elements,
+    validate_design,
+)
+from infrastructure.stages.frontend.ui.proposals import (
+    INSTRUCTIONS as EXAMPLE_INSTRUCTIONS,
+)
 from infrastructure.shared.rag.pages import PageRetriever
 from infrastructure.utils.files import save_json
 
@@ -32,7 +40,11 @@ def bind_requirement_image_pages(design, requirement, rid):
                 page["images"].append(image_id)
             candidates = [page_hint]
         else:
-            candidates = [pid for pid, page in design["pages"].items() if image_id in page.get("images", [])]
+            candidates = [
+                pid
+                for pid, page in design["pages"].items()
+                if image_id in page.get("images", [])
+            ]
         if len(candidates) != 1:
             continue
         root = design["pages"][candidates[0]]["root"]
@@ -42,7 +54,18 @@ def bind_requirement_image_pages(design, requirement, rid):
     design["requirements"][rid] = owned
 
 
-def synthesize_ui(arc_dir, tree, schema, contracts, images, contexts, model, console, top_k=3, max_fixtures=3):
+def synthesize_ui(
+    arc_dir,
+    tree,
+    schema,
+    contracts,
+    images,
+    contexts,
+    model,
+    console,
+    top_k=3,
+    max_fixtures=3,
+):
     """Design UI/data for all leaf requirements using page-first retrieval.
 
     Show existing/retrieved pages, ask for an incremental proposal, and feed
@@ -53,18 +76,35 @@ def synthesize_ui(arc_dir, tree, schema, contracts, images, contexts, model, con
     design, retriever = empty_design(), PageRetriever()
     completed = []
     fresh = os.getenv("ARC_UI_DESIGN_FRESH", "0") == "1"
-    progress_path, design_path = arc_dir / "ui_design_progress.json", arc_dir / "ui_design.json"
+    progress_path, design_path = (
+        arc_dir / "ui_design_progress.json",
+        arc_dir / "ui_design.json",
+    )
     if not fresh and design_path.is_file():
         try:
             saved = json.loads(design_path.read_text(encoding="utf-8-sig"))
-            design = {key: deepcopy(saved.get(key, {})) for key in ("pages", "elements", "bindings", "requirements", "steps")}
+            design = {
+                key: deepcopy(saved.get(key, {}))
+                for key in ("pages", "elements", "bindings", "requirements", "steps")
+            }
             if progress_path.is_file():
-                completed = list(json.loads(progress_path.read_text(encoding="utf-8-sig")).get("completed", []))
+                completed = list(
+                    json.loads(progress_path.read_text(encoding="utf-8-sig")).get(
+                        "completed", []
+                    )
+                )
             else:
-                completed = [rid for rid, owned in design["requirements"].items() if owned]
-            console.show("UI/data design resume", f"Loaded checkpoint with {len(completed)} completed leaf requirements: {sorted(completed)}")
+                completed = [
+                    rid for rid, owned in design["requirements"].items() if owned
+                ]
+            console.show(
+                "UI/data design resume",
+                f"Loaded checkpoint with {len(completed)} completed leaf requirements: {sorted(completed)}",
+            )
         except (OSError, ValueError, json.JSONDecodeError) as error:
-            console.show("UI/data design resume unavailable", f"Starting fresh ({error})")
+            console.show(
+                "UI/data design resume unavailable", f"Starting fresh ({error})"
+            )
             design, completed = empty_design(), []
     failures = []
     for rid in tree.requirements:
@@ -72,31 +112,61 @@ def synthesize_ui(arc_dir, tree, schema, contracts, images, contexts, model, con
             design["requirements"][rid] = []
             for sid in tree.own_steps[rid]:
                 design["steps"][sid] = []
-            console.show(f"{rid} | Skip non-leaf UI/data analysis", "Only leaf requirements are analyzed. Organizational parents do not generate or inherit UI nodes.")
+            console.show(
+                f"{rid} | Skip non-leaf UI/data analysis",
+                "Only leaf requirements are analyzed. Organizational parents do not generate or inherit UI nodes.",
+            )
     for number, rid in enumerate(tree.leaves, 1):
         if rid in completed:
-            console.show(f"UI/data design {number}/{len(tree.leaves)} {rid} | Checkpoint hit",
-                "Already designed in an earlier run; skipping. Set ARC_UI_DESIGN_FRESH=1 to redesign.")
+            console.show(
+                f"UI/data design {number}/{len(tree.leaves)} {rid} | Checkpoint hit",
+                "Already designed in an earlier run; skipping. Set ARC_UI_DESIGN_FRESH=1 to redesign.",
+            )
             continue
         requirement = contexts[rid]
         label = f"UI/data design {number}/{len(tree.leaves)} {rid}"
-        console.show(label + " | 1. Requirement and steps", json.dumps(requirement, ensure_ascii=False, indent=2))
-        console.show(label + " | 2. All Existing Pages", json.dumps(design["pages"], ensure_ascii=False, indent=2))
+        console.show(
+            label + " | 1. Requirement and steps",
+            json.dumps(requirement, ensure_ascii=False, indent=2),
+        )
+        console.show(
+            label + " | 2. All Existing Pages",
+            json.dumps(design["pages"], ensure_ascii=False, indent=2),
+        )
         retrieved = retriever.retrieve(requirement, design, top_k)
-        console.show(label + " | 3. Retrieved page subtrees (RAG)", json.dumps(retrieved, ensure_ascii=False, indent=2))
+        console.show(
+            label + " | 3. Retrieved page subtrees (RAG)",
+            json.dumps(retrieved, ensure_ascii=False, indent=2),
+        )
         request = {
-            "requirement": requirement, "retrieved_pages": retrieved["pages"],
-            "all_pages": {pid: {key: page[key] for key in ("name", "route", "root", "images")}
-                for pid, page in design["pages"].items()}, "schema": schema["entities"],
-            "direct_apis": {aid: contracts["apis"][aid] for aid in contracts["requirements"][rid]},
+            "requirement": requirement,
+            "retrieved_pages": retrieved["pages"],
+            "all_pages": {
+                pid: {key: page[key] for key in ("name", "route", "root", "images")}
+                for pid, page in design["pages"].items()
+            },
+            "schema": schema["entities"],
+            "direct_apis": {
+                aid: contracts["apis"][aid] for aid in contracts["requirements"][rid]
+            },
             "max_fixtures": max_fixtures,
         }
         for attempt in range(1, 4):
             response, updated = None, None
             try:
-                response = model.generate_json(INSTRUCTIONS + "\n\n" + EXAMPLE_INSTRUCTIONS, request)
+                response = model.generate_json(
+                    INSTRUCTIONS + "\n\n" + EXAMPLE_INSTRUCTIONS, request
+                )
                 proposal = response
-                updated = apply_proposal(design, proposal, rid, tree, images, retrieved["pages"], max_fixtures)
+                updated = apply_proposal(
+                    design,
+                    proposal,
+                    rid,
+                    tree,
+                    images,
+                    retrieved["pages"],
+                    max_fixtures,
+                )
                 bind_requirement_image_pages(updated, requirement, rid)
                 break
             except ValueError as error:
@@ -104,27 +174,44 @@ def synthesize_ui(arc_dir, tree, schema, contracts, images, contexts, model, con
                 message = str(error)
                 if isinstance(error, json.JSONDecodeError):
                     correction["invalid_response"] = error.doc
-                    correction["instruction"] = "Follow the complete JSON examples exactly: one outer object containing pages, elements, bindings, requirement_ui, step_ui. Use ordinary objects, not patch/entries arrays. Return complete records for changed IDs; omit unchanged IDs."
+                    correction["instruction"] = (
+                        "Follow the complete JSON examples exactly: one outer object containing pages, elements, bindings, requirement_ui, step_ui. Use ordinary objects, not patch/entries arrays. Return complete records for changed IDs; omit unchanged IDs."
+                    )
                     message += "\nInvalid JSON response (excerpt):\n" + error.doc[:3000]
                 elif response is not None:
-                    message += "\nRejected proposal (excerpt):\n" + json.dumps(response, ensure_ascii=False, indent=2)[:3000]
+                    message += (
+                        "\nRejected proposal (excerpt):\n"
+                        + json.dumps(response, ensure_ascii=False, indent=2)[:3000]
+                    )
                 console.show(label + f" | Validation failed ({attempt}/3)", message)
                 if attempt == 3:
                     failures.append(f"{rid}: {error}")
-                    console.show(label + " | Deferred failure", f"{rid} is recorded; other requirements continue. Rerun step 09 to retry it.")
+                    console.show(
+                        label + " | Deferred failure",
+                        f"{rid} is recorded; other requirements continue. Rerun step 09 to retry it.",
+                    )
                     break
                 request["correction"] = correction
         if updated is None:
             save_json(progress_path, {"completed": sorted(set(completed))})
             continue
-        console.show(label + " | 4. Validated incremental UI/data changes", json.dumps(proposal, ensure_ascii=False, indent=2))
+        console.show(
+            label + " | 4. Validated incremental UI/data changes",
+            json.dumps(proposal, ensure_ascii=False, indent=2),
+        )
         design = updated
         completed.append(rid)
         save_json(design_path, design)
         save_json(progress_path, {"completed": sorted(set(completed))})
     if failures:
-        raise ValueError("UI/data design failed for some requirements after 3 proposals each: " + "; ".join(failures))
+        raise ValueError(
+            "UI/data design failed for some requirements after 3 proposals each: "
+            + "; ".join(failures)
+        )
     validate_design(design, tree, images, max_fixtures, complete=True)
     save_json(arc_dir / "ui_design.json", design)
-    console.show("UI/data design complete for ALL requirements", f"Saved {arc_dir / 'ui_design.json'}\nRun 10_implement_ui.py for existence tests and UI implementation. Interactions belong to step 11.")
+    console.show(
+        "UI/data design complete for ALL requirements",
+        f"Saved {arc_dir / 'ui_design.json'}\nRun 10_implement_ui.py for existence tests and UI implementation. Interactions belong to step 11.",
+    )
     return design

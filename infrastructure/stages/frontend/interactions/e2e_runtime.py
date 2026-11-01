@@ -13,7 +13,7 @@ FIXTURE = "frontend/tests/e2e/support/context.ts"
 RUNNER = "frontend/scripts/test-e2e.mjs"
 VITE_CONFIG = "frontend/vite.e2e.config.ts"
 
-CONFIG_SOURCE = '''import { defineConfig } from "@playwright/test";
+CONFIG_SOURCE = """import { defineConfig } from "@playwright/test";
 const frontendPort = process.env.ARC_E2E_FRONTEND_PORT;
 const backendPort = process.env.ARC_E2E_BACKEND_PORT;
 const database = process.env.ARC_E2E_DB_FILE;
@@ -35,9 +35,9 @@ export default defineConfig({
       env: { ARC_BACKEND_URL: `http://127.0.0.1:${backendPort}` } },
   ],
 });
-'''
+"""
 
-RUNNER_SOURCE = '''// Every invocation owns a new database; no production database is reset.
+RUNNER_SOURCE = """// Every invocation owns a new database; no production database is reset.
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -72,9 +72,9 @@ try {
     process.exitCode = await new Promise((resolve, reject) => { child.once("error", reject); child.once("close", code => resolve(code ?? 1)); });
   } finally { process.off("SIGINT", forward); process.off("SIGTERM", forward); }
 } finally { rmSync(directory, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 }); }
-'''
+"""
 
-FIXTURE_SOURCE = '''// Compiler-owned Given/observation fixture. When actions go through the browser.
+FIXTURE_SOURCE = """// Compiler-owned Given/observation fixture. When actions go through the browser.
 import { test as base, expect } from "@playwright/test";
 import type Database from "better-sqlite3";
 import { basename, dirname } from "node:path";
@@ -110,14 +110,17 @@ export const test = base.extend<{ database: Database.Database; applicationErrors
   }, { auto: true }],
 });
 export { expect };
-'''
+"""
 
 
 def prepare_e2e(output, backend):
     """Write E2E configuration, real-server launchers, isolated database fixtures, and the npm test command."""
-    sources = {CONFIG: CONFIG_SOURCE, RUNNER: RUNNER_SOURCE,
+    sources = {
+        CONFIG: CONFIG_SOURCE,
+        RUNNER: RUNNER_SOURCE,
         VITE_CONFIG: 'import { defineConfig, mergeConfig } from "vite";\nimport base from "./vite.config";\nexport default mergeConfig(base, defineConfig({ server: { proxy: { "/api": process.env.ARC_BACKEND_URL! } } }));\n',
-        FIXTURE: FIXTURE_SOURCE}
+        FIXTURE: FIXTURE_SOURCE,
+    }
     for relative, source in sources.items():
         save_text(output / relative, source)
     path = output / "package.json"

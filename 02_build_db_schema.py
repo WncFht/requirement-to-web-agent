@@ -72,7 +72,9 @@ def requirement_nodes(root: dict):
 def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
     requirements_path = arc_dir / "requirements.json"
     if not requirements_path.is_file():
-        raise ValueError("Run 01_explore_requirement.py first to create .arc/requirements.json")
+        raise ValueError(
+            "Run 01_explore_requirement.py first to create .arc/requirements.json"
+        )
     requirements = json.loads(requirements_path.read_text(encoding="utf-8-sig"))
     # --- Extension point 02B: traversal and analysis context -------------------
     # RequirementTree owns traversal and step ownership. Study how another visit
@@ -86,11 +88,17 @@ def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
     schema = {"entities": {}, "requirements": {}}
     for index, requirement in enumerate(nodes, 1):
         label = f"{index}/{len(nodes)} {requirement['id']}"
-        console.show(f"{label} | 1. Current requirement", (
-            f"{requirement['name']}\n\nDescription:\n{requirement['description']}"
-            f"\n\nConcatenated steps:\n{requirement['steps'] or '(No steps on this requirement.)'}"
-        ))
-        console.show(f"{label} | 2. All existing schema (excerpt)", format_schema(schema["entities"], excerpt=True))
+        console.show(
+            f"{label} | 1. Current requirement",
+            (
+                f"{requirement['name']}\n\nDescription:\n{requirement['description']}"
+                f"\n\nConcatenated steps:\n{requirement['steps'] or '(No steps on this requirement.)'}"
+            ),
+        )
+        console.show(
+            f"{label} | 2. All existing schema (excerpt)",
+            format_schema(schema["entities"], excerpt=True),
+        )
 
         # --- Key extension point 02C: retrieval / RAG --------------------------
         # Rewrite query construction here and ranking/candidate selection in
@@ -99,12 +107,18 @@ def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
         # retrieved entity definitions must retain their actual schema names.
         query = "\n".join(requirement[key] for key in ("name", "description", "steps"))
         retrieved = retriever.retrieve(query, schema, top_k)
-        ranking = "\n".join(f"{item['symbol']}  BM25={item['score']:.4f}" for item in retrieved["matches"])
-        console.show(f"{label} | 3. Retrieved schema", (
-            (ranking or "No lexical matches (the schema may still be empty).")
-            + "\n\nRetrieved entity definitions:\n"
-            + format_schema(retrieved["entities"])
-        ))
+        ranking = "\n".join(
+            f"{item['symbol']}  BM25={item['score']:.4f}"
+            for item in retrieved["matches"]
+        )
+        console.show(
+            f"{label} | 3. Retrieved schema",
+            (
+                (ranking or "No lexical matches (the schema may still be empty).")
+                + "\n\nRetrieved entity definitions:\n"
+                + format_schema(retrieved["entities"])
+            ),
+        )
 
         # --- Extension point 02D: generation and validation feedback -----------
         # Change the evidence supplied to the model or its correction strategy.
@@ -112,7 +126,10 @@ def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
         # apply_patch() checks the proposal before it can become shared state.
         request = {
             "requirement": requirement,
-            "symbol_inventory": {name: list(entity["fields"]) for name, entity in schema["entities"].items()},
+            "symbol_inventory": {
+                name: list(entity["fields"])
+                for name, entity in schema["entities"].items()
+            },
             "retrieved_schema": {"entities": retrieved["entities"]},
         }
         # Give malformed JSON or invalid graph updates bounded, explicit feedback.
@@ -120,28 +137,45 @@ def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
             patch = None
             try:
                 patch = model.generate_json(INSTRUCTIONS, request)
-                object_fields(patch, {"entities": dict, "related_fields": list}, "schema proposal")
+                object_fields(
+                    patch, {"entities": dict, "related_fields": list}, "schema proposal"
+                )
                 string_list(patch["related_fields"], "related_fields")
                 updated = apply_patch(schema, patch, retrieved["entities"])
-                symbols = {f"{name}.{field}" for name, entity in updated["entities"].items() for field in entity["fields"]}
+                symbols = {
+                    f"{name}.{field}"
+                    for name, entity in updated["entities"].items()
+                    for field in entity["fields"]
+                }
                 if any(field not in symbols for field in patch["related_fields"]):
-                    raise ValueError("related_fields must contain fields from the accepted schema")
-                updated["requirements"][requirement["id"]] = sorted(set(patch["related_fields"]))
+                    raise ValueError(
+                        "related_fields must contain fields from the accepted schema"
+                    )
+                updated["requirements"][requirement["id"]] = sorted(
+                    set(patch["related_fields"])
+                )
                 from infrastructure.stages.database.schema import validate_schema
+
                 validate_schema(updated)
                 break
             except ValueError as error:
                 if attempt == 3:
-                    raise ValueError(f"Schema analysis failed for {requirement['id']} after 3 attempts: {error}") from error
-                print(f"Retrying {requirement['id']} ({attempt + 1}/3): {error}", flush=True)
+                    raise ValueError(
+                        f"Schema analysis failed for {requirement['id']} after 3 attempts: {error}"
+                    ) from error
+                print(
+                    f"Retrying {requirement['id']} ({attempt + 1}/3): {error}",
+                    flush=True,
+                )
                 request["correction"] = {"error": str(error), "previous_patch": patch}
         # --- Pass boundary: publish the validated schema ----------------------
         # Subsequent requirements retrieve from this updated graph. Keep failed
         # proposals out of it so one mistake does not contaminate later nodes.
         save_json(arc_dir / "db_schema.json", updated)
-        console.show(f"{label} | 4. Schema changes (validated and saved)", (
-            patch.get("explanation", "") + "\n\n" + format_changes(schema, updated)
-        ))
+        console.show(
+            f"{label} | 4. Schema changes (validated and saved)",
+            (patch.get("explanation", "") + "\n\n" + format_changes(schema, updated)),
+        )
         schema = updated
     print(f"Schema saved: {arc_dir / 'db_schema.json'}", flush=True)
     return schema
@@ -149,7 +183,12 @@ def build_db_schema(arc_dir: Path, pause: bool = False, top_k: int = 6) -> dict:
 
 def main() -> None:
     parser = create_parser("Step 02: Build DB Schema with RAG")
-    parser.add_argument("--top-k", type=int, default=6, help="Number of BM25 entity/field hits (default: 6)")
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=6,
+        help="Number of BM25 entity/field hits (default: 6)",
+    )
     args = parser.parse_args()
     with ExitStack() as stack:
         try:

@@ -6,10 +6,16 @@ from pathlib import Path
 from infrastructure.utils.cli import create_parser, resolve_directories
 from infrastructure.utils.presentation.console import DemoConsole
 from infrastructure.utils.presentation.logging import console_log
-from infrastructure.shared.project.initialize import DEFAULT_STACK, STACKS, initialize_project
+from infrastructure.shared.project.initialize import (
+    DEFAULT_STACK,
+    STACKS,
+    initialize_project,
+)
 
 
-def project_initialization(output_dir: Path, pause: bool = False, stack: str = DEFAULT_STACK) -> list[str]:
+def project_initialization(
+    output_dir: Path, pause: bool = False, stack: str = DEFAULT_STACK
+) -> list[str]:
     created = initialize_project(output_dir, stack)
     DemoConsole(pause).show(
         f"Project initialization | {stack}",
@@ -21,7 +27,12 @@ def project_initialization(output_dir: Path, pause: bool = False, stack: str = D
 
 def main() -> None:
     parser = create_parser("Step 00: Project Initialization")
-    parser.add_argument("--stack", choices=sorted(STACKS), default=DEFAULT_STACK, help="Technology stack; extend STACKS to register another template")
+    parser.add_argument(
+        "--stack",
+        choices=sorted(STACKS),
+        default=DEFAULT_STACK,
+        help="Technology stack; extend STACKS to register another template",
+    )
     args = parser.parse_args()
     with ExitStack() as stack:
         try:

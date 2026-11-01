@@ -7,6 +7,7 @@ from infrastructure.shared.rag.bm25 import rank, tokenize
 
 class SchemaRetriever:
     """Retrieve full entity definitions using entity- and field-level lexical matches."""
+
     def retrieve(self, query: str, schema: dict, top_k: int = 6) -> dict:
         """Rebuild from the latest graph so newly added fields are searchable."""
         if top_k < 1:
@@ -16,7 +17,9 @@ class SchemaRetriever:
         # matches. Experiment with their granularity and included properties.
         documents = {}
         for name, entity in schema["entities"].items():
-            documents[name] = f"{name} {entity['description']} {' '.join(entity['fields'])}"
+            documents[name] = (
+                f"{name} {entity['description']} {' '.join(entity['fields'])}"
+            )
             for field_name, field in entity["fields"].items():
                 symbol = f"{name}.{field_name}"
                 text = f"{symbol} {entity['description']} {field['description']} {' '.join(field['constraints'])}"
@@ -35,5 +38,9 @@ class SchemaRetriever:
         # Return complete definitions only for entities selected by BM25 hits.
         return {
             "matches": matches,
-            "entities": {name: deepcopy(entity) for name, entity in schema["entities"].items() if name in selected},
+            "entities": {
+                name: deepcopy(entity)
+                for name, entity in schema["entities"].items()
+                if name in selected
+            },
         }

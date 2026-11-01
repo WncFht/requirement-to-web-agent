@@ -10,8 +10,19 @@ def validate_schema(schema):
     for name, entity in schema["entities"].items():
         object_fields(entity, {"description": str, "fields": dict}, name)
         for field, record in entity["fields"].items():
-            object_fields(record, {"description": str, "type": str, "nullable": bool,
-                "primary_key": bool, "unique": bool, "references": (str, type(None)), "constraints": list}, f"{name}.{field}")
+            object_fields(
+                record,
+                {
+                    "description": str,
+                    "type": str,
+                    "nullable": bool,
+                    "primary_key": bool,
+                    "unique": bool,
+                    "references": (str, type(None)),
+                    "constraints": list,
+                },
+                f"{name}.{field}",
+            )
             string_list(record["constraints"], f"{name}.{field}.constraints")
     for rid, fields in schema["requirements"].items():
         string_list(fields, f"schema.requirements.{rid}")
@@ -23,7 +34,9 @@ def apply_patch(schema, patch, retrieved):
     result = deepcopy(schema)
     for name, update in patch["entities"].items():
         object_fields(update, {}, name)
-        existing = result["entities"].setdefault(name, {"description": "", "fields": {}})
+        existing = result["entities"].setdefault(
+            name, {"description": "", "fields": {}}
+        )
         if "description" in update:
             existing["description"] = update["description"]
         if "fields" in update:

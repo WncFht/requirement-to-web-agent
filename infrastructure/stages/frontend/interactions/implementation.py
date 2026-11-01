@@ -8,15 +8,31 @@ import json
 import re
 import os
 
-from infrastructure.shared.agent.files import FileWorkspace, source_paths, editable_sources
+from infrastructure.shared.agent.files import (
+    FileWorkspace,
+    source_paths,
+    editable_sources,
+)
 from infrastructure.shared.agent.loop import compact_feedback, run_file_agent
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.stages.frontend.interactions.e2e_runtime import FIXTURE, prepare_e2e
-from infrastructure.stages.frontend.interactions.testing import E2EChecks, require_behavioral_red, test_path
+from infrastructure.stages.frontend.interactions.testing import (
+    E2EChecks,
+    require_behavioral_red,
+    test_path,
+)
 from infrastructure.stages.frontend.interactions.runtime import sync_interactions
 from infrastructure.stages.frontend.ui.runtime import prepare_frontend
-from infrastructure.stages.frontend.ui.testing import FrontendChecks, require_green, test_path as ui_test_path
-from infrastructure.stages.frontend.interactions.design import api_ids, event_ids, relevant_pages
+from infrastructure.stages.frontend.ui.testing import (
+    FrontendChecks,
+    require_green,
+    test_path as ui_test_path,
+)
+from infrastructure.stages.frontend.interactions.design import (
+    api_ids,
+    event_ids,
+    relevant_pages,
+)
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.utils.files import save_json
 from infrastructure.stages.frontend.ui.design import page_context, page_elements
@@ -28,16 +44,32 @@ def scenario_context(ui, interactions, rid):
     while True:
         elements = {uid for pid in pages for uid in page_elements(ui, pid)}
         tids = set(interactions["requirements"].get(rid, [])) | {
-            tid for tid, trigger in interactions["triggers"].items() if trigger["source"] in elements}
+            tid
+            for tid, trigger in interactions["triggers"].items()
+            if trigger["source"] in elements
+        }
         eids = event_ids(interactions, tids)
-        destinations = {action["page"] for eid in eids for action in interactions["events"][eid]["actions"] if action["kind"] == "navigate" and action["page"] in ui["pages"]}
+        destinations = {
+            action["page"]
+            for eid in eids
+            for action in interactions["events"][eid]["actions"]
+            if action["kind"] == "navigate" and action["page"] in ui["pages"]
+        }
         hrefs = {ui["elements"][uid]["prop"].get("href") for uid in elements}
-        destinations.update(pid for pid, page in ui["pages"].items() if page["route"] in hrefs)
+        destinations.update(
+            pid for pid, page in ui["pages"].items() if page["route"] in hrefs
+        )
         if destinations.issubset(pages):
-            return {"page_subtrees": {pid: page_context(ui, pid) for pid in sorted(pages)},
-                "triggers": {tid: interactions["triggers"][tid] for tid in sorted(tids)},
+            return {
+                "page_subtrees": {pid: page_context(ui, pid) for pid in sorted(pages)},
+                "triggers": {
+                    tid: interactions["triggers"][tid] for tid in sorted(tids)
+                },
                 "events": {eid: interactions["events"][eid] for eid in sorted(eids)},
-                "contracts": {eid: interactions["contracts"][eid] for eid in sorted(eids)}}
+                "contracts": {
+                    eid: interactions["contracts"][eid] for eid in sorted(eids)
+                },
+            }
         pages.update(destinations)
 
 
@@ -47,13 +79,25 @@ def test_run_status(result):
         require_green(result)
         return "GREEN"
     headlines = [error.split("\n", 1)[0] for error in result.get("failures", [])]
-    if not result.get("errors") and not result.get("skipped") and not result.get("flaky") and result.get("failed") and any("E2E_RUNTIME_ERROR:" in error for error in headlines) and not any("E2E_BACKEND_ERROR:" in error or "E2E_NETWORK_ERROR:" in error or "browserType.launch" in error for error in headlines):
+    if (
+        not result.get("errors")
+        and not result.get("skipped")
+        and not result.get("flaky")
+        and result.get("failed")
+        and any("E2E_RUNTIME_ERROR:" in error for error in headlines)
+        and not any(
+            "E2E_BACKEND_ERROR:" in error
+            or "E2E_NETWORK_ERROR:" in error
+            or "browserType.launch" in error
+            for error in headlines
+        )
+    ):
         return "REPAIR_REQUIRED"
     require_behavioral_red(result)
     return "RED_CONFIRMED"
 
 
-TEST_INSTRUCTIONS = '''Write a few real Playwright E2E tests BEFORE implementation of the current requirement.
+TEST_INSTRUCTIONS = """Write a few real Playwright E2E tests BEFORE implementation of the current requirement.
 For a new suite, choose a .spec.ts path under task.new_file.directory; otherwise edit test_path.
 Import {test,expect,fixturePasswordHash} from frontend/tests/e2e/support/context.ts,
 using the correct relative .js import from your chosen file path.
@@ -101,9 +145,9 @@ The compiler owns fixtures, app startup,
 database reset and test commands. The generation gate checks TypeScript,
 and executable scenarios against the current application. Assertion RED is accepted;
 invalid locators, fixture/runtime errors, and timeouts need test repair, not skipped tests.
-'''
+"""
 
-IMPLEMENT_INSTRUCTIONS = '''Implement the current requirement's designed UI interactions against frozen E2E tests.
+IMPLEMENT_INSTRUCTIONS = """Implement the current requirement's designed UI interactions against frozen E2E tests.
 Use only the supplied UI/data, trigger/event actions, contracts and canonical backend APIs.
 The context contains each scenario interaction once, including destination-page lifecycle
 behavior. target_event_ids selects new handlers to implement; preserve other handlers' behavior.
@@ -140,11 +184,24 @@ Frozen backend, SQL, designs, fixtures, tests and compiler infrastructure cannot
 Inspect automatic browser/DB check feedback and iterate until current AND previously
 accepted requirements and all UI existence tests pass. Missing required implementation files
 still prevent acceptance even if an inadequate current implementation appears to pass.
-'''
+"""
 
 
-def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images, contexts,
-        model, console, report, max_turns=18, max_tests=5):
+def run_interaction_tdd(
+    arc_dir,
+    tree,
+    schema,
+    backend,
+    ui,
+    interactions,
+    images,
+    contexts,
+    model,
+    console,
+    report,
+    max_turns=18,
+    max_tests=5,
+):
     """Implement interactions one requirement at a time through real-app E2E TDD.
 
     Prepare dependencies/runtime, generate and freeze key scenario tests, then
@@ -158,7 +215,10 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
     prepare_frontend(output)
     prepare_e2e(output, backend)
     sync_interactions(output, ui, interactions, backend, [])
-    console.show("E2E preparation | Dependencies", "Install workspace dependencies and Chromium. Each browser run owns a new real test database; production data is not used.")
+    console.show(
+        "E2E preparation | Dependencies",
+        "Install workspace dependencies and Chromium. Each browser run owns a new real test database; production data is not used.",
+    )
     install_dependencies(output)
     checks, ui_checks = E2EChecks(output, max_tests), FrontendChecks(output)
     checks.install_browser()
@@ -184,11 +244,23 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
         active = implemented | context_eids
         relative = test_path(rid, output)
         called = {aid for event in context["events"].values() for aid in api_ids(event)}
-        context.update({"requirement": contexts[rid], "target_event_ids": sorted(targets),
-            "backend_apis": {aid: backend["apis"][aid] for aid in sorted(called)}})
-        console.show(label + " | Scenario context", json.dumps(context, ensure_ascii=False, indent=2))
-        report["requirements"][rid] = {"status": "GENERATING_TESTS", "events": sorted(eids),
-            "target_events": sorted(targets), "test_path": relative}
+        context.update(
+            {
+                "requirement": contexts[rid],
+                "target_event_ids": sorted(targets),
+                "backend_apis": {aid: backend["apis"][aid] for aid in sorted(called)},
+            }
+        )
+        console.show(
+            label + " | Scenario context",
+            json.dumps(context, ensure_ascii=False, indent=2),
+        )
+        report["requirements"][rid] = {
+            "status": "GENERATING_TESTS",
+            "events": sorted(eids),
+            "target_events": sorted(targets),
+            "test_path": relative,
+        }
         save_json(arc_dir / "frontend_e2e.json", report)
         regression_files = [test_path(key, output) for key in [*accepted, rid]]
         sync_interactions(output, ui, interactions, backend, active)
@@ -207,24 +279,51 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
                 raise ValueError(compiled["output"])
             source = (output / relative).read_text(encoding="utf-8-sig")
             if re.search(r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?", source):
-                raise ValueError("The generated test hardcodes a loopback host. Use the baseURL fixture for Cookie.url and relative page.goto paths; the runner uses a random port on 127.0.0.1.")
+                raise ValueError(
+                    "The generated test hardcodes a loopback host. Use the baseURL fixture for Cookie.url and relative page.goto paths; the runner uses a random port on 127.0.0.1."
+                )
             behavior = checks.tests([relative])
             status = test_run_status(behavior)
             return {"typecheck": compiled, "behavior": behavior, "status": status}
 
-        test_context = {**context, "schema": schema["entities"], "test_path": relative if (output / relative).is_file() else None,
-            "max_tests": max_tests}
-        if os.getenv("ARC_REUSE_E2E_TESTS", "0") == "1" and (output / relative).is_file():
+        test_context = {
+            **context,
+            "schema": schema["entities"],
+            "test_path": relative if (output / relative).is_file() else None,
+            "max_tests": max_tests,
+        }
+        if (
+            os.getenv("ARC_REUSE_E2E_TESTS", "0") == "1"
+            and (output / relative).is_file()
+        ):
             agent = {"turns": 0, "checks": test_gate()}
-            console.show(label + " | Reuse existing tests", "Revalidate the existing suite; no test-generation model call.")
+            console.show(
+                label + " | Reuse existing tests",
+                "Revalidate the existing suite; no test-generation model call.",
+            )
         else:
-            agent = run_file_agent(model, TEST_INSTRUCTIONS, test_context,
-                FileWorkspace.for_target(output, "e2e_test", rid, existing=relative,
+            agent = run_file_agent(
+                model,
+                TEST_INSTRUCTIONS,
+                test_context,
+                FileWorkspace.for_target(
+                    output,
+                    "e2e_test",
+                    rid,
+                    existing=relative,
                     writable=editable_sources(output, "frontend/src"),
-                    references=[FIXTURE, *source_paths(output, "backend/src/db"),
+                    references=[
+                        FIXTURE,
+                        *source_paths(output, "backend/src/db"),
                         *source_paths(output, "frontend/src"),
-                        *(path for path in regression_files if path != relative)]),
-                test_gate, max_turns, console, label + " / Test Generation")
+                        *(path for path in regression_files if path != relative),
+                    ],
+                ),
+                test_gate,
+                max_turns,
+                console,
+                label + " / Test Generation",
+            )
         report["requirements"][rid]["test_turns"] = agent["turns"]
         report["requirements"][rid]["test_path"] = relative
 
@@ -249,21 +348,36 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
             return result
 
         current = implementation_checks()
-        report["requirements"][rid]["status"] = test_run_status(current["e2e"]) if current["e2e"] is not None else "REPAIR_REQUIRED"
+        report["requirements"][rid]["status"] = (
+            test_run_status(current["e2e"])
+            if current["e2e"] is not None
+            else "REPAIR_REQUIRED"
+        )
         save_json(arc_dir / "frontend_e2e.json", report)
-        if current["e2e"] and current["e2e"]["returncode"] == 0 and current["ui"] and current["ui"]["returncode"] == 0:
+        if (
+            current["e2e"]
+            and current["e2e"]["returncode"] == 0
+            and current["ui"]
+            and current["ui"]["returncode"] == 0
+        ):
             require_green(current["e2e"])
             require_green(current["ui"])
             agent = {"turns": 0, "checks": current}
         else:
             page_paths = {pid: selected_path(output, "page", pid) for pid in pages}
-            missing = [eid for eid in sorted(targets) if selected_path(output, "event", eid) is None]
+            missing = [
+                eid
+                for eid in sorted(targets)
+                if selected_path(output, "event", eid) is None
+            ]
             total_turns = 0
             # Each creation call has one unambiguous target. The final call runs
             # complete acceptance, with all current handlers available for repair.
             for index, new_event in enumerate(missing or [None]):
                 final_call = not missing or index == len(missing) - 1
-                event_paths = {eid: selected_path(output, "event", eid) for eid in sorted(targets)}
+                event_paths = {
+                    eid: selected_path(output, "event", eid) for eid in sorted(targets)
+                }
                 if slim_context and new_event is not None and not final_call:
                     # Creation calls implement exactly one new handler. Supply only the
                     # compiler-owned wiring, this requirement's page sources and the
@@ -271,26 +385,65 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
                     # captured by the events/contracts/task descriptions. The final call
                     # of the requirement keeps the full context for cross-file repairs.
                     target_event_ids = [new_event]
-                    called = {aid for eid in target_event_ids for aid in api_ids(context["events"].get(eid, {}))}
-                    task = {**context, "target_event_ids": target_event_ids,
-                        "contracts": {eid: contract for eid in target_event_ids
-                            if (contract := context["contracts"].get(eid)) is not None},
-                        "backend_apis": {aid: backend["apis"][aid] for aid in sorted(called)
-                            if aid in backend["apis"]},
-                        "implementation_paths": event_paths, "page_paths": page_paths}
-                    references = [relative for relative in ("frontend/src/ui-runtime.ts",
-                        "frontend/src/ui-api.ts", "frontend/src/ui-events.ts")
-                        if (output / relative).is_file()]
+                    called = {
+                        aid
+                        for eid in target_event_ids
+                        for aid in api_ids(context["events"].get(eid, {}))
+                    }
+                    task = {
+                        **context,
+                        "target_event_ids": target_event_ids,
+                        "contracts": {
+                            eid: contract
+                            for eid in target_event_ids
+                            if (contract := context["contracts"].get(eid)) is not None
+                        },
+                        "backend_apis": {
+                            aid: backend["apis"][aid]
+                            for aid in sorted(called)
+                            if aid in backend["apis"]
+                        },
+                        "implementation_paths": event_paths,
+                        "page_paths": page_paths,
+                    }
+                    references = [
+                        relative
+                        for relative in (
+                            "frontend/src/ui-runtime.ts",
+                            "frontend/src/ui-api.ts",
+                            "frontend/src/ui-events.ts",
+                        )
+                        if (output / relative).is_file()
+                    ]
                     editable = set(editable_sources(output, "frontend/src"))
-                    writable = {relative for relative in page_paths.values()
-                        if relative and relative in editable}
-                    workspace = FileWorkspace.for_target(output, "event", new_event, references, writable)
+                    writable = {
+                        relative
+                        for relative in page_paths.values()
+                        if relative and relative in editable
+                    }
+                    workspace = FileWorkspace.for_target(
+                        output, "event", new_event, references, writable
+                    )
                 else:
-                    task = {**context, "implementation_paths": event_paths, "page_paths": page_paths}
+                    task = {
+                        **context,
+                        "implementation_paths": event_paths,
+                        "page_paths": page_paths,
+                    }
                     writable = set(editable_sources(output, "frontend/src"))
-                    references = source_paths(output, "frontend/src") + regression_files + ui_files + ["frontend/package.json", "frontend/tsconfig.json"]
-                    workspace = (FileWorkspace.for_target(output, "event", new_event, references, writable)
-                        if new_event else FileWorkspace(output, writable, references))
+                    references = (
+                        source_paths(output, "frontend/src")
+                        + regression_files
+                        + ui_files
+                        + ["frontend/package.json", "frontend/tsconfig.json"]
+                    )
+                    workspace = (
+                        FileWorkspace.for_target(
+                            output, "event", new_event, references, writable
+                        )
+                        if new_event
+                        else FileWorkspace(output, writable, references)
+                    )
 
                 def creation_gate():
                     sync_interactions(output, ui, interactions, backend, active)
@@ -299,22 +452,47 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
                         raise ValueError(compiled["output"])
                     return {"typecheck": compiled}
 
-                agent = run_file_agent(model, IMPLEMENT_INSTRUCTIONS, task, workspace,
-                    implementation_gate if final_call else creation_gate, max_turns, console,
-                    label + (f" / Create {new_event}" if new_event else " / Interaction Implementation"), feedback=compact_feedback(current))
+                agent = run_file_agent(
+                    model,
+                    IMPLEMENT_INSTRUCTIONS,
+                    task,
+                    workspace,
+                    implementation_gate if final_call else creation_gate,
+                    max_turns,
+                    console,
+                    label
+                    + (
+                        f" / Create {new_event}"
+                        if new_event
+                        else " / Interaction Implementation"
+                    ),
+                    feedback=compact_feedback(current),
+                )
                 total_turns += agent["turns"]
             agent["turns"] = total_turns
         accepted.append(rid)
         reused = eids & implemented
         implemented.update(targets)
         result = agent["checks"]["e2e"]
-        report["requirements"][rid].update({"status": "GREEN", "implementation_turns": agent["turns"],
-            "steps": list(steps), "passed": result["passed"], "reused_events": sorted(reused)})
+        report["requirements"][rid].update(
+            {
+                "status": "GREEN",
+                "implementation_turns": agent["turns"],
+                "steps": list(steps),
+                "passed": result["passed"],
+                "reused_events": sorted(reused),
+            }
+        )
         save_json(arc_dir / "frontend_e2e.json", report)
         console.show(label + " | GREEN", result["output"])
     sync_interactions(output, ui, interactions, backend, implemented)
-    console.show("Final frontend verification", "Run every generated E2E scenario and UI existence suite, then build the full application.")
-    final = checks.tests([test_path(rid, output) for rid in accepted]) if accepted else None
+    console.show(
+        "Final frontend verification",
+        "Run every generated E2E scenario and UI existence suite, then build the full application.",
+    )
+    final = (
+        checks.tests([test_path(rid, output) for rid in accepted]) if accepted else None
+    )
     if final is not None:
         require_green(final)
     presence = ui_checks.tests(ui_files)
@@ -322,7 +500,17 @@ def run_interaction_tdd(arc_dir, tree, schema, backend, ui, interactions, images
     built = checks.build()
     if built["returncode"]:
         raise ValueError(built["output"])
-    report.update({"status": "GREEN", "summary": {"requirements": len(accepted), "events": len(implemented),
-        "e2e_tests": final["passed"] if final else 0, "ui_tests": presence["passed"], "failed": 0}})
+    report.update(
+        {
+            "status": "GREEN",
+            "summary": {
+                "requirements": len(accepted),
+                "events": len(implemented),
+                "e2e_tests": final["passed"] if final else 0,
+                "ui_tests": presence["passed"],
+                "failed": 0,
+            },
+        }
+    )
     save_json(arc_dir / "frontend_e2e.json", report)
     return report

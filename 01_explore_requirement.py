@@ -69,14 +69,20 @@ class RequirementExplorer:
         if not isinstance(reference, str) or not reference.strip():
             return "(invalid image reference)", None, None
         source = Path(reference)
-        target = source.resolve() if source.is_absolute() else (self.input_dir / source).resolve()
+        target = (
+            source.resolve()
+            if source.is_absolute()
+            else (self.input_dir / source).resolve()
+        )
         if target != self.input_dir and self.input_dir not in target.parents:
             return reference, None, "outside input directory"
         if not target.is_file():
             return reference, target, "file not found"
         return reference, target, None
 
-    def _references(self, references: object) -> list[tuple[str, Path | None, str | None]]:
+    def _references(
+        self, references: object
+    ) -> list[tuple[str, Path | None, str | None]]:
         """Turn image IDs, reference macros, or direct image paths into link rows."""
         if not isinstance(references, list):
             return []
@@ -89,7 +95,14 @@ class RequirementExplorer:
             image_id = match.group(1) if match else reference
             image = self.images.get(image_id)
             raw_path = image.get("reference") if image else None
-            if raw_path is None and Path(reference).suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}:
+            if raw_path is None and Path(reference).suffix.lower() in {
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".gif",
+                ".webp",
+                ".svg",
+            }:
                 raw_path = reference
             if raw_path is None:
                 continue
@@ -132,13 +145,17 @@ class RequirementExplorer:
             f"Scenarios: {scenario_count}   ·   Steps: {len(own_steps)}   ·   Children: {len(children)}",
             "Child requirements: " + (", ".join(children) if children else "(none)"),
         ]
-        self.console.show(f"Requirement | {rid} — {requirement['name']}", "\n".join(body))
+        self.console.show(
+            f"Requirement | {rid} — {requirement['name']}", "\n".join(body)
+        )
 
         images = []
         for image in self._requirement_images(node):
             if isinstance(image, dict):
                 label = image.get("id", "reference image")
-                display_path, target, problem = self._image_target(image.get("reference"))
+                display_path, target, problem = self._image_target(
+                    image.get("reference")
+                )
                 images.append((f"{label}  ·  {display_path}", target, problem))
         if images:
             print("Reference images (click to open):")
@@ -152,7 +169,9 @@ class RequirementExplorer:
     def _show_scenarios(self, node: dict) -> None:
         scenarios = node.get("scenarios", []) or []
         if not scenarios:
-            self.console.show("Scenarios and steps", "This requirement has no scenarios or steps.")
+            self.console.show(
+                "Scenarios and steps", "This requirement has no scenarios or steps."
+            )
             return
         for scenario in scenarios:
             sid = scenario.get("id", "Scenario")
@@ -161,22 +180,28 @@ class RequirementExplorer:
             if not steps:
                 lines.append("(No steps.)")
             for step in steps:
-                lines.extend([
-                    "",
-                    f"Step: {step.get('id', '(no id)')}",
-                    f"Given: {step.get('Given', step.get('given', ''))}",
-                    f"When:  {step.get('When', step.get('when', ''))}",
-                    f"Then:  {step.get('Then', step.get('then', ''))}",
-                ])
+                lines.extend(
+                    [
+                        "",
+                        f"Step: {step.get('id', '(no id)')}",
+                        f"Given: {step.get('Given', step.get('given', ''))}",
+                        f"When:  {step.get('When', step.get('when', ''))}",
+                        f"Then:  {step.get('Then', step.get('then', ''))}",
+                    ]
+                )
                 references = self._references(step.get("references", []))
                 if references:
-                    lines.append("Image references: " + ", ".join(row[0].split("  ·  ")[0] for row in references))
+                    lines.append(
+                        "Image references: "
+                        + ", ".join(row[0].split("  ·  ")[0] for row in references)
+                    )
             self.console.show(f"Scenario | {sid}", "\n".join(lines))
             for step in steps:
                 self._print_links(self._references(step.get("references", [])))
 
     def _depth(self, requirement_id: str) -> int:
         """Find a node's depth from the already-normalized containment tree."""
+
         def search(current: str, depth: int):
             if current == requirement_id:
                 return depth
@@ -240,7 +265,9 @@ def collect_images(value: object) -> list[str]:
             if not isinstance(images, list):
                 raise ValueError("description.image must be a list")
             for image in images:
-                if not isinstance(image, dict) or not isinstance(image.get("reference"), str):
+                if not isinstance(image, dict) or not isinstance(
+                    image.get("reference"), str
+                ):
                     raise ValueError("Each image must have a string reference")
                 if not image["reference"].strip():
                     raise ValueError("Image reference must not be empty")
@@ -268,7 +295,9 @@ def explore_requirement(input_dir: Path, arc_dir: Path, pause: bool = False) -> 
     try:
         text = json.dumps(requirements, ensure_ascii=False, indent=2, allow_nan=False)
     except (TypeError, ValueError) as error:
-        raise ValueError(f"Cannot convert requirement fields to JSON: {error}") from error
+        raise ValueError(
+            f"Cannot convert requirement fields to JSON: {error}"
+        ) from error
     console.show("1. Requirement tree", text)
 
     # --- Extension point 01B: reference discovery ------------------------------
@@ -278,10 +307,14 @@ def explore_requirement(input_dir: Path, arc_dir: Path, pause: bool = False) -> 
     for reference in references:
         image = (input_dir / reference).resolve()
         if not image.is_relative_to(input_dir.resolve()):
-            raise ValueError(f"Referenced image must be inside the input directory: {reference}")
+            raise ValueError(
+                f"Referenced image must be inside the input directory: {reference}"
+            )
         if not image.is_file():
             raise ValueError(f"Referenced image does not exist: {reference}")
-    console.show("2. Referenced images", "\n".join(references) or "(No referenced images.)")
+    console.show(
+        "2. Referenced images", "\n".join(references) or "(No referenced images.)"
+    )
 
     # --- Extension point 01C: visual analysis ----------------------------------
     # Rewrite the prompt/model in infrastructure/shared/models/vision.py to compare
@@ -295,22 +328,31 @@ def explore_requirement(input_dir: Path, arc_dir: Path, pause: bool = False) -> 
         for reference in references:
             print(f"Analyzing image: {reference}", flush=True)
             analysis[reference] = model.analyze(input_dir / reference)
-            console.show(f"3. Visual analysis | {reference}", json.dumps(analysis[reference], ensure_ascii=False, indent=2))
+            console.show(
+                f"3. Visual analysis | {reference}",
+                json.dumps(analysis[reference], ensure_ascii=False, indent=2),
+            )
     else:
-        console.show("3. Visual analysis", "No referenced images; no model call is needed.")
+        console.show(
+            "3. Visual analysis", "No referenced images; no model call is needed."
+        )
     save_json(arc_dir / "visual_analysis.json", analysis)
-    print(f"Results saved: {arc_dir / 'requirements.json'}, {arc_dir / 'visual_analysis.json'}")
+    print(
+        f"Results saved: {arc_dir / 'requirements.json'}, {arc_dir / 'visual_analysis.json'}"
+    )
     return requirements
 
 
 def main() -> None:
     parser = create_parser("Step 01: Explore Requirement Tree")
     parser.add_argument(
-        "--browse", action="store_true",
+        "--browse",
+        action="store_true",
         help="Skip analysis and browse requirements interactively",
     )
     parser.add_argument(
-        "--no-browse", action="store_true",
+        "--no-browse",
+        action="store_true",
         help="Run analysis only (used by non-interactive pipelines)",
     )
     args = parser.parse_args()
@@ -323,7 +365,9 @@ def main() -> None:
     if args.browse:
         try:
             if not input_dir.is_dir():
-                raise ValueError(f"Input directory does not exist or is not a directory: {input_dir}")
+                raise ValueError(
+                    f"Input directory does not exist or is not a directory: {input_dir}"
+                )
             root = load_requirements(source)
             RequirementExplorer(source, root).run()
         except (OSError, ValueError, yaml.YAMLError) as error:
@@ -335,8 +379,12 @@ def main() -> None:
             input_dir, output_dir = resolve_directories(args)
             stack.enter_context(console_log(output_dir))
             if not input_dir.is_dir():
-                raise ValueError(f"Input directory does not exist or is not a directory: {input_dir}")
-            requirements = explore_requirement(input_dir, output_dir / ".arc", args.pause)
+                raise ValueError(
+                    f"Input directory does not exist or is not a directory: {input_dir}"
+                )
+            requirements = explore_requirement(
+                input_dir, output_dir / ".arc", args.pause
+            )
             if not args.no_browse:
                 RequirementExplorer(source, requirements).run()
         except (OSError, ValueError, RuntimeError) as error:

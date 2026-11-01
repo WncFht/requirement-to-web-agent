@@ -3,7 +3,11 @@
 
 def field_lines(name: str, field: dict, details: bool = True) -> list[str]:
     """Render a field's type, key/nullability/reference flags, and optional description and constraints."""
-    flags = [label for key, label in (("primary_key", "PK"), ("unique", "UNIQUE")) if field[key]]
+    flags = [
+        label
+        for key, label in (("primary_key", "PK"), ("unique", "UNIQUE"))
+        if field[key]
+    ]
     flags.append("NULL" if field["nullable"] else "NOT NULL")
     if field["references"]:
         flags.append(f"-> {field['references']}")
@@ -20,10 +24,15 @@ def format_schema(entities: dict, excerpt: bool = False) -> str:
         return "(No entities yet.)"
     lines = []
     items = list(entities.items())
-    for name, entity in (items[:6] if excerpt else items):
-        lines.extend([f"{name} — {entity['description']}", "  FIELD                    TYPE       PROPERTIES"])
+    for name, entity in items[:6] if excerpt else items:
+        lines.extend(
+            [
+                f"{name} — {entity['description']}",
+                "  FIELD                    TYPE       PROPERTIES",
+            ]
+        )
         fields = list(entity["fields"].items())
-        for field_name, field in (fields[:6] if excerpt else fields):
+        for field_name, field in fields[:6] if excerpt else fields:
             lines.extend(field_lines(field_name, field, details=not excerpt))
         if excerpt and len(fields) > 6:
             lines.append(f"  ... {len(fields) - 6} more fields")
@@ -45,7 +54,9 @@ def format_changes(before: dict, after: dict) -> str:
             continue
         lines.append(f"UPDATED ENTITY: {name}")
         if old["description"] != entity["description"]:
-            lines.append(f"  Description: {old['description']} -> {entity['description']}")
+            lines.append(
+                f"  Description: {old['description']} -> {entity['description']}"
+            )
         for field_name, field in entity["fields"].items():
             previous = old["fields"].get(field_name)
             if previous == field:
@@ -74,7 +85,11 @@ def format_obligations(records: dict, empty_label: str = "(empty)") -> str:
 
 def format_requirement_schema_relations(schema: dict) -> str:
     """Render the schema graph followed by each requirement's related fields and obligations."""
-    lines = ["DATABASE SCHEMA / ER GRAPH", format_schema(schema["entities"]), "REQUIREMENT RELATIONS"]
+    lines = [
+        "DATABASE SCHEMA / ER GRAPH",
+        format_schema(schema["entities"]),
+        "REQUIREMENT RELATIONS",
+    ]
     for rid, fields in schema.get("requirements", {}).items():
         lines.append(rid)
         lines.append("  RELATED: " + (", ".join(fields) or "(none)"))
@@ -83,7 +98,10 @@ def format_requirement_schema_relations(schema: dict) -> str:
 
 def format_apis(apis: dict) -> str:
     """Render API descriptions and their obligations for existing/retrieved API panels."""
-    return "\n\n".join(
-        f"{aid} — {api['description']}\n" + format_obligations({aid: api})
-        for aid, api in apis.items()
-    ) or "(No existing Backend API Primitives.)"
+    return (
+        "\n\n".join(
+            f"{aid} — {api['description']}\n" + format_obligations({aid: api})
+            for aid, api in apis.items()
+        )
+        or "(No existing Backend API Primitives.)"
+    )
