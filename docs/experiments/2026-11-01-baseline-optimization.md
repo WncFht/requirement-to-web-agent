@@ -134,3 +134,18 @@ await page.reload();
 原记录中的 log 路径是测量时的工作位置；当前队友文件在课程侧 `artifacts/teammate-baseline/`，模型日志与阶段日志均保留压缩原件。恢复原始优化快照使用 `artifacts/optimization-runs/` 的校验归档，不能把历史失败工件冒充新的完整运行。
 
 源码差异可以相对 teacher-baseline 核验，但队友编译器提交号未知，不能证明所有较早工程修正都是队友没有的功能。Stage 12 的 59,139/27,596 是阶段输入除以 21 次返回的均值，包含测试生成，旧“单次创建调用”标签已纠正。
+
+## 老师原版验收恢复
+
+以上历史性能记录使用本地 pending 扩展输入。默认 input 现已按教师 ZIP 原始字节恢复，原件哈希在 input/source.json，扩展保留在 examples/registration-pending。两种输入不混算性能。原版独立验收执行未改动的老师四条测试及十条固定行为/数据库检查；契约 v2 只纠正失败会话读取后入口显示的过度约束，保留原要求的身份和无写入不变量，详情见 [验收说明](../../acceptance/README.md)。
+
+| 原版运行 | SDK 总 token | 最终状态与定位 |
+| --- | ---: | --- |
+| teacher-original-1101 | 381,595 | Stage 08；对永远非空的 JSON 字符串取反，断言恒假 |
+| teacher-original-1101-v2 | 424,915 | 后端 14 条通过，Stage 10 UI 失败；未完成应用被独立反例验收 0/14 拒绝 |
+| teacher-original-1101-v3 | 251,506 | Stage 08；将未知凭据字面量与完整 JSON 响应判相等，断言恒假 |
+| teacher-original-1101-v4 | 343,212 | 后端 13 条、UI 9 条通过；Stage 06 失败续跑后，Stage 11 交互提案耗尽三次 |
+
+数字与安全元数据归 [teacher-original-validation.json](teacher-original-validation.json)，原始日志、设计、冻结测试和生成源码按逐文件哈希归档在课程侧 artifacts/optimization-runs；失败测试未改写。v4 的 UI IR 还把老师显式要求的 Gender radiogroup 设计为 select，说明内部 UI 全绿不能代替老师测试。v4 生成中发生契约审计修正，也不能视为验收源码始终不变的受控测量。
+
+已实施修正包括：冻结前拒绝两类恒假后端断言；完整登录态可见性提示；只读外部测试供给及 radiogroup/select 冲突准入；radio 静态选项值与共享选择 checked 状态的正确存在性断言；API 叶子义务边界说明；交互重试明确基于已接受状态而非被拒提案增量。全部保留原阶段 gate，并分别提供环境回退开关。当前 70 项编译器测试、17 项维护测试通过；第五轮从全新目录验证固定 v2 验收，尚不能据这些局部结果宣布稳定或性能收益。

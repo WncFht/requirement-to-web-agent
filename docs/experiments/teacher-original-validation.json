@@ -1,0 +1,127 @@
+{
+  "scope": "Original teacher input; separate from prior pending-extension performance runs",
+  "records": [
+    {
+      "run": "teacher-original-1101",
+      "status": "FAILED",
+      "last_stage": "08",
+      "reason": "Always-false negation of a nonempty JSON string helper",
+      "generation_metadata": {
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "d27e81b45091b52d9ea63c1e2ee23f90ea7a31c69cae0ee1be358bd3476543de",
+        "code_revision": "97f0bdbf1458d4708d46322036168bb5bbc9a7bf",
+        "input_kind": "teacher original, byte-identical",
+        "ARC_DISABLE_THINKING": "1",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4"
+      },
+      "sdk_calls": 40,
+      "tokens_total": 381595,
+      "archive": "artifacts/optimization-runs/teacher-original-1101.tar.gz",
+      "backend_tdd": "FAILED",
+      "ui_checks": null,
+      "frontend_e2e": null
+    },
+    {
+      "run": "teacher-original-1101-v2",
+      "status": "FAILED",
+      "last_stage": "10",
+      "reason": "UI display fixture/visibility mismatch; incomplete app independently rejected 0/14",
+      "generation_metadata": {
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "d27e81b45091b52d9ea63c1e2ee23f90ea7a31c69cae0ee1be358bd3476543de",
+        "code_revision": "24fa853c851c42076dbaf0e77314b72a9f025697",
+        "input_kind": "teacher original, byte-identical",
+        "ARC_DISABLE_THINKING": "1",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4",
+        "fixed_acceptance_sha256": "21bb6c19135b92e9254a139e4b3772cdc3d4121067bf2f39f5b3100ba433d847",
+        "predecessor_failed_run": "teacher-original-1101"
+      },
+      "sdk_calls": 45,
+      "tokens_total": 424915,
+      "archive": "artifacts/optimization-runs/teacher-original-1101-v2.tar.gz",
+      "backend_tdd": "GREEN",
+      "ui_checks": "FAILED",
+      "frontend_e2e": null,
+      "negative_control": {
+        "status": "FAILED",
+        "stats": {
+          "startTime": "2026-11-01T09:14:00.022Z",
+          "duration": 327063.362,
+          "expected": 0,
+          "skipped": 0,
+          "unexpected": 14,
+          "flaky": 0
+        },
+        "teacher_test_count": 4,
+        "fixed_test_count": 10,
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "assertions_sha256": {
+          "setup.ts": "8ca72acab19bdf22241f5d6c60071d0e2f173378cfdfabf9ced3365f2f32653b",
+          "context.ts": "66119abec3af5878f8514e4998f6437fe0c76dc26137ad2df80a7ae433a75fa4",
+          "fixed.spec.ts": "21bb6c19135b92e9254a139e4b3772cdc3d4121067bf2f39f5b3100ba433d847"
+        },
+        "preserved_gates": {
+          "backend_tdd.json": "GREEN",
+          "ui_checks.json": "FAILED",
+          "frontend_e2e.json": null
+        },
+        "diagnostic_only": true,
+        "all_preserved_gates_green": false,
+        "production_build_passed": false
+      }
+    },
+    {
+      "run": "teacher-original-1101-v3",
+      "status": "FAILED",
+      "last_stage": "08",
+      "reason": "Impossible equality between unquoted credential and JSON serialization",
+      "generation_metadata": {
+        "code_revision": "f7758051077563f65f050b487203bc2c13ebb20d",
+        "input_kind": "teacher original, byte-identical",
+        "predecessor_failed_run": "teacher-original-1101-v2",
+        "ARC_DISABLE_THINKING": "1",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4",
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "d27e81b45091b52d9ea63c1e2ee23f90ea7a31c69cae0ee1be358bd3476543de",
+        "fixed_acceptance_sha256": "21bb6c19135b92e9254a139e4b3772cdc3d4121067bf2f39f5b3100ba433d847"
+      },
+      "sdk_calls": 37,
+      "tokens_total": 251506,
+      "archive": "artifacts/optimization-runs/teacher-original-1101-v3.tar.gz",
+      "backend_tdd": "FAILED",
+      "ui_checks": null,
+      "frontend_e2e": null
+    },
+    {
+      "run": "teacher-original-1101-v4",
+      "status": "FAILED",
+      "last_stage": "11",
+      "reason": "Rejected interaction proposal was retried as delta; also incompatible Gender select identified before final acceptance",
+      "generation_metadata": {
+        "code_revision": "edaa473876a8d68381a25ad765e8a29a2e62aeb3",
+        "input_kind": "teacher original, byte-identical",
+        "predecessor_failed_run": "teacher-original-1101-v3",
+        "ARC_DISABLE_THINKING": "1",
+        "ARC_MODEL_TRANSPORT_RETRIES": "4",
+        "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+        "contract_sha256": "d27e81b45091b52d9ea63c1e2ee23f90ea7a31c69cae0ee1be358bd3476543de",
+        "fixed_acceptance_sha256": "21bb6c19135b92e9254a139e4b3772cdc3d4121067bf2f39f5b3100ba433d847",
+        "resume_attempts": [
+          {
+            "from_stage": "06",
+            "source_revision": "7e1c65ff120d09e6589ece55a0e7a4a528ed10d9",
+            "reason": "clarify leaf scope after three excess-read failures",
+            "retained_prefix": "00-05 from initial code_revision; no IR moved from another output",
+            "prior_log_sha256": "a8104a853491c82da286e836ef504ae60759cf0194365dfce26156e1e51f7d22"
+          }
+        ]
+      },
+      "sdk_calls": 40,
+      "tokens_total": 343212,
+      "archive": "artifacts/optimization-runs/teacher-original-1101-v4.tar.gz",
+      "backend_tdd": "GREEN",
+      "ui_checks": "GREEN",
+      "frontend_e2e": null
+    }
+  ]
+}
