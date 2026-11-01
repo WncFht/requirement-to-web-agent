@@ -10,8 +10,25 @@ def cache_prefix_enabled():
 def stable_first(value, keys):
     if not cache_prefix_enabled():
         return value
+    if os.getenv("ARC_CACHE_PREFIX_V2", "0") == "1" and "event_id" in value:
+        keys = (*keys, "all_requirement_uses", "backend_apis")
     first = {key: value[key] for key in keys if key in value}
     return {**first, **value}
+
+
+def stable_creation_first(value):
+    if not cache_prefix_enabled() or os.getenv("ARC_CACHE_PREFIX_V2", "0") != "1":
+        return value
+    return stable_first(
+        value,
+        (
+            "creation_scope",
+            "page_inventory",
+            "frontend_data",
+            "page_paths",
+            "requirement",
+        ),
+    )
 
 
 def file_order(files, writable):

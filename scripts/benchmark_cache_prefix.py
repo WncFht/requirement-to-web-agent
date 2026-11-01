@@ -20,7 +20,7 @@ from infrastructure.utils.presentation.logging import console_log
 from infrastructure.utils.presentation.model_io import invoke
 
 
-def variants(arguments, namespace):
+def variants(arguments, namespace, refined=False):
     original = deepcopy(arguments)
     original["messages"][0]["content"] += (
         "\nExperiment identifier (no change to task): " + namespace
@@ -28,7 +28,12 @@ def variants(arguments, namespace):
     candidate = deepcopy(original)
     content = original["messages"][-1]["content"]
     payload = json.loads(content)
-    stable = {key: payload[key] for key in ("frontend_data", "page_inventory")}
+    keys = (
+        ("frontend_data", "page_inventory", "all_requirement_uses", "backend_apis")
+        if refined
+        else ("frontend_data", "page_inventory")
+    )
+    stable = {key: payload[key] for key in keys if key in payload}
     candidate["messages"][-1]["content"] = json.dumps(
         {**stable, **payload}, ensure_ascii=False
     )
@@ -42,6 +47,11 @@ def main():
     parser.add_argument("log", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--pairs", type=int, default=6)
+    parser.add_argument(
+        "--refined-prefix",
+        action="store_true",
+        help="Compare recorded ordering with additional stable requirement/API sections first",
+    )
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Refusing to overwrite a cache experiment")
@@ -82,6 +92,7 @@ def main():
     experiment = {
         "protocol": "Distinct matched event requests. One warm-up per variant on a separate event, then counterbalanced A/B order. Shared unique system suffix avoids prior full-payload cache warming. All fields and values identical within each pair; outputs checked by the original Stage11 contract validator. No application output modified.",
         "namespace": namespace,
+        "refined_prefix": args.refined_prefix,
         "source_log_sha256": sha256(args.log.read_bytes()).hexdigest(),
         "warmup": [],
         "pairs": [],
@@ -98,7 +109,7 @@ def main():
                 "event_id": payload["event_id"],
                 "results": {},
             }
-            requests = variants(row["arguments"], namespace)
+            requests = variants(row["arguments"], namespace, args.refined_prefix)
             order = [0, 1] if index % 2 == 0 else [1, 0]
             if index == 0:
                 rng.shuffle(order)

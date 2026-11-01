@@ -8,10 +8,60 @@ import unittest
 from unittest.mock import patch
 
 from infrastructure.shared.agent.files import FileWorkspace
-from infrastructure.shared.models.context_order import stable_first
+from infrastructure.shared.models.context_order import (
+    stable_first,
+    stable_creation_first,
+)
 
 
 class ContextOrderTests(unittest.TestCase):
+    def test_refined_order_is_opt_in_and_changes_no_values(self):
+        value = {
+            "event_id": "e",
+            "event": {"x": 1},
+            "frontend_data": {"x": ""},
+            "page_inventory": {},
+            "all_requirement_uses": ["same"],
+            "backend_apis": {},
+        }
+        with patch.dict(
+            os.environ, {"ARC_CACHE_PREFIX": "1", "ARC_CACHE_PREFIX_V2": "1"}
+        ):
+            result = stable_first(value, ("frontend_data", "page_inventory"))
+            self.assertEqual(
+                list(result)[:4],
+                [
+                    "frontend_data",
+                    "page_inventory",
+                    "all_requirement_uses",
+                    "backend_apis",
+                ],
+            )
+            self.assertEqual(result, value)
+            creation = {
+                "creation_scope": "target",
+                "requirement": {},
+                "page_inventory": {},
+                "source_elements": {"target": True},
+                "frontend_data": {"shared": 1},
+                "page_paths": {"home": "home.tsx"},
+            }
+            ordered = stable_creation_first(creation)
+            self.assertEqual(creation, ordered)
+            self.assertLess(
+                list(ordered).index("frontend_data"),
+                list(ordered).index("source_elements"),
+            )
+        with patch.dict(
+            os.environ, {"ARC_CACHE_PREFIX": "1", "ARC_CACHE_PREFIX_V2": "0"}
+        ):
+            self.assertIs(stable_creation_first(creation), creation)
+        with patch.dict(
+            os.environ, {"ARC_CACHE_PREFIX": "0", "ARC_CACHE_PREFIX_V2": "1"}
+        ):
+            self.assertIs(stable_first(value, ("frontend_data",)), value)
+            self.assertIs(stable_creation_first(creation), creation)
+
     def test_stable_fields_move_first_with_identical_values_and_keys(self):
         request = {
             "event_id": "EV-input",
