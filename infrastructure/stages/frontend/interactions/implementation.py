@@ -5,7 +5,6 @@ the event implementation. Complete that requirement before advancing; include
 accepted scenarios and UI presence tests in regression checks."""
 
 import json
-import re
 import os
 
 from infrastructure.shared.agent.files import (
@@ -20,6 +19,7 @@ from infrastructure.stages.frontend.interactions.testing import (
     E2EChecks,
     require_behavioral_red,
     test_path,
+    validate_e2e_source,
 )
 from infrastructure.stages.frontend.interactions.runtime import sync_interactions
 from infrastructure.stages.frontend.ui.runtime import prepare_frontend
@@ -278,10 +278,7 @@ def run_interaction_tdd(
             if compiled["returncode"]:
                 raise ValueError(compiled["output"])
             source = (output / relative).read_text(encoding="utf-8-sig")
-            if re.search(r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?", source):
-                raise ValueError(
-                    "The generated test hardcodes a loopback host. Use the baseURL fixture for Cookie.url and relative page.goto paths; the runner uses a random port on 127.0.0.1."
-                )
+            validate_e2e_source(source)
             behavior = checks.tests([relative])
             status = test_run_status(behavior)
             return {"typecheck": compiled, "behavior": behavior, "status": status}

@@ -16,6 +16,25 @@ from infrastructure.stages.frontend.ui.testing import (
 from infrastructure.shared.project.entrypoints import selected_path
 
 
+def validate_e2e_source(source: str) -> None:
+    """Reject known invalid E2E setup before freezing a generated test suite."""
+    if re.search(r"https?://(?:localhost|127\.0\.0\.1)(?::\d+)?", source):
+        raise ValueError(
+            "The generated test hardcodes a loopback host. Use the baseURL fixture "
+            "for Cookie.url and relative page.goto paths; the runner uses a random "
+            "port on 127.0.0.1."
+        )
+    if (
+        os.getenv("ARC_LEGACY_E2E_SOURCE_CHECK", "0") != "1"
+        and "__ARC_UI_FIXTURE__" in source
+    ):
+        raise ValueError(
+            "E2E tests cannot reference __ARC_UI_FIXTURE__. It is reserved for "
+            "compiler-owned UI presence tests. Replace fixture injection with "
+            "a real browser interaction scenario before this suite is frozen."
+        )
+
+
 def test_path(rid, output=None):
     """Return a safe, stable E2E spec path for one requirement."""
     chosen = selected_path(output, "e2e_test", rid) if output is not None else None
