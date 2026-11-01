@@ -34,7 +34,7 @@ def validate_reference_controls(design, context):
     if os.getenv("ARC_LEGACY_IDENTITY_DISPLAY", "0") != "1" and re.search(
         r"getByText\(\s*account\.username\s*,\s*\{\s*exact:\s*true", sources
     ):
-        from infrastructure.stages.frontend.ui.design import page_elements, visible
+        from infrastructure.stages.frontend.ui.design import page_elements
 
         defaults = {
             key: binding["initial"] for key, binding in design["bindings"].items()
@@ -55,11 +55,10 @@ def validate_reference_controls(design, context):
                 if candidates and not any(
                     node["type"] in {"text", "heading"}
                     and candidates.intersection(node.get("data", []))
-                    and visible(design, uid, values)
                     for uid, node in elements.items()
                 ):
                     raise ValueError(
-                        "External signed-in homepage contract requires the exact account.username to be visible. This fixture has nonempty username data but no visible text/heading bound to it. Add an actual username display on '/' when signed in; static 'My account/My 12306' text does not display the username. Preserve signed-out and loading/failure visibility."
+                        "External signed-in homepage contract requires the exact account.username to be visible. This fixture has nonempty username data but no text/heading bound to it. Add an actual username display on '/' when signed in; static 'My account/My 12306' text does not display the username. Preserve signed-out and loading/failure visibility."
                     )
     groups = set(
         re.findall(

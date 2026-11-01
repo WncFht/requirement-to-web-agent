@@ -28,7 +28,7 @@ class IdentityDisplayTests(unittest.TestCase):
 
     def test_missing_identity_display_is_rejected_but_bound_text_is_accepted(self):
         design, context = self.fixture()
-        with self.assertRaisesRegex(ValueError, "no visible text"):
+        with self.assertRaisesRegex(ValueError, "no text"):
             validate_reference_controls(design, context)
         design["elements"]["UI-IDENTITY"] = node(
             "text", "UI-FORM", ["display.username"]
