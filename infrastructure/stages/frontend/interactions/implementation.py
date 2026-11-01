@@ -224,6 +224,14 @@ def run_interaction_tdd(
     activate and repair the current event handlers before advancing. Regress
     accepted E2E/UI tests, build the app, and update the caller's report."""
     output = arc_dir.parent.resolve()
+    test_instructions = TEST_INSTRUCTIONS
+    if os.getenv("ARC_LEGACY_RED_GUIDANCE", "0") != "1":
+        test_instructions += (
+            "\nBefore EVERY click/fill/check/selectOption/press, await expect(the same locator).toBeVisible() "
+            "and, when necessary, toBeEnabled(). During RED, controls can be hidden until their mount handler exists. "
+            "A missing target must fail with this assertion before the action can time out. "
+            "Preserve scenario behavior and all database assertions; do not implement event handlers in test generation."
+        )
     # Creation calls carry a slim context by default: one target event, the
     # compiler-owned wiring files and this requirement's page sources. Set
     # ARC_FULL_CONTEXT=1 to restore the unsimplified per-call context (A/B runs).
@@ -333,7 +341,7 @@ def run_interaction_tdd(
         else:
             agent = run_file_agent(
                 model,
-                TEST_INSTRUCTIONS,
+                test_instructions,
                 test_context,
                 FileWorkspace.for_target(
                     output,

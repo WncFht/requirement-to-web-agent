@@ -15,6 +15,7 @@ from infrastructure.stages.frontend.ui.testing import (
     require_red,
 )
 from infrastructure.shared.project.entrypoints import selected_path
+from infrastructure.shared.agent.loop import CheckFailure
 
 
 def backend_cookie_names(output):
@@ -97,6 +98,26 @@ def require_behavioral_red(result):
     try:
         require_red(result)
     except ValueError as error:
+        if os.getenv("ARC_LEGACY_RED_GUIDANCE", "0") != "1":
+            message = (
+                "Expected behavioral assertion RED, not server/browser/runtime failure"
+            )
+            if any(
+                re.search(
+                    r"locator\.(click|fill|check|selectOption|press):.*(?:[Tt]imeout|[Tt]imed out)",
+                    failure,
+                    re.DOTALL,
+                )
+                for failure in result.get("failures", [])
+            ):
+                message += (
+                    ". A test action timed out on a missing/unready control. Before EVERY click/fill/check/selectOption/press, "
+                    "await expect(the same locator).toBeVisible() (and toBeEnabled() when required). "
+                    "This must fail by an assertion before attempting the action while handlers are not implemented. "
+                    "Keep all workflows, assertions and database checks; repair the test's wait/assertion ordering. "
+                    "Do not implement missing handlers or edit compiler-owned ui-events.ts to force RED/GREEN."
+                )
+            raise CheckFailure(message, result) from error
         raise ValueError(
             f"Expected behavioral assertion RED, not server/browser/runtime failure: {result}"
         ) from error
