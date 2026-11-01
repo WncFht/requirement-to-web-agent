@@ -21,6 +21,17 @@ from infrastructure.stages.frontend.ui.proposals import (
 from infrastructure.shared.rag.pages import PageRetriever
 from infrastructure.utils.files import save_json
 
+VISIBILITY_RULES = """Check every fixture's derived visibility against the requirement BEFORE returning.
+A visibility predicate represents the whole business condition, not just readiness.
+If display requires two conditions, use a dedicated boolean binding representing the
+combined condition and document how events maintain it; a single {var,equals} rule
+cannot silently stand in for a conjunction. For authentication: signed-out entry
+links must be hidden in signed-in fixtures and shown in signed-out fixtures; the
+username has the opposite visibility. Readiness alone is not signed-out identity.
+Include explicit values for these boolean bindings in all affected fixtures.
+Do not contradict requirement text with props merely to reproduce a static image.
+"""
+
 
 def bind_requirement_image_pages(design, requirement, rid):
     """Bind image-backed pages to the current requirement when the page hint is unambiguous."""
@@ -155,7 +166,15 @@ def synthesize_ui(
             response, updated = None, None
             try:
                 response = model.generate_json(
-                    INSTRUCTIONS + "\n\n" + EXAMPLE_INSTRUCTIONS, request
+                    INSTRUCTIONS
+                    + "\n\n"
+                    + EXAMPLE_INSTRUCTIONS
+                    + (
+                        ""
+                        if os.getenv("ARC_LEGACY_UI_PREDICATES", "0") == "1"
+                        else "\n\n" + VISIBILITY_RULES
+                    ),
+                    request,
                 )
                 proposal = response
                 updated = apply_proposal(
