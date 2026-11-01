@@ -64,10 +64,16 @@ def stop_process(process) -> None:
             check=False,
         )
     else:
+        descendants = (
+            owned_descendants(process.pid)
+            if os.getenv("ARC_LEGACY_PROCESS_CLEANUP", "0") != "1"
+            else []
+        )
         try:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:
             pass
+        signal_owned(descendants, signal.SIGTERM)
         try:
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
@@ -77,9 +83,52 @@ def stop_process(process) -> None:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
+        signal_owned(descendants, signal.SIGKILL)
     if process.poll() is None:
         process.kill()
     process.wait(timeout=5)
+
+
+def owned_descendants(root_pid):
+    """Snapshot only descendants of the owned child before parents can exit/reparent.
+
+    Playwright web servers may create their own process groups. A group signal
+    alone cannot reach those children. ps exposes PID/PPID only, no environment
+    or command text; the snapshot does not target unrelated workspace processes.
+    """
+    try:
+        result = subprocess.run(
+            ["ps", "-eo", "pid=,ppid="],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []  # Original process-group cleanup still runs on hosts without ps.
+    children = {}
+    for line in result.stdout.splitlines():
+        try:
+            pid, parent = map(int, line.split())
+        except ValueError:
+            continue
+        children.setdefault(parent, []).append(pid)
+    ordered, pending, seen = [], [root_pid], {root_pid}
+    while pending:
+        for pid in children.get(pending.pop(), []):
+            if pid not in seen:
+                seen.add(pid)
+                ordered.append(pid)
+                pending.append(pid)
+    return list(reversed(ordered))
+
+
+def signal_owned(pids, value):
+    for pid in pids:
+        try:
+            os.kill(pid, value)
+        except ProcessLookupError:
+            pass
 
 
 def capture_process(command, *, cwd, timeout, env=None, timing_kind=None) -> dict:
