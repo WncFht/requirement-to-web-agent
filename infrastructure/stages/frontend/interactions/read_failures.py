@@ -115,6 +115,7 @@ def check_read_failures(output, ui, interactions, backend, active):
             ],
             cwd=output,
             timeout=max(15, len(subjects) * 8),
+            timing_kind="read_failure_probe",
         )
     try:
         report = json.loads(result["stdout"])

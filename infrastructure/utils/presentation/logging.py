@@ -11,6 +11,7 @@ from contextvars import ContextVar
 from time import monotonic
 
 from infrastructure.utils.presentation.stages import stage_label
+from infrastructure.utils.timing import timed
 
 
 _session = ContextVar("compiler_log_session", default=None)
@@ -91,7 +92,10 @@ def console_log(output_dir: Path):
                 f"{timestamp}\nScript: {script}\nLogs: {output_dir / 'compiler.log'}\nFull model I/O: {output_dir / 'model_calls.jsonl'}",
             )
             try:
-                yield
+                with timed(
+                    "stage_session", output=output_dir, stage=stage_label(script)
+                ):
+                    yield
             except BaseException as error:
                 if not isinstance(error, SystemExit):
                     traceback.print_exc(file=log)

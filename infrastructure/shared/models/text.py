@@ -16,6 +16,7 @@ from openai import (
 )
 
 from infrastructure.utils.presentation.model_io import http_client, invoke
+from infrastructure.utils.timing import timed
 
 TRANSIENT_ERRORS = (
     APIConnectionError,
@@ -132,7 +133,8 @@ class TextModel:
                     f"retrying {attempt + 1}/{attempts - 1} in {wait}s",
                     flush=True,
                 )
-                time.sleep(wait)
+                with timed("model_backoff"):
+                    time.sleep(wait)
             except OpenAIError as error:
                 raise RuntimeError(f"Text model request failed: {error}") from error
         if response is None:

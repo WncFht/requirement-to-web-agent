@@ -15,6 +15,7 @@ from infrastructure.utils.presentation.console import (
     WaitingStatus,
 )
 from infrastructure.utils.presentation.logging import session_info
+from infrastructure.utils.timing import timed
 
 
 _call = ContextVar("compiler_model_call", default=None)
@@ -149,7 +150,8 @@ def invoke(client, arguments: dict):
 
     try:
         _record("request", arguments=arguments)
-        response = client.chat.completions.create(**arguments)
+        with timed("model_request", name=call_id):
+            response = client.chat.completions.create(**arguments)
         # Preserve the SDK envelope and untouched message content before any JSON repair.
         raw = response.model_dump(mode="json")
         _record("response", elapsed_seconds=monotonic() - started, response=raw)

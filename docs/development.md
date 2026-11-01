@@ -34,6 +34,7 @@
 
 | 变量                          | 默认               | 作用                                                             |
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
+| `ARC_DISABLE_TIMING` | 0 | =1 停用新增 timings.jsonl，不影响 gate 或原模型审计 |
 | `ARC_LEGACY_PIPELINE_RESUME` | 0 | =1 显式回退旧哨兵恢复；不接入可信记录，保留部分产物误判风险 |
 | `ARC_EVENT_CONTEXT` | 0 | =1 试验非终验单事件上下文收窄；终验保持全量，FULL_CONTEXT=1 优先回退 |
 | `ARC_LEGACY_LABEL_LOCATORS` | 0 | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留 |
@@ -57,8 +58,24 @@
 ## 度量
 
 - 逐阶段 token/耗时：聚合 `<输出目录>/model_calls.jsonl`（每条含 usage 与 elapsed_seconds）
-- 阶段 wall time：`compiler.log` 中各 `[DONE] Completed in` 的最终值
+- 历史阶段 wall time：`compiler.log` 中各 `[DONE] Completed in`，不含被中断未完成部分；新运行使用下述结构化计时。
 - 正确性：`.arc/backend_tdd.json`、`.arc/ui_checks.json`、`.arc/frontend_e2e.json` 的 status 与 summary
+
+### 流水线与检查耗时
+
+新运行在输出目录追加 `timings.jsonl`，每个步骤有独立 span_id、trace_id、parent_id 和 start/end。耗时使用单调时钟，UTC 时间戳只用于定位。一次 main.py 启动测 entrypoint（包括 run_all、db:init、最终 build 与 deploy.sh 写出），run_all 独立记录 pipeline 与各阶段；单阶段脚本也通过 console_log 记录 stage_session。续跑使用新的 trace，不覆盖失败尝试，跳过阶段显式标为 skipped。强制终止只有 start 的记录按未知耗时保留。
+
+按以下命令汇总，拒绝覆盖已有摘要：
+
+```sh
+.venv/bin/python scripts/summarize_timings.py ../work/<目录>/timings.jsonl --output ../work/<目录>/timing-summary.json
+```
+
+`entrypoint_seconds` 是一次入口调用的 wall time，`pipeline_seconds` 不含入口最后的数据库初始化与构建。阶段 seconds 包括子进程启动、实际工作及完成记录检查。categories 列出 SDK 模型请求、模型外层退避、typecheck、backend_tests、ui_tests、e2e_tests、dependency_install、browser_install、read_failure_probe、build/db_init 等累计耗时与成功/失败次数。SDK 请求含其内部重试与网络等待；外层显式 sleep 单列，原 model_calls.jsonl 的 call_id 与 model_request.name 对应。模型 SDK 计时只包围实际 SDK create，不包括请求预览、JSON 解析和完整日志写出。
+
+父级耗时包含子级，不能把 pipeline、阶段和各检查相加；分类累计时间也不能直接当 wall time 或 CPU 时间，并发执行时会重叠。categories 未覆盖的部分包括提案校验、上下文组装、序列化、部分测试准备和计时记账。不从差值自动归因于缓存或网络。固定老师验收是 main.py 结束后的独立步骤，不计入该入口的 wall time。历史日志没有这些测点，不能补造旧阶段或 gate 的实测耗时。
+
+计时只写类别、内部标识符、状态、错误类型和耗时，不复制命令参数、请求正文、凭据或异常消息。写日志失败会发出固定警告并保留原操作结果，此时测量不完整；开关 `ARC_DISABLE_TIMING=1` 可以停用新增计时，原模型 I/O 审计仍保留。该开关与内部 trace 标识不参与可信恢复的配置指纹；timings.jsonl 和固定命名 timing-summary.json 属于测量记录，不使已完成工作区失效。归档工具会保存并逐文件校验原始计时日志。
 
 ## 启动生成的网站
 

@@ -293,6 +293,8 @@ class PipelineResumeTests(unittest.TestCase):
         before = workspace(self.output)
         for relative in (
             "compiler.log",
+            "timings.jsonl",
+            "timing-summary.json",
             "model_calls.jsonl",
             "deploy.sh",
             "node_modules/cache.json",

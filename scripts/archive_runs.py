@@ -40,7 +40,12 @@ def archive(run, destination, prune=False):
         )
     selected.update(
         run / name
-        for name in ("compiler.log", "model_calls.jsonl", "model_calls.jsonl.gz")
+        for name in (
+            "compiler.log",
+            "model_calls.jsonl",
+            "model_calls.jsonl.gz",
+            "timings.jsonl",
+        )
         if (run / name).is_file()
     )
     files = {}

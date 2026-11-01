@@ -75,7 +75,7 @@ def identity(source: Path, inputs: Path) -> dict:
                     path.read_text(encoding="utf-8-sig"),
                 )
             )
-    names.discard("ARC_LEGACY_PIPELINE_RESUME")
+    names.difference_update({"ARC_LEGACY_PIPELINE_RESUME", "ARC_DISABLE_TIMING"})
     effective = {**dotenv_values(source / ".env"), **os.environ}
     configuration = {name: effective.get(name) for name in sorted(names)}
     configuration["python"] = list(sys.version_info[:3])
@@ -120,6 +120,7 @@ def workspace(output: Path) -> dict:
                 not in {
                     "experiment.json",
                     "call-summary.json",
+                    "timing-summary.json",
                     "vite.fixed.config.ts",
                     "playwright.fixed.config.ts",
                 }

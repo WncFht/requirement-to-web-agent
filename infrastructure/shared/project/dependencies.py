@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from threading import Thread
 
+from infrastructure.utils.timing import timed
 from infrastructure.utils.processes import npm_command, start_process, stop_process
 
 
@@ -18,16 +19,19 @@ def install_dependencies(output_dir: Path) -> None:
         f"Installing dependencies in {output_dir}: npm install --include=dev --no-audit --no-fund",
         flush=True,
     )
-    with start_process(
-        [*command, "install", "--include=dev", "--no-audit", "--no-fund"],
-        cwd=output_dir,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        bufsize=1,
-    ) as process:
+    with (
+        timed("dependency_install"),
+        start_process(
+            [*command, "install", "--include=dev", "--no-audit", "--no-fund"],
+            cwd=output_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        ) as process,
+    ):
         # Forward child output through Python so the console log also receives it.
         def forward_output():
             """Forward npm output through Python so both the terminal and compiler.log receive it."""

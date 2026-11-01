@@ -11,6 +11,7 @@ import sys
 from infrastructure.utils.cli import COMPILER_DIR, resolve_directories
 from infrastructure.utils.processes import start_process, stop_process
 from infrastructure.utils.pipeline_state import PipelineState, pipeline_lock
+from infrastructure.utils.timing import timed
 from infrastructure.utils.presentation.logging import configure_console
 from infrastructure.utils.presentation.console import show_panel
 from infrastructure.utils.presentation.stages import stage_label
@@ -86,7 +87,10 @@ def legacy_step_completed(output: Path, step: str) -> bool:
 def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
     """Run sequential passes; publish successful receipts only after exit and gate validation."""
     legacy = os.getenv("ARC_LEGACY_PIPELINE_RESUME", "0") == "1"
-    with nullcontext() if legacy else pipeline_lock(output_dir):
+    with (
+        timed("pipeline", output=output_dir),
+        nullcontext() if legacy else pipeline_lock(output_dir),
+    ):
         state = (
             None
             if legacy
@@ -99,6 +103,8 @@ def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
                 else state.completed(step)
             )
             if resume and complete:
+                with timed("stage_skip", stage=stage_label(step), name=step) as timing:
+                    timing["status"] = "skipped"
                 show_panel(
                     f"[{index}/{len(STEPS)}] {stage_label(step)}",
                     "Verified completion record; skipping (--resume)."
@@ -107,35 +113,38 @@ def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
                 )
                 continue
             show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", f"Running {step}")
-            if state:
-                state.begin(step)
-            command = [
-                sys.executable,
-                str(COMPILER_DIR / step),
-                "--input",
-                str(input_dir),
-                "--output",
-                str(output_dir),
-            ]
-            if step == "01_explore_requirement.py":
-                command.append("--no-browse")
-            success = False
-            checkpoint_safe = True
-            try:
-                process = start_process(command, cwd=COMPILER_DIR)
+            with timed("pipeline_stage", stage=stage_label(step), name=step):
+                if state:
+                    state.begin(step)
+                command = [
+                    sys.executable,
+                    str(COMPILER_DIR / step),
+                    "--input",
+                    str(input_dir),
+                    "--output",
+                    str(output_dir),
+                ]
+                if step == "01_explore_requirement.py":
+                    command.append("--no-browse")
+                success = False
+                checkpoint_safe = True
                 try:
-                    code = process.wait()
-                except BaseException:
-                    checkpoint_safe = False
-                    stop_process(process)
-                    checkpoint_safe = True
-                    raise
-                if code:
-                    raise subprocess.CalledProcessError(code, [sys.executable, step])
-                success = True
-            finally:
-                if state and checkpoint_safe:
-                    state.finish(step, success)
+                    process = start_process(command, cwd=COMPILER_DIR)
+                    try:
+                        code = process.wait()
+                    except BaseException:
+                        checkpoint_safe = False
+                        stop_process(process)
+                        checkpoint_safe = True
+                        raise
+                    if code:
+                        raise subprocess.CalledProcessError(
+                            code, [sys.executable, step]
+                        )
+                    success = True
+                finally:
+                    if state and checkpoint_safe:
+                        state.finish(step, success)
 
 
 def main() -> None:

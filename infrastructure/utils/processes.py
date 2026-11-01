@@ -6,6 +6,12 @@ import shutil
 import signal
 import subprocess
 
+from infrastructure.utils.timing import (
+    child_environment as timing_environment,
+    timed,
+    command_kind,
+)
+
 WINDOWS = os.name == "nt"
 
 
@@ -14,6 +20,7 @@ def child_environment(overrides=None) -> dict:
     return {
         **os.environ,
         **(overrides or {}),
+        **timing_environment(),
         "PYTHONUTF8": "1",
         "PYTHONIOENCODING": "utf-8",
     }
@@ -75,29 +82,31 @@ def stop_process(process) -> None:
     process.wait(timeout=5)
 
 
-def capture_process(command, *, cwd, timeout, env=None) -> dict:
+def capture_process(command, *, cwd, timeout, env=None, timing_kind=None) -> dict:
     """Capture UTF-8 output and clean the whole process tree before re-raising timeout or Ctrl+C."""
-    process = start_process(
-        command,
-        cwd=cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    try:
-        stdout, stderr = process.communicate(timeout=timeout)
-    except BaseException:
-        stop_process(process)
-        process.communicate(timeout=5)
-        raise
-    return {
-        "returncode": process.returncode,
-        "stdout": stdout,
-        "output": (stdout + stderr)[-24000:],
-    }
+    with timed(timing_kind or command_kind(command)) as timing:
+        process = start_process(
+            command,
+            cwd=cwd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except BaseException:
+            stop_process(process)
+            process.communicate(timeout=5)
+            raise
+        timing["returncode"] = process.returncode
+        return {
+            "returncode": process.returncode,
+            "stdout": stdout,
+            "output": (stdout + stderr)[-24000:],
+        }
 
 
 def npm_command() -> list[str]:

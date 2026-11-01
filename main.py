@@ -6,6 +6,9 @@ from pathlib import Path
 import subprocess
 import sys
 
+from infrastructure.utils.timing import timed
+from infrastructure.utils.processes import child_environment
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -27,6 +30,8 @@ def main():
     if not (inputs / "requirements.yaml").is_file():
         parser.error("requirements.yaml was not found in the input directory")
     output = args.output_dir.expanduser().resolve()
+    if output == inputs or output.is_relative_to(inputs):
+        parser.error("Output directory must not equal or be inside the input directory")
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535")
     if os.getenv("MODEL", "").lower().startswith("deepseek"):
@@ -41,21 +46,29 @@ def main():
     ]
     if args.resume:
         pipeline_command.append("--resume")
-    subprocess.run(pipeline_command, cwd=source, check=True)
+    with timed("entrypoint", output=output):
+        build_application(pipeline_command, source, output, args.port)
+
+
+def build_application(pipeline_command, source, output, port):
+    subprocess.run(pipeline_command, cwd=source, check=True, env=child_environment())
     npm = (
         ["node", os.environ["npm_execpath"]]
         if os.environ.get("npm_execpath")
         else ["npm"]
     )
-    subprocess.run([*npm, "run", "db:init"], cwd=output, check=True)
-    subprocess.run([*npm, "run", "build"], cwd=output, check=True)
+    for script, kind in (("db:init", "db_init"), ("build", "build")):
+        with timed(kind, output=output, stage="finalize"):
+            subprocess.run(
+                [*npm, "run", script], cwd=output, check=True, env=child_environment()
+            )
     deploy = output / "deploy.sh"
     deploy.write_text(
         "#!/usr/bin/env bash\nset -euo pipefail\n"
         'cd -- "$(dirname -- "${BASH_SOURCE[0]}")"\n'
         "npm install --include=dev --no-audit --no-fund\n"
         "npm run db:init\nnpm run build\n"
-        f'export PORT="${{PORT:-{args.port}}}"\n'
+        f'export PORT="${{PORT:-{port}}}"\n'
         'export HOST="${HOST:-0.0.0.0}"\nexec npm start\n'
     )
     deploy.chmod(0o755)
