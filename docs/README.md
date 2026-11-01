@@ -1,6 +1,7 @@
 # docs/README.md — 按读者问题导航
 
 - 「这套编译器整体怎么工作、每步吃进吐出什么？」→ [architecture.md](architecture.md)
+- 「整体应该优先优化哪里、有哪些恢复和校验缺口？」→ [整体优化审阅](2026-11-01-整体优化审阅.md)
 - 「怎么跑、断了怎么续、怎么量 token？」→ [development.md](development.md)
 - 「baseline 是多少、优化改了什么、效果如何？」→ [experiments/2026-11-01-baseline-optimization.md](experiments/2026-11-01-baseline-optimization.md)
 - 「为什么这样设计而不是那样？」→ `.agents/notes/`（决策记录，按主题归档）

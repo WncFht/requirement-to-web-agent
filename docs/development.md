@@ -22,6 +22,7 @@
 
 | 变量                          | 默认               | 作用                                                             |
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
+| `ARC_EVENT_CONTEXT` | 0 | =1 试验非终验单事件上下文收窄；终验保持全量，FULL_CONTEXT=1 优先回退 |
 | `ARC_LEGACY_E2E_SOURCE_CHECK` | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
 | `ARC_LEGACY_REFERENCE_TESTS` | 0 | =1 不向前端设计/实现提供 input/tests 外部交互契约 |
 | `ARC_LEGACY_RADIO_ASSERTIONS` | 0 | =1 回退 radio 存在性测试的选项值/checked 分离断言 |
