@@ -1,0 +1,96 @@
+{
+  "source_log": "../work/optf-1101/model_calls.jsonl",
+  "measurement": "Serialized feedback JSON characters, not model tokens or total prompt size",
+  "candidate_reports": 17,
+  "recovered_reports": 17,
+  "unrecoverable_reports": 0,
+  "before_characters": 48006,
+  "after_characters": 18821,
+  "samples": [
+    {
+      "call_id": "b033778612404a0c984fafd082595f7e",
+      "before_characters": 4850,
+      "after_characters": 1907
+    },
+    {
+      "call_id": "1c80b691dade4d958077e6f4fb3409ed",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "24d5af6bbced4f0f9cda8ac33a2d4303",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "c10ecc94ddc8464689592168ac4140cb",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "4acbcd48e43c47a6ab79142a295c6b05",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "f4d89b9a99634895b1229ce37e798fad",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "839d8e09345e41b3b1b2020cbe0e6185",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "d552e821f2c843cea43de1822a8696dc",
+      "before_characters": 2506,
+      "after_characters": 969
+    },
+    {
+      "call_id": "6f47e701a4d04d47851fdf5f8a7ded7b",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "f0af1686a04a4588b461e01cabce479e",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "8c3e3328dd30449d8468fde2af16e61d",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "453b54789ad3466fabcc84db8a7fba29",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "632e1348abb94f15b73796c4049a751d",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "166a817f0d554446beb52bffac6a56e2",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "231bfbcd324144a18ecd73612ab8da6b",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "fcda802d36624bb1b1a28d91c1b41e60",
+      "before_characters": 2710,
+      "after_characters": 1063
+    },
+    {
+      "call_id": "a9afc95ada7e4b30a372a1a84f674f54",
+      "before_characters": 2710,
+      "after_characters": 1063
+    }
+  ]
+}

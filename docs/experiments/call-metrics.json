@@ -1,0 +1,436 @@
+[
+  {
+    "log": "../baseline-teammate/01-model_calls.jsonl.gz",
+    "log_sha256": "65116d64a61ca8c6418a7d6245db0ef6230330caf4bb6ebfac0df4814477b7c2",
+    "events": {
+      "request": 80,
+      "http_request": 92,
+      "http_response": 79,
+      "response": 79,
+      "error": 1
+    },
+    "totals": {
+      "calls": 79,
+      "prompt_tokens": 1576030,
+      "completion_tokens": 565072,
+      "total_tokens": 2141102,
+      "prompt_cache_hit_tokens": 812923,
+      "prompt_cache_miss_tokens": 763107,
+      "reasoning_tokens": 491658,
+      "model_seconds": 4339.339922399999,
+      "input_cache_hit_ratio": 0.5158042676852598
+    },
+    "stages": {
+      "Stage 01 | Read requirements and analyze reference images": {
+        "calls": 3,
+        "prompt_tokens": 3432,
+        "completion_tokens": 8360,
+        "total_tokens": 11792,
+        "prompt_cache_hit_tokens": 2816,
+        "prompt_cache_miss_tokens": 616,
+        "reasoning_tokens": 5395,
+        "model_seconds": 57.40808509999624,
+        "input_cache_hit_ratio": 0.8205128205128205
+      },
+      "Stage 02 | Design database schema": {
+        "calls": 4,
+        "prompt_tokens": 6701,
+        "completion_tokens": 9132,
+        "total_tokens": 15833,
+        "prompt_cache_hit_tokens": 4608,
+        "prompt_cache_miss_tokens": 2093,
+        "reasoning_tokens": 7303,
+        "model_seconds": 56.60619750000478,
+        "input_cache_hit_ratio": 0.6876585584241158
+      },
+      "Stage 03 | Infer database read/write obligations": {
+        "calls": 3,
+        "prompt_tokens": 5253,
+        "completion_tokens": 15659,
+        "total_tokens": 20912,
+        "prompt_cache_hit_tokens": 3328,
+        "prompt_cache_miss_tokens": 1925,
+        "reasoning_tokens": 14478,
+        "model_seconds": 99.23229599999831,
+        "input_cache_hit_ratio": 0.6335427374833429
+      },
+      "Stage 05 | Implement database": {
+        "calls": 2,
+        "prompt_tokens": 2532,
+        "completion_tokens": 602,
+        "total_tokens": 3134,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 2020,
+        "reasoning_tokens": 325,
+        "model_seconds": 6.9069196000018565,
+        "input_cache_hit_ratio": 0.20221169036334913
+      },
+      "Stage 06 | Decompose backend APIs": {
+        "calls": 3,
+        "prompt_tokens": 9189,
+        "completion_tokens": 12120,
+        "total_tokens": 21309,
+        "prompt_cache_hit_tokens": 5504,
+        "prompt_cache_miss_tokens": 3685,
+        "reasoning_tokens": 10091,
+        "model_seconds": 76.97545610000088,
+        "input_cache_hit_ratio": 0.5989770377625422
+      },
+      "Stage 07 | Infer API preconditions and postconditions": {
+        "calls": 3,
+        "prompt_tokens": 9782,
+        "completion_tokens": 9437,
+        "total_tokens": 19219,
+        "prompt_cache_hit_tokens": 768,
+        "prompt_cache_miss_tokens": 9014,
+        "reasoning_tokens": 7672,
+        "model_seconds": 57.955367699996714,
+        "input_cache_hit_ratio": 0.07851155182989164
+      },
+      "Stage 08 | Implement backend with test-first acceptance": {
+        "calls": 6,
+        "prompt_tokens": 75698,
+        "completion_tokens": 73065,
+        "total_tokens": 148763,
+        "prompt_cache_hit_tokens": 6912,
+        "prompt_cache_miss_tokens": 68786,
+        "reasoning_tokens": 61995,
+        "model_seconds": 380.76675119999345,
+        "input_cache_hit_ratio": 0.09131020634627071
+      },
+      "Stage 09 | Design UI and frontend data": {
+        "calls": 10,
+        "prompt_tokens": 74751,
+        "completion_tokens": 120431,
+        "total_tokens": 195182,
+        "prompt_cache_hit_tokens": 46592,
+        "prompt_cache_miss_tokens": 28159,
+        "reasoning_tokens": 98701,
+        "model_seconds": 624.2414873000089,
+        "input_cache_hit_ratio": 0.6232960094179342
+      },
+      "Stage 10 | Implement UI and run existence tests": {
+        "calls": 3,
+        "prompt_tokens": 69942,
+        "completion_tokens": 37700,
+        "total_tokens": 107642,
+        "prompt_cache_hit_tokens": 3584,
+        "prompt_cache_miss_tokens": 66358,
+        "reasoning_tokens": 26980,
+        "model_seconds": 173.40322619999642,
+        "input_cache_hit_ratio": 0.051242458036658944
+      },
+      "Stage 11 | Design frontend interactions and API calls": {
+        "calls": 21,
+        "prompt_tokens": 76830,
+        "completion_tokens": 51898,
+        "total_tokens": 128728,
+        "prompt_cache_hit_tokens": 2944,
+        "prompt_cache_miss_tokens": 73886,
+        "reasoning_tokens": 42939,
+        "model_seconds": 320.9934959999955,
+        "input_cache_hit_ratio": 0.03831836522191852
+      },
+      "Stage 12 | Implement interactions and run end-to-end tests": {
+        "calls": 21,
+        "prompt_tokens": 1241920,
+        "completion_tokens": 226668,
+        "total_tokens": 1468588,
+        "prompt_cache_hit_tokens": 735355,
+        "prompt_cache_miss_tokens": 506565,
+        "reasoning_tokens": 215779,
+        "model_seconds": 2484.8506397000056,
+        "input_cache_hit_ratio": 0.5921114081422314
+      }
+    }
+  },
+  {
+    "log": "../work/opt-1101/model_calls.jsonl",
+    "log_sha256": "9ffaa5004f61b1cf840fdb22d092227c729e2edc2e183401ce994c4e7a00bb0d",
+    "events": {
+      "request": 77,
+      "http_request": 81,
+      "http_response": 78,
+      "response": 75,
+      "error": 2
+    },
+    "totals": {
+      "calls": 75,
+      "prompt_tokens": 859534,
+      "completion_tokens": 68765,
+      "total_tokens": 928299,
+      "prompt_cache_hit_tokens": 312320,
+      "prompt_cache_miss_tokens": 547214,
+      "reasoning_tokens": 11151,
+      "model_seconds": 337.89507745206356,
+      "input_cache_hit_ratio": 0.36335968094339494
+    },
+    "stages": {
+      "Stage 01 | Read requirements and analyze reference images": {
+        "calls": 3,
+        "prompt_tokens": 3432,
+        "completion_tokens": 13708,
+        "total_tokens": 17140,
+        "prompt_cache_hit_tokens": 2816,
+        "prompt_cache_miss_tokens": 616,
+        "reasoning_tokens": 11151,
+        "model_seconds": 81.43572087213397,
+        "input_cache_hit_ratio": 0.8205128205128205
+      },
+      "Stage 02 | Design database schema": {
+        "calls": 3,
+        "prompt_tokens": 4974,
+        "completion_tokens": 1434,
+        "total_tokens": 6408,
+        "prompt_cache_hit_tokens": 2816,
+        "prompt_cache_miss_tokens": 2158,
+        "reasoning_tokens": 0,
+        "model_seconds": 8.36319223092869,
+        "input_cache_hit_ratio": 0.5661439485323683
+      },
+      "Stage 03 | Infer database read/write obligations": {
+        "calls": 5,
+        "prompt_tokens": 9346,
+        "completion_tokens": 1629,
+        "total_tokens": 10975,
+        "prompt_cache_hit_tokens": 6016,
+        "prompt_cache_miss_tokens": 3330,
+        "reasoning_tokens": 0,
+        "model_seconds": 10.494815342826769,
+        "input_cache_hit_ratio": 0.6436978386475497
+      },
+      "Stage 05 | Implement database": {
+        "calls": 2,
+        "prompt_tokens": 2504,
+        "completion_tokens": 261,
+        "total_tokens": 2765,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 1992,
+        "reasoning_tokens": 0,
+        "model_seconds": 2.135021143127233,
+        "input_cache_hit_ratio": 0.20447284345047922
+      },
+      "Stage 06 | Decompose backend APIs": {
+        "calls": 4,
+        "prompt_tokens": 13360,
+        "completion_tokens": 2619,
+        "total_tokens": 15979,
+        "prompt_cache_hit_tokens": 7552,
+        "prompt_cache_miss_tokens": 5808,
+        "reasoning_tokens": 0,
+        "model_seconds": 14.250413318164647,
+        "input_cache_hit_ratio": 0.5652694610778443
+      },
+      "Stage 07 | Infer API preconditions and postconditions": {
+        "calls": 4,
+        "prompt_tokens": 13210,
+        "completion_tokens": 1669,
+        "total_tokens": 14879,
+        "prompt_cache_hit_tokens": 4352,
+        "prompt_cache_miss_tokens": 8858,
+        "reasoning_tokens": 0,
+        "model_seconds": 10.317151569761336,
+        "input_cache_hit_ratio": 0.329447388342165
+      },
+      "Stage 08 | Implement backend with test-first acceptance": {
+        "calls": 7,
+        "prompt_tokens": 76508,
+        "completion_tokens": 10390,
+        "total_tokens": 86898,
+        "prompt_cache_hit_tokens": 21376,
+        "prompt_cache_miss_tokens": 55132,
+        "reasoning_tokens": 0,
+        "model_seconds": 38.6172963429708,
+        "input_cache_hit_ratio": 0.27939561875882263
+      },
+      "Stage 09 | Design UI and frontend data": {
+        "calls": 3,
+        "prompt_tokens": 21405,
+        "completion_tokens": 11413,
+        "total_tokens": 32818,
+        "prompt_cache_hit_tokens": 4224,
+        "prompt_cache_miss_tokens": 17181,
+        "reasoning_tokens": 0,
+        "model_seconds": 36.728789332089946,
+        "input_cache_hit_ratio": 0.19733707077785564
+      },
+      "Stage 10 | Implement UI and run existence tests": {
+        "calls": 3,
+        "prompt_tokens": 73967,
+        "completion_tokens": 8674,
+        "total_tokens": 82641,
+        "prompt_cache_hit_tokens": 3456,
+        "prompt_cache_miss_tokens": 70511,
+        "reasoning_tokens": 0,
+        "model_seconds": 30.629898969782516,
+        "input_cache_hit_ratio": 0.046723538875444455
+      },
+      "Stage 11 | Design frontend interactions and API calls": {
+        "calls": 20,
+        "prompt_tokens": 61312,
+        "completion_tokens": 5680,
+        "total_tokens": 66992,
+        "prompt_cache_hit_tokens": 3072,
+        "prompt_cache_miss_tokens": 58240,
+        "reasoning_tokens": 0,
+        "model_seconds": 41.97242319723591,
+        "input_cache_hit_ratio": 0.05010438413361169
+      },
+      "Stage 12 | Implement interactions and run end-to-end tests": {
+        "calls": 21,
+        "prompt_tokens": 579516,
+        "completion_tokens": 11288,
+        "total_tokens": 590804,
+        "prompt_cache_hit_tokens": 256128,
+        "prompt_cache_miss_tokens": 323388,
+        "reasoning_tokens": 0,
+        "model_seconds": 62.95035513304174,
+        "input_cache_hit_ratio": 0.4419688153562628
+      }
+    }
+  },
+  {
+    "log": "../work/optf-1101/model_calls.jsonl",
+    "log_sha256": "8b2d7fe3b9d24458ecb626a632408b0783715af395428c3015b98e81905a9e46",
+    "events": {
+      "request": 106,
+      "http_request": 106,
+      "http_response": 106,
+      "response": 106
+    },
+    "totals": {
+      "calls": 106,
+      "prompt_tokens": 1986730,
+      "completion_tokens": 102987,
+      "total_tokens": 2089717,
+      "prompt_cache_hit_tokens": 724992,
+      "prompt_cache_miss_tokens": 1261738,
+      "reasoning_tokens": 5463,
+      "model_seconds": 464.8681562477723,
+      "input_cache_hit_ratio": 0.36491722579313746
+    },
+    "stages": {
+      "Stage 01 | Read requirements and analyze reference images": {
+        "calls": 3,
+        "prompt_tokens": 3432,
+        "completion_tokens": 8019,
+        "total_tokens": 11451,
+        "prompt_cache_hit_tokens": 2816,
+        "prompt_cache_miss_tokens": 616,
+        "reasoning_tokens": 5463,
+        "model_seconds": 50.76114570302889,
+        "input_cache_hit_ratio": 0.8205128205128205
+      },
+      "Stage 02 | Design database schema": {
+        "calls": 3,
+        "prompt_tokens": 5030,
+        "completion_tokens": 1433,
+        "total_tokens": 6463,
+        "prompt_cache_hit_tokens": 3200,
+        "prompt_cache_miss_tokens": 1830,
+        "reasoning_tokens": 0,
+        "model_seconds": 8.563415496842936,
+        "input_cache_hit_ratio": 0.6361829025844931
+      },
+      "Stage 03 | Infer database read/write obligations": {
+        "calls": 4,
+        "prompt_tokens": 7219,
+        "completion_tokens": 1643,
+        "total_tokens": 8862,
+        "prompt_cache_hit_tokens": 4608,
+        "prompt_cache_miss_tokens": 2611,
+        "reasoning_tokens": 0,
+        "model_seconds": 9.936462408863008,
+        "input_cache_hit_ratio": 0.6383155561712148
+      },
+      "Stage 05 | Implement database": {
+        "calls": 2,
+        "prompt_tokens": 2528,
+        "completion_tokens": 246,
+        "total_tokens": 2774,
+        "prompt_cache_hit_tokens": 512,
+        "prompt_cache_miss_tokens": 2016,
+        "reasoning_tokens": 0,
+        "model_seconds": 2.437821927247569,
+        "input_cache_hit_ratio": 0.20253164556962025
+      },
+      "Stage 06 | Decompose backend APIs": {
+        "calls": 3,
+        "prompt_tokens": 9422,
+        "completion_tokens": 2298,
+        "total_tokens": 11720,
+        "prompt_cache_hit_tokens": 5248,
+        "prompt_cache_miss_tokens": 4174,
+        "reasoning_tokens": 0,
+        "model_seconds": 12.792198981158435,
+        "input_cache_hit_ratio": 0.5569942687327532
+      },
+      "Stage 07 | Infer API preconditions and postconditions": {
+        "calls": 3,
+        "prompt_tokens": 9633,
+        "completion_tokens": 1332,
+        "total_tokens": 10965,
+        "prompt_cache_hit_tokens": 768,
+        "prompt_cache_miss_tokens": 8865,
+        "reasoning_tokens": 0,
+        "model_seconds": 8.319891004823148,
+        "input_cache_hit_ratio": 0.07972594207412022
+      },
+      "Stage 08 | Implement backend with test-first acceptance": {
+        "calls": 13,
+        "prompt_tokens": 151881,
+        "completion_tokens": 18728,
+        "total_tokens": 170609,
+        "prompt_cache_hit_tokens": 78464,
+        "prompt_cache_miss_tokens": 73417,
+        "reasoning_tokens": 0,
+        "model_seconds": 67.31618273514323,
+        "input_cache_hit_ratio": 0.5166149814657528
+      },
+      "Stage 09 | Design UI and frontend data": {
+        "calls": 3,
+        "prompt_tokens": 20216,
+        "completion_tokens": 9235,
+        "total_tokens": 29451,
+        "prompt_cache_hit_tokens": 4224,
+        "prompt_cache_miss_tokens": 15992,
+        "reasoning_tokens": 0,
+        "model_seconds": 30.54588155122474,
+        "input_cache_hit_ratio": 0.20894341115947765
+      },
+      "Stage 10 | Implement UI and run existence tests": {
+        "calls": 6,
+        "prompt_tokens": 137860,
+        "completion_tokens": 14524,
+        "total_tokens": 152384,
+        "prompt_cache_hit_tokens": 58496,
+        "prompt_cache_miss_tokens": 79364,
+        "reasoning_tokens": 0,
+        "model_seconds": 51.28321816516109,
+        "input_cache_hit_ratio": 0.4243145219788191
+      },
+      "Stage 11 | Design frontend interactions and API calls": {
+        "calls": 24,
+        "prompt_tokens": 68022,
+        "completion_tokens": 6923,
+        "total_tokens": 74945,
+        "prompt_cache_hit_tokens": 2944,
+        "prompt_cache_miss_tokens": 65078,
+        "reasoning_tokens": 0,
+        "model_seconds": 48.349810018669814,
+        "input_cache_hit_ratio": 0.04328011525682867
+      },
+      "Stage 12 | Implement interactions and run end-to-end tests": {
+        "calls": 42,
+        "prompt_tokens": 1571487,
+        "completion_tokens": 38606,
+        "total_tokens": 1610093,
+        "prompt_cache_hit_tokens": 563712,
+        "prompt_cache_miss_tokens": 1007775,
+        "reasoning_tokens": 0,
+        "model_seconds": 174.56212825560942,
+        "input_cache_hit_ratio": 0.358712480599585
+      }
+    }
+  }
+]

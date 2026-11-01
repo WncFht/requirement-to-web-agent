@@ -10,5 +10,9 @@
     "staged_checks.py": "07c504bd2f1cee31fce6e4c21f111edae8df810a13f09db87d22ac2e35449def",
     "notes_guard.py": "a8d33871c8f92e6673061ec958ad1d18e4c43508765408ec7091a767a83ab690",
     "check_archive.py": "6a5f85b5af1a4d3abbb0cc5ca0ad1a0b5db4d9efbefcb5b13f07439bb1656c52"
+  },
+  "project_adaptations": {
+    "scripts/run_checks.py": "Resolve python3 commands to sys.executable so child checks share the selected interpreter.",
+    "configuration": "Project-scoped hooks, CI, dependencies and document budgets."
   }
 }

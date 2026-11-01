@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 
 from infrastructure.stages.frontend.ui.design import page_elements, visible
+from infrastructure.shared.agent.loop import CheckFailure
 from infrastructure.utils.processes import capture_process, npm_command
 
 KEY_TYPES = {
@@ -179,7 +180,7 @@ def require_green(result: dict) -> None:
         or not result.get("passed")
         or result.get("failed")
     ):
-        raise ValueError(f"UI checks are not GREEN: {result}")
+        raise CheckFailure("UI checks are not GREEN", result)
 
 
 def require_red(result: dict) -> None:

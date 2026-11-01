@@ -2,6 +2,10 @@
 
 Compile a requirement tree into a database, backend APIs, and an interactive frontend through 13 independently executable teaching steps.
 
+## 改良版维护入口
+
+源码历史见 [开发历史](docs/history.md)，运行前提与断点续跑见 [开发指南](docs/development.md)，实验数据与可比性限制见 [优化实验](docs/experiments/2026-11-01-baseline-optimization.md)。维护规则、提交检查和清理入口见 [维护指南](docs/maintenance.md)。以下保留教师教程的逐阶段入口。
+
 ## Environment setup
 
 Requires Python 3.11+, Node.js 22.12+, and npm. Building `better-sqlite3` from source may also require Python, make, and a C++ compiler.
