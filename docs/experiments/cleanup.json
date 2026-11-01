@@ -6,6 +6,30 @@
       "bytes": 31974407,
       "retained": "baseline-teammate/01-model_calls.jsonl.gz",
       "uncompressed_sha256": "4e6b4332bbb7ec94a804d6d29ff5b691bcf952ac329514e226e546a0275b4773"
+    },
+    {
+      "removed": "work/opt-1101/node_modules",
+      "reason": "Rebuildable dependencies; evidence archive verified before removal",
+      "retained_archive": "artifacts/optimization-runs/opt-1101.tar.gz",
+      "manifest": "artifacts/optimization-runs.json"
+    },
+    {
+      "removed": "work/optf-1101/node_modules",
+      "reason": "Rebuildable dependencies; evidence archive verified before removal",
+      "retained_archive": "artifacts/optimization-runs/optf-1101.tar.gz",
+      "manifest": "artifacts/optimization-runs.json"
+    },
+    {
+      "removed": "work/optg-1101/node_modules",
+      "reason": "Rebuildable dependencies; evidence archive verified before removal",
+      "retained_archive": "artifacts/optimization-runs/optg-1101.tar.gz",
+      "manifest": "artifacts/optimization-runs.json"
+    },
+    {
+      "removed": "work/optg2-1101/node_modules",
+      "reason": "Rebuildable dependencies; evidence archive verified before removal",
+      "retained_archive": "artifacts/optimization-runs/optg2-1101.tar.gz",
+      "manifest": "artifacts/optimization-runs.json"
     }
   ]
 }

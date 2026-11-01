@@ -8,10 +8,21 @@ from tempfile import TemporaryDirectory
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from summarize_calls import summarize
+from summarize_calls import successful_stage_times, summarize
 
 
 class CallSummaryTests(unittest.TestCase):
+    def test_stage_time_uses_last_success_and_excludes_failed_attempts(self):
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "compiler.log"
+            path.write_text(
+                "[FAILED] Stage 09\nStopped after 400s\n"
+                "[DONE] Stage 09\nCompleted in 5.0s\n"
+                "[DONE] Stage 09\nCompleted in 2.0s\n"
+                "[DONE] Stage 12\nCompleted in 3.0s\n"
+            )
+            self.assertEqual(successful_stage_times(path)["sum_seconds"], 5.0)
+
     def test_http_mirrors_do_not_duplicate_sdk_tokens(self):
         record = {
             "event": "response",

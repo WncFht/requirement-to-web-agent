@@ -56,5 +56,5 @@
 - `infrastructure/`：编译器库——`shared/agent`（编辑协议与循环）、`shared/models`
   （text/vision 客户端）、`stages/*`（各 pass）、`shared/rag`（页面检索）、`utils`、`project/templates`
 - `input/`：smoke 需求 + 参考截图 + 教师参考 E2E
-- `tests/`：编译器自带 50 项单元测试
+- `tests/`：编译器单元测试（含文件编辑、流程与反馈回归）
 - `main.py`：平台入口（run_all → db:init → build → deploy.sh）

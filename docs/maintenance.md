@@ -35,7 +35,7 @@ pre-commit install
 外层 `../upstream.patch` 使用以下命令从已提交源码导出，避免把运行产物与维护文件混入教师源码补丁：
 
 ```sh
-git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.txt uv.lock > ../upstream.patch
+git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.txt uv.lock ':(exclude)scripts/**' > ../upstream.patch
 ```
 
 更新外层课程记录时只暂存明确相关文件，不合并 JI 仓库里其他课程的未提交工作。
@@ -50,4 +50,12 @@ git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.tx
 
 工具导出 `../artifacts/compiler-source.bundle`（完整已提交历史）、源码补丁和带提交号及 SHA-256 的 `compiler-export.json`。在不含 `source/` 的课程目录执行 `git clone artifacts/compiler-source.bundle source` 即可恢复；凭据、依赖和实验运行目录需单独准备。导出后对 bundle 做临时 clone，并核验提交号、文档和 `git fsck`，再提交外层归档。每次后续源码提交后重新导出，不能把旧 bundle 当成最新源码。
 
-清理清单见 `docs/experiments/cleanup.json`；当前只删除经过解压哈希校验的队友 baseline 重复原始日志，压缩原件仍保留。失败实验、编译工件和课程报告未删除。
+清理清单见 `docs/experiments/cleanup.json`；已删除经过解压哈希校验的队友 baseline 重复原始日志，并在运行归档验证后移除四套可重建的 node_modules。原始日志、冻结测试、IR、源码与课程报告保留。运行归档的清单由课程侧 `artifacts/optimization-runs.json` 维护。
+
+已经确认运行进程退出后，可用归档工具保存证据并清理依赖：
+
+```sh
+.venv/bin/python scripts/archive_runs.py ../work/<run> --archive-dir ../artifacts/optimization-runs --manifest ../artifacts/optimization-runs.json
+```
+
+工具拒绝覆盖既有归档或清单，逐文件解压校验后才允许 `--prune-dependencies` 删除所选运行的 node_modules。它不会判断进程是否仍在运行，调用者必须先确认退出；凭据与数据库不进入归档。为保留已有汇总清单，后续批次使用独立的 `--manifest` 文件名，不能覆盖旧批次清单。运行归档包含编译输入对应的生成源码和工件；需求 YAML 与参考截图归源码 bundle，输入哈希归 experiment.json。

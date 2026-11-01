@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+import re
 
 FIELDS = (
     "prompt_tokens",
@@ -14,6 +15,26 @@ FIELDS = (
     "prompt_cache_hit_tokens",
     "prompt_cache_miss_tokens",
 )
+
+
+def successful_stage_times(path):
+    """Sum last successful attempts, excluding failures and earlier successes."""
+    values = {}
+    stage = None
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        found = re.search(r"\[DONE\] Stage (\d+)", line)
+        if found:
+            stage = found.group(1)
+        found = re.search(r"Completed in ([0-9.]+)s", line)
+        if found and stage is not None:
+            values[stage] = float(found.group(1))
+            stage = None
+    return {
+        "log": str(path),
+        "last_successful_stage_seconds": values,
+        "sum_seconds": round(sum(values.values()), 1),
+        "measurement": "Sum of last successful attempts; excludes failed attempts, human gaps and final main.py build",
+    }
 
 
 def summarize(path: Path) -> dict:
@@ -56,13 +77,20 @@ def summarize(path: Path) -> dict:
 
     with path.open("rb") as raw:
         digest = hashlib.file_digest(raw, "sha256").hexdigest()
-    return {
+    result = {
         "log": str(path),
         "log_sha256": digest,
         "events": dict(events),
         "totals": metrics(totals),
         "stages": {name: metrics(value) for name, value in sorted(stages.items())},
     }
+    for suffix in ("model_calls.jsonl.gz", "model_calls.jsonl"):
+        if path.name.endswith(suffix):
+            wall_log = path.with_name(path.name.removesuffix(suffix) + "compiler.log")
+            if wall_log.is_file():
+                result["successful_stage_wall_time"] = successful_stage_times(wall_log)
+            break
+    return result
 
 
 def main():

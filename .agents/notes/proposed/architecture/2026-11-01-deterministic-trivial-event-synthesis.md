@@ -2,25 +2,20 @@
 
 Status: proposed
 
-## 问题
+Stage 11 的事件契约与 Stage 12 的逐事件创建仍各自消耗模型调用。单字段输入镜像可能适合确定性生成，但不能仅凭事件描述推断表达式。
 
-Stage 11 的 Event P/Q 调用（20 次）与 Stage 12 的部分创建调用中，相当比例的事件是
-同构的"输入框 → 更新一个变量"绑定：例如 `register-agreement-change` 的完整 handler 只有
-`context.update({"form.agreement": Boolean(context.input.checked)})`。这类事件仍各消耗
-一次模型调用（Stage 11 约 3K token/次、Stage 12 约 27.6K token/次）。
+## 当前 IR 与前置条件
 
-## 拟议选择
+核查 `work/opt-1101` 与 `work/optg2-1101` 的 `ui_interactions.json`：实际动作种类为 `local/api/navigate`，不存在旧提案假设的 `update` 动作。新运行 18 个事件中有 13 个仅含 local，但 local 的赋值关系仍写在自然语言 description 中；它们并不都已证明是输入镜像，不能把 13 当成可合成事件数。
 
-在 Stage 11 → 12 之间加一条确定性合成规则（lowering pass 语义）：当事件的设计记录
-满足「动作集合仅含 update 且目标变量为输入型绑定的直接镜像、无 API 调用、无条件分支」
-时，直接从 IR 模板合成 handler 文件，跳过模型调用。模式不匹配的事件仍走原模型路径。
-验收：合成事件必须通过与模型事件完全相同的 gate（typecheck + 回归 + E2E）。
+例如 nationality 的 local 描述要求将 select 当前值写入 `register.nationality`，IR 只记录写集合和自然语言动作，没有可直接执行的赋值表达式。只看 write 集合无法区分输入转换、互斥更新、初始化和条件分支。
 
-## 可观察的验收与风险
+拟议路径是在现有 IR 中引入经验证的有限赋值形式（目标绑定、输入 value/checked、显式转换），只对完全匹配且无 API、导航或分支的事件合成。其余事件保持模型路径；任何合成失败都回退模型路径，并保留同一 typecheck、UI 回归与 E2E gate。新增 schema 和回退开关须独立记录与测试。
 
-- 预期：Stage 11 调用数 20 → ~10，Stage 12 创建调用数相应减少；token 再降 10–15%。
-- 风险：模式覆盖不全导致合成 handler 语义偏差——由既有 gate 兜底（失败自动回退
-  模型路径重试，需要在实现里显式支持该回退）。
-- 前置测量：统计最近一次运行中满足模式的事件占比。
+Stage 11 之后的 lowering 只能节省 Stage 12 创建调用；要减少 Stage 11 契约调用，必须在契约生成之前获得足够的形式化语义并能生成契约，不能把已经消耗的调用计作节省。
 
-Status 保持 proposed 直到完成一次带合成的全流程运行并确认 GREEN。
+## 验收与风险
+
+先测量满足形式化模式的真实事件数，再给出 token 与调用数预算。旧有约 10–15% 的收益数字没有模式覆盖证据，不作为结论。须通过正反例、失败回退和隔离全流程 GREEN，且不削弱冻结验收。
+
+主要风险是把自然语言 local 误当成直接赋值，产生错误状态更新。保持 proposed，当前没有实现该优化；先补齐 IR 的语义前提。

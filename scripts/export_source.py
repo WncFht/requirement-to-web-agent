@@ -33,6 +33,7 @@ def main():
         "pyproject.toml",
         "requirements.txt",
         "uv.lock",
+        ":(exclude)scripts/**",
     )
     (output / "upstream.patch").write_bytes(patch)
     bundle = artifacts / "compiler-source.bundle"

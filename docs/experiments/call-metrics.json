@@ -142,6 +142,26 @@
         "model_seconds": 2484.8506397000056,
         "input_cache_hit_ratio": 0.5921114081422314
       }
+    },
+    "successful_stage_wall_time": {
+      "log": "../baseline-teammate/01-compiler.log",
+      "last_successful_stage_seconds": {
+        "00": 0.3,
+        "01": 58.3,
+        "02": 57.1,
+        "03": 99.7,
+        "05": 7.3,
+        "04": 0.0,
+        "06": 77.4,
+        "07": 58.4,
+        "08": 443.8,
+        "09": 183.7,
+        "10": 353.2,
+        "11": 321.6,
+        "12": 2821.0
+      },
+      "sum_seconds": 4481.8,
+      "measurement": "Sum of last successful attempts; excludes failed attempts, human gaps and final main.py build"
     }
   },
   {
@@ -287,6 +307,26 @@
         "model_seconds": 62.95035513304174,
         "input_cache_hit_ratio": 0.4419688153562628
       }
+    },
+    "successful_stage_wall_time": {
+      "log": "../work/opt-1101/compiler.log",
+      "last_successful_stage_seconds": {
+        "00": 0.0,
+        "01": 81.5,
+        "02": 8.4,
+        "03": 10.5,
+        "04": 0.0,
+        "06": 14.3,
+        "07": 10.3,
+        "05": 2.2,
+        "08": 47.0,
+        "09": 36.8,
+        "10": 96.5,
+        "11": 42.0,
+        "12": 140.3
+      },
+      "sum_seconds": 489.8,
+      "measurement": "Sum of last successful attempts; excludes failed attempts, human gaps and final main.py build"
     }
   },
   {
@@ -431,6 +471,25 @@
         "model_seconds": 174.56212825560942,
         "input_cache_hit_ratio": 0.358712480599585
       }
+    },
+    "successful_stage_wall_time": {
+      "log": "../work/optf-1101/compiler.log",
+      "last_successful_stage_seconds": {
+        "00": 0.0,
+        "01": 50.8,
+        "02": 8.6,
+        "03": 10.0,
+        "04": 0.0,
+        "05": 2.5,
+        "06": 12.8,
+        "07": 8.3,
+        "08": 93.3,
+        "09": 30.6,
+        "10": 134.0,
+        "11": 48.4
+      },
+      "sum_seconds": 399.3,
+      "measurement": "Sum of last successful attempts; excludes failed attempts, human gaps and final main.py build"
     }
   }
 ]

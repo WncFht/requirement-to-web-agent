@@ -6,7 +6,7 @@
 > 59 处 role=）混淆——两份是同一 smoke 的不同方言，本报告所有数字对应前者。
 > baseline 原始产物在 JI 仓库 `notes/4810/lab6/baseline-teammate/`（gitignored，jsonl 保留 gz）。
 
-在队友 Windows baseline（`baseline-teammate/`，34/34 全绿、82 分钟、2,141,102 token）的基础上，
+在队友 Windows baseline（`baseline-teammate/`，34/34 全绿、约 82 分钟（含失败尝试）、2,141,102 token）的基础上，
 对本仓库 `source/` 的需求编译器做了一轮「度量 → 根因 → 优化 → 复测」。全部修改记录于
 课程侧 `upstream.patch`，实验报告与 slides 见 课程侧 `report/main.pdf` 与 课程侧 `slides/main.pdf`。
 
@@ -38,7 +38,7 @@
 | 输入 / 输出 | 1,576,030 / 565,072 | 859,534 / 68,765 | −45.5% / −87.8% |
 | Stage 12 token | 1,468,588 | 590,804 | −59.8% |
 | 单次创建调用输入（均值） | 59,139 | 27,596 | −53.3% |
-| 阶段累计耗时 | 4,940.2 s | 489.8 s | −90.1%（跨机器口径） |
+| 各阶段最后成功尝试的 wall 总和 | 4,481.8 s | 489.8 s | −89.1%（跨机器，排除失败重试与最终构建） |
 | 正确性 | 34/34 | 后端 14/14、UI 9/9、E2E 11/11 | 全绿 |
 
 输出目录 `work/opt-1101`（git 忽略），逐阶段聚合与 `model_calls.jsonl` 完整保留。
@@ -102,3 +102,24 @@ node --import tsx ../../source/docs/experiments/optf-session-probe.mjs .
 从 OPT-F 日志提取的 17 份可完整解析失败报告，序列化反馈从 48,006 字符降至 18,821 字符，减少 60.8%；见 [feedback-replay.json](feedback-replay.json)。这是历史反馈的字符重放测量，不是模型 token、端到端耗时或成功率的测量。全流程验证结果另按实际运行状态更新。
 
 初始反馈另有独立缺陷：调用者传入的报告字典被循环按键展开，首轮仅收到 `typecheck/e2e/ui` 等字段名。已补齐完整字典传输与回归断言。首次 OPT-G 尝试在 Stage 08 被主动中断，保留在 `work/optg-1101`；修改后的完整验证使用新目录，不复用该次产物。
+
+耗时口径已统一：旧 baseline 的 4,940.2s 含失败尝试，不能直接与优化后的最后成功阶段总和 489.8s 对比；按日志逐阶段取最后成功尝试，baseline 为 4,481.8s。新聚合脚本保留这一单位，并与模型调用累计时间分开。
+
+## OPT-G 完整尝试与准入修复
+
+`7ef3a5b` 在 `work/optg2-1101` 以同一输入和 deepseek-flash 运行：后端 14/14、UI 8/8 GREEN，REQ-1 E2E GREEN，REQ-2 在 18 轮修复后失败，未执行最终生产构建。总 token 为 1,884,192，全流程输入缓存命中率为 41.6%；另一次主动中断尝试消耗 60,543 token，单独计入 [optg-metrics.json](optg-metrics.json)。这些观测没有证明总 token、成功率或端到端耗时改善，反馈优化的全流程验收仍未满足。
+
+冻结的注册测试包含以下设置：
+
+```ts
+await page.evaluate(() => {
+  window.__ARC_UI_FIXTURE__ = { page: "registration", data: { "register.submitting": true } };
+});
+await page.reload();
+```
+
+窗口变量不会跨 reload 保留，且 E2E 生成指令本来就禁止 UI fixture 注入。这一断言失败被旧准入 gate 接受为行为 RED，导致后续应用修复耗尽轮数；同套件还存在 Cookie 的根 URL 观察断言失败，不能把它与 fixture 问题视为同一根因。
+
+新增的 `validate_e2e_source` 在冻结前拒绝保留的 UI fixture 标识符，已经用原失败套件和回归测试验证拒绝。原冻结测试和失败工件没有改写。`ARC_LEGACY_E2E_SOURCE_CHECK=1` 恢复此前的 fixture 准入行为，原 loopback URL 检查仍生效。新规则尚未经过另一轮完整模型生成，因此不把此修复写成端到端 GREEN。
+
+两次 OPT-G 尝试的安全运行元数据、原始审计日志、IR、源码及冻结测试已归档在课程侧 `artifacts/optimization-runs/`，清单为 `artifacts/optimization-runs.json`。归档逐文件解压哈希验证后才删除四套运行目录中的可重建依赖；IR、源码、冻结测试与原始日志在工作目录中继续保留。恢复归档后需安装依赖，不能把缺少 node_modules 的目录当作可直接运行的应用。
