@@ -62,6 +62,7 @@ test("F04: real pending and failed session lookup do not expose cached identity"
     await expect(page.getByText(EXISTING_ACCOUNT.username, { exact: true })).toHaveCount(0);
   } finally { release(); }
   expect((await failedResponse).status()).toBe(503);
+  await page.waitForLoadState("networkidle");
   await expect(page.getByText(EXISTING_ACCOUNT.username, { exact: true })).toHaveCount(0);
   expect(snapshot()).toEqual(before);
 });
