@@ -64,12 +64,68 @@
       "not_exercised": 0
     }
   },
-  "fresh_run": "teacher-contracts-1101",
+  "fresh_run": "teacher-contracts-1101-v2",
   "fresh_status": "RUNNING",
   "fixed_acceptance_unchanged": true,
   "limits": [
     "Handler probes isolate context.api; real browser/database checks remain required",
     "NOT_EXERCISED is recorded, not counted as coverage",
     "DOM positive control is not a repair of the archived application"
-  ]
+  ],
+  "first_run": {
+    "run": "teacher-contracts-1101",
+    "status": "INTERRUPTED",
+    "reason": {
+      "status": "INTERRUPTED",
+      "stage": "12",
+      "reason": "Frozen scenario adds cookie session, tested backend reads session_id; do not repair production code to compensate for invalid test setup",
+      "new_checks": "Exact label UI gate GREEN; read-only fault probe exercised both modes and passed",
+      "next": "Fresh output after pre-freeze cookie-name admission; frozen suite unchanged"
+    },
+    "cookie_replay": {
+      "detected_backend_cookie_names": [
+        "session_id"
+      ],
+      "frozen_scenario_rejected_by_new_admission": "Positive existing-session setup uses Cookie ['session'], but tested backend producers use ['session_id']. Use the real backend cookie name with the seeded credential before freezing; do not change production handlers to accommodate this test."
+    },
+    "gates": {
+      "backend_tdd": "GREEN",
+      "ui_checks": "GREEN",
+      "frontend_e2e": "FAILED"
+    },
+    "read_failure_checks": {
+      "returncode": 0,
+      "results": [
+        {
+          "event": "EV-home-session-load",
+          "mode": "http-503",
+          "calls": 1,
+          "updates": 2,
+          "status": "PASSED"
+        },
+        {
+          "event": "EV-home-session-load",
+          "mode": "transport-rejection",
+          "calls": 1,
+          "updates": 2,
+          "status": "PASSED"
+        }
+      ],
+      "failures": [],
+      "exercised": 2,
+      "not_exercised": 0
+    },
+    "tokens_returned": {
+      "calls": 94,
+      "prompt_tokens": 1626212,
+      "completion_tokens": 97786,
+      "total_tokens": 1723998,
+      "prompt_cache_hit_tokens": 682624,
+      "prompt_cache_miss_tokens": 943588,
+      "reasoning_tokens": 6937,
+      "model_seconds": 447.93364361766726,
+      "input_cache_hit_ratio": 0.4197632289025047
+    },
+    "archive": "artifacts/optimization-runs/teacher-contracts-1101.tar.gz"
+  }
 }
