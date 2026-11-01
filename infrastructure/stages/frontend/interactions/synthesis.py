@@ -43,6 +43,18 @@ def propose(model, instructions, request, validate, console, label, max_attempts
                 "existing_interactions" in request
                 and os.getenv("ARC_LEGACY_INTERACTION_RETRY", "0") != "1"
             ):
+                correction["trigger_record_example"] = {
+                    "TR-example": {
+                        "source": "UI-example",
+                        "event": "mount",
+                        "action": "EV-example",
+                    }
+                }
+                correction["trigger_shape"] = (
+                    "triggers is keyed by trigger ID, each value has string source, event, action. "
+                    "Do not return UI-ID: {mount: EVENT-ID} or another nested shorthand. "
+                    "requirement_triggers and step_triggers refer to trigger IDs."
+                )
                 correction["retry_base"] = (
                     "The rejected proposal was NOT applied. Retry against the original "
                     "accepted existing_interactions, including ALL new triggers/events "

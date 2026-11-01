@@ -524,6 +524,10 @@ class FrontendFlow(unittest.TestCase):
         self.assertEqual(response, {"complete": True})
         self.assertEqual(request["existing_interactions"], accepted)
         self.assertIn("NOT applied", request["correction"]["retry_base"])
+        self.assertEqual(
+            request["correction"]["trigger_record_example"]["TR-example"]["event"],
+            "mount",
+        )
 
     def test_radio_presence_distinguishes_option_value_and_shared_selection(self):
         ui = deepcopy(self.ui)

@@ -6,6 +6,8 @@ Only return new or changed COMPLETE records. Existing IDs may be reused by refer
 All existing triggers/events are supplied; retain earlier behavior and associations.
 Trigger fields: source (UI ID), event (mount/click/change/input/submit/keydown/keyup),
 action (event ID). One trigger per source/native-event pair; share it by ID.
+Example: "triggers":{"TR-load":{"source":"UI-page","event":"mount","action":"EV-load"}}.
+Do NOT use "UI-page":{"mount":"EV-load"}; this is not a trigger record.
 mount sources must be page roots; submit sources must be forms; native input/change
 sources must be editable controls. Every current editable UI data variable needs an
 input/change event that writes its latest native value. Do not submit on input changes.
