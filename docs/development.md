@@ -23,6 +23,8 @@
 | 变量                          | 默认               | 作用                                                             |
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
 | `ARC_EVENT_CONTEXT` | 0 | =1 试验非终验单事件上下文收窄；终验保持全量，FULL_CONTEXT=1 优先回退 |
+| `ARC_LEGACY_LABEL_LOCATORS` | 0 | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留 |
+| `ARC_LEGACY_READ_FAILURES` | 0 | =1 回退只读 mount 处理器故障探针和提示；原浏览器错误上报保留 |
 | `ARC_LEGACY_E2E_SOURCE_CHECK` | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留 |
 | `ARC_LEGACY_REFERENCE_TESTS` | 0 | =1 不向前端设计/实现提供 input/tests 外部交互契约 |
 | `ARC_LEGACY_RADIO_ASSERTIONS` | 0 | =1 回退 radio 存在性测试的选项值/checked 分离断言 |
@@ -66,3 +68,7 @@ cd <输出目录> && PORT=3309 npm start   # 或使用生成的 deploy.sh
 默认 `input/` 已恢复教师 ZIP 原字节，哈希归 `input/source.json`；旧 pending 输入迁到 `examples/registration-pending/`，必须分开运行和记录。完整生成后额外运行 `scripts/accept_teacher.py`，命令及准入标准见 [固定验收](../acceptance/README.md)。现有阶段 GREEN 和独立验收/最终构建同时通过，才可记录为稳定运行。
 
 `ARC_LEGACY_TEST_SANITY=1` 回退后端冻结前新增的恒假 header 断言检查；原有类型、RED/GREEN 和回归仍保留。该开关不影响固定的老师独立验收。
+
+页面存在性测试额外检查精确标签定位到实际控件；带必填星号时仅 aria-hidden 不足，控件应保留精确 aria-label。Stage 12 在创建/修复和终验时对已实现的只读 GET mount 处理器注入 503 与传输失败，报告归 `.arc/frontend_read_failures.json`。这不是完整浏览器故障验收；NOT_EXERCISED 表示条件路径未到 API，仍需固定验收检查身份与持久化。
+
+编译器单元检查包含纯 JavaScript 故障探针，需要 PATH 中有 Node；Node 22 仍是完整生成的已验证版本。

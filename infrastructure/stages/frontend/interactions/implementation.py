@@ -12,7 +12,11 @@ from infrastructure.shared.agent.files import (
     source_paths,
     editable_sources,
 )
-from infrastructure.shared.agent.loop import compact_feedback, run_file_agent
+from infrastructure.shared.agent.loop import (
+    CheckFailure,
+    compact_feedback,
+    run_file_agent,
+)
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.stages.frontend.interactions.e2e_runtime import FIXTURE, prepare_e2e
 from infrastructure.stages.frontend.interactions.testing import (
@@ -37,6 +41,10 @@ from infrastructure.stages.frontend.interactions.creation_context import (
     creation_context,
 )
 from infrastructure.stages.frontend.ui.label_contracts import label_instructions
+from infrastructure.stages.frontend.interactions.read_failures import (
+    check_read_failures,
+    read_failure_instructions,
+)
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.utils.files import save_json
 from infrastructure.stages.frontend.ui.design import page_context, page_elements
@@ -334,6 +342,17 @@ def run_interaction_tdd(
             compiled = checks.typecheck([*regression_files, *ui_files])
             if compiled["returncode"]:
                 return {"typecheck": compiled, "e2e": None, "ui": None}
+            fault_checks = check_read_failures(
+                output, ui, interactions, backend, active
+            )
+            save_json(arc_dir / "frontend_read_failures.json", fault_checks)
+            if fault_checks["returncode"]:
+                return {
+                    "typecheck": compiled,
+                    "read_failures": fault_checks,
+                    "e2e": None,
+                    "ui": None,
+                }
             tested = checks.tests(regression_files)
             presence = ui_checks.tests(ui_files) if tested["returncode"] == 0 else None
             return {"typecheck": compiled, "e2e": tested, "ui": presence}
@@ -344,6 +363,11 @@ def run_interaction_tdd(
             for kind in ("typecheck",):
                 if result[kind] and result[kind]["returncode"]:
                     raise ValueError(result[kind]["output"])
+            if result.get("read_failures", {}).get("returncode"):
+                raise CheckFailure(
+                    "Read-only API failures must be handled inside the page-load handler",
+                    result["read_failures"],
+                )
             require_green(result["e2e"])
             require_green(result["ui"])
             return result
@@ -471,11 +495,24 @@ def run_interaction_tdd(
                     compiled = checks.typecheck([*regression_files, *ui_files])
                     if compiled["returncode"]:
                         raise ValueError(compiled["output"])
-                    return {"typecheck": compiled}
+                    fault_checks = check_read_failures(
+                        output, ui, interactions, backend, active
+                    )
+                    save_json(arc_dir / "frontend_read_failures.json", fault_checks)
+                    if fault_checks["returncode"]:
+                        raise CheckFailure(
+                            "Read-only API failures must be handled inside the page-load handler",
+                            fault_checks,
+                        )
+                    return {"typecheck": compiled, "read_failures": fault_checks}
 
                 agent = run_file_agent(
                     model,
-                    IMPLEMENT_INSTRUCTIONS + "\n" + label_instructions(),
+                    IMPLEMENT_INSTRUCTIONS
+                    + "\n"
+                    + label_instructions()
+                    + "\n"
+                    + read_failure_instructions(),
                     task,
                     workspace,
                     implementation_gate if final_call else creation_gate,
@@ -507,6 +544,10 @@ def run_interaction_tdd(
         save_json(arc_dir / "frontend_e2e.json", report)
         console.show(label + " | GREEN", result["output"])
     sync_interactions(output, ui, interactions, backend, implemented)
+    faults = check_read_failures(output, ui, interactions, backend, implemented)
+    save_json(arc_dir / "frontend_read_failures.json", faults)
+    if faults["returncode"]:
+        raise CheckFailure("Final read-only API failure handling check failed", faults)
     console.show(
         "Final frontend verification",
         "Run every generated E2E scenario and UI existence suite, then build the full application.",

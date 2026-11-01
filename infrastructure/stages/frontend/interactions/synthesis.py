@@ -2,6 +2,9 @@
 
 import json
 import os
+from infrastructure.stages.frontend.interactions.read_failures import (
+    read_failure_instructions,
+)
 
 from infrastructure.stages.frontend.interactions.contracts import validate_contract
 from infrastructure.stages.frontend.interactions.prompts import DECOMPOSE, CONTRACT
@@ -169,7 +172,13 @@ def synthesize_interactions(
             return value["contract"]
 
         result["contracts"][eid], _ = propose(
-            model, CONTRACT, request, accept, console, f"Event P/Q {eid}", max_attempts
+            model,
+            CONTRACT + "\n" + read_failure_instructions(),
+            request,
+            accept,
+            console,
+            f"Event P/Q {eid}",
+            max_attempts,
         )
     save_json(arc_dir / "ui_interactions.json", result)
     return result
