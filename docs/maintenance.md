@@ -39,3 +39,15 @@ git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.tx
 ```
 
 更新外层课程记录时只暂存明确相关文件，不合并 JI 仓库里其他课程的未提交工作。
+
+## 可恢复的课程归档
+
+源码仓库未配置远端，外层 JI 只忽略工作副本，不应成为唯一备份缺口。源码工作区提交干净后运行：
+
+```sh
+.venv/bin/python scripts/export_source.py --output-dir ..
+```
+
+工具导出 `../artifacts/compiler-source.bundle`（完整已提交历史）、源码补丁和带提交号及 SHA-256 的 `compiler-export.json`。在不含 `source/` 的课程目录执行 `git clone artifacts/compiler-source.bundle source` 即可恢复；凭据、依赖和实验运行目录需单独准备。导出后对 bundle 做临时 clone，并核验提交号、文档和 `git fsck`，再提交外层归档。每次后续源码提交后重新导出，不能把旧 bundle 当成最新源码。
+
+清理清单见 `docs/experiments/cleanup.json`；当前只删除经过解压哈希校验的队友 baseline 重复原始日志，压缩原件仍保留。失败实验、编译工件和课程报告未删除。

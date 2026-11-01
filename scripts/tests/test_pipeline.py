@@ -13,6 +13,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 from check_archive import check as check_archive  # noqa: E402
 from check_docs import SKILLS, check  # noqa: E402
+from run_checks import execute  # noqa: E402
 
 
 class PipelineTests(unittest.TestCase):
@@ -42,6 +43,17 @@ class PipelineTests(unittest.TestCase):
             text=True,
             check=True,
         ).stdout.strip()
+
+    def test_python_checks_share_the_callers_interpreter(self):
+        status, output, _ = execute(
+            {
+                "command": ["python3", "-c", "import sys; print(sys.executable)"],
+                "timeout": 10,
+            },
+            self.root,
+        )
+        self.assertEqual(status, "passed")
+        self.assertEqual(output.strip(), sys.executable)
 
     def test_links_references_images_hidden_and_code(self):
         page = self.root / "README.md"
