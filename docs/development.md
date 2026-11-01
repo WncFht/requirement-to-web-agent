@@ -73,9 +73,15 @@
 
 `entrypoint_seconds` 是一次入口调用的 wall time，`pipeline_seconds` 不含入口最后的数据库初始化与构建。阶段 seconds 包括子进程启动、实际工作及完成记录检查。categories 列出 SDK 模型请求、模型外层退避、typecheck、backend_tests、ui_tests、e2e_tests、dependency_install、browser_install、read_failure_probe、build/db_init 等累计耗时与成功/失败次数。SDK 请求含其内部重试与网络等待；外层显式 sleep 单列，原 model_calls.jsonl 的 call_id 与 model_request.name 对应。模型 SDK 计时只包围实际 SDK create，不包括请求预览、JSON 解析和完整日志写出。
 
-父级耗时包含子级，不能把 pipeline、阶段和各检查相加；分类累计时间也不能直接当 wall time 或 CPU 时间，并发执行时会重叠。categories 未覆盖的部分包括提案校验、上下文组装、序列化、部分测试准备和计时记账。不从差值自动归因于缓存或网络。固定老师验收是 main.py 结束后的独立步骤，不计入该入口的 wall time。历史日志没有这些测点，不能补造旧阶段或 gate 的实测耗时。
+父级耗时包含子级，不能把 pipeline、阶段和各检查相加；分类累计时间也不能直接当 wall time 或 CPU 时间，并发执行时会重叠。非零返回含预期的 TDD RED，不能直接算作阶段失败次数。categories 未覆盖的部分包括提案校验、上下文组装、序列化、部分测试准备和计时记账。不从差值自动归因于缓存或网络。固定老师验收是 main.py 结束后的独立步骤，不计入该入口的 wall time。历史日志没有这些测点，不能补造旧阶段或 gate 的实测耗时。
 
 计时只写类别、内部标识符、状态、错误类型和耗时，不复制命令参数、请求正文、凭据或异常消息。写日志失败会发出固定警告并保留原操作结果，此时测量不完整；开关 `ARC_DISABLE_TIMING=1` 可以停用新增计时，原模型 I/O 审计仍保留。该开关与内部 trace 标识不参与可信恢复的配置指纹；timings.jsonl 和固定命名 timing-summary.json 属于测量记录，不使已完成工作区失效。归档工具会保存并逐文件校验原始计时日志。
+
+### 已记录的计时反例
+
+`work/timing-baseline-1101` 在 Stage 12 重复修复错误的已冻结会话 fixture 后主动中断，入口 wall time 707.57s；模型 SDK 请求 424.12s，UI/E2E 检查累计 223.27s，typecheck 39.75s。93 次已返回调用共 1,791,464 token，输入缓存命中 35.7%。这是失败/中断轨迹，不能作为成功基线或性能改进。
+
+该后端采用空名称 Cookie，实际 Chromium 注册后可恢复会话；生成测试却把凭据同时当名称和值。冻结前静态名称检查在没有识别到命名 producer 时跳过，未覆盖此形式。默认固定验收适配器也无法自动推断空名；显式按实测空名提供结构适配器后，固定 14 条检查和构建通过，但内部 E2E 保持 FAILED，故不晋升稳定标签。证据与边界归 [计时记录](experiments/timing-validation.json)，真实处理器与浏览器重放脚本为 `scripts/replay_empty_cookie.py`；重放使用隔离内存数据库，需要该运行的 npm 依赖、Node 22 和 Chromium，不修改应用或冻结测试。
 
 ## 启动生成的网站
 

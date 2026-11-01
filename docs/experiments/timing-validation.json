@@ -1,0 +1,467 @@
+{
+  "date": "2026-11-01",
+  "source_run_revision": "c6e7fe0",
+  "scope": "Instrumentation only; no prompt/context/cache/gate-policy change. This is a failed/interrupted generation, not a successful timing baseline.",
+  "run": "work/timing-baseline-1101",
+  "settings": {
+    "ARC_DISABLE_THINKING": "1",
+    "ARC_MODEL_TRANSPORT_RETRIES": "4",
+    "ARC_FULL_CONTEXT": "0",
+    "ARC_FULL_FEEDBACK": "0",
+    "ARC_EVENT_CONTEXT": "0",
+    "ARC_LEGACY_TEST_SANITY": "0",
+    "ARC_LEGACY_TEST_REVIEW": "0",
+    "ARC_LEGACY_E2E_SOURCE_CHECK": "0",
+    "ARC_LEGACY_UI_PREDICATES": "0",
+    "ARC_LEGACY_REFERENCE_TESTS": "0",
+    "ARC_LEGACY_RADIO_ASSERTIONS": "0",
+    "ARC_LEGACY_API_SCOPE": "0",
+    "ARC_LEGACY_LABEL_LOCATORS": "0",
+    "ARC_LEGACY_READ_FAILURES": "0",
+    "ARC_LEGACY_E2E_COOKIE_NAMES": "0",
+    "ARC_LEGACY_INTERACTION_RETRY": "0"
+  },
+  "compiler_tests": 117,
+  "maintenance_tests": 23,
+  "new_timing_tests": 13,
+  "new_summary_tests": 5,
+  "generation": {
+    "status": "INTERRUPTED Stage12 after repeated repair of frozen invalid Cookie fixture",
+    "successful_stage_receipts": 12,
+    "active_state_cleared": true,
+    "backend_tests": {
+      "passed": 14,
+      "total": 14
+    },
+    "ui": {
+      "pages": 3,
+      "tests": 9,
+      "failed": 0
+    },
+    "frontend_e2e_status": "FAILED",
+    "stable_checkpoint_promoted": false,
+    "app_source_manually_edited": false,
+    "frozen_tests_edited": false
+  },
+  "timing": {
+    "entrypoint_seconds": [
+      707.572083628038
+    ],
+    "pipeline_seconds": [
+      707.5407023711596
+    ],
+    "stages": {
+      "Stage 00 | Initialize project": {
+        "attempts": 1,
+        "seconds": 0.04329742304980755,
+        "ok": 1
+      },
+      "Stage 01 | Read requirements and analyze reference images": {
+        "attempts": 1,
+        "seconds": 54.24841613089666,
+        "ok": 1
+      },
+      "Stage 02 | Design database schema": {
+        "attempts": 1,
+        "seconds": 8.137773653957993,
+        "ok": 1
+      },
+      "Stage 03 | Infer database read/write obligations": {
+        "attempts": 1,
+        "seconds": 10.98163384385407,
+        "ok": 1
+      },
+      "Stage 04 | Review database obligations": {
+        "attempts": 1,
+        "seconds": 0.05053062806837261,
+        "ok": 1
+      },
+      "Stage 05 | Implement database": {
+        "attempts": 1,
+        "seconds": 2.8525558130349964,
+        "ok": 1
+      },
+      "Stage 06 | Decompose backend APIs": {
+        "attempts": 1,
+        "seconds": 10.668022385099903,
+        "ok": 1
+      },
+      "Stage 07 | Infer API preconditions and postconditions": {
+        "attempts": 1,
+        "seconds": 9.451129815075547,
+        "ok": 1
+      },
+      "Stage 08 | Implement backend with test-first acceptance": {
+        "attempts": 1,
+        "seconds": 57.22843984304927,
+        "ok": 1
+      },
+      "Stage 09 | Design UI and frontend data": {
+        "attempts": 1,
+        "seconds": 26.15666699083522,
+        "ok": 1
+      },
+      "Stage 10 | Implement UI and run existence tests": {
+        "attempts": 1,
+        "seconds": 103.95096504501998,
+        "ok": 1
+      },
+      "Stage 11 | Design frontend interactions and API calls": {
+        "attempts": 1,
+        "seconds": 65.94884556089528,
+        "ok": 1
+      },
+      "Stage 12 | Implement interactions and run end-to-end tests": {
+        "attempts": 1,
+        "seconds": 357.8020954639651,
+        "error": 1
+      }
+    },
+    "categories": {
+      "model_request": {
+        "calls": 93,
+        "seconds": 424.12397381546907,
+        "ok": 93
+      },
+      "dependency_install": {
+        "calls": 3,
+        "seconds": 7.255598320858553,
+        "ok": 3
+      },
+      "typecheck": {
+        "calls": 51,
+        "seconds": 39.753178735263646,
+        "ok": 50,
+        "nonzero": 1
+      },
+      "backend_tests": {
+        "calls": 12,
+        "seconds": 3.2536931617651135,
+        "nonzero": 6,
+        "ok": 6
+      },
+      "browser_install": {
+        "calls": 2,
+        "seconds": 0.5620216929819435,
+        "ok": 2
+      },
+      "ui_tests": {
+        "calls": 8,
+        "seconds": 58.61455476493575,
+        "nonzero": 3,
+        "ok": 5
+      },
+      "build": {
+        "calls": 1,
+        "seconds": 2.0288899480365217,
+        "ok": 1
+      },
+      "e2e_tests": {
+        "calls": 16,
+        "seconds": 164.6508193372283,
+        "nonzero": 15,
+        "error": 1
+      },
+      "read_failure_probe": {
+        "calls": 29,
+        "seconds": 2.6483671530149877,
+        "ok": 29
+      }
+    },
+    "skipped_stages": [],
+    "incomplete_span_ids": [],
+    "orphan_end_span_ids": []
+  },
+  "stage_categories_seconds": {
+    "Stage 01 | Read requirements and analyze reference images": {
+      "model_request": 53.89549452974461
+    },
+    "Stage 02 | Design database schema": {
+      "model_request": 7.810062536271289
+    },
+    "Stage 03 | Infer database read/write obligations": {
+      "model_request": 10.652254314860329
+    },
+    "Stage 05 | Implement database": {
+      "model_request": 2.538531162077561
+    },
+    "Stage 06 | Decompose backend APIs": {
+      "model_request": 10.338762228144333
+    },
+    "Stage 07 | Infer API preconditions and postconditions": {
+      "model_request": 9.122356847859919
+    },
+    "Stage 08 | Implement backend with test-first acceptance": {
+      "dependency_install": 6.275963698048145,
+      "model_request": 42.39878800115548,
+      "typecheck": 4.84088956611231,
+      "backend_tests": 3.2536931617651135
+    },
+    "Stage 09 | Design UI and frontend data": {
+      "model_request": 25.819526203908026
+    },
+    "Stage 10 | Implement UI and run existence tests": {
+      "dependency_install": 0.7151445669587702,
+      "browser_install": 0.2836802799720317,
+      "typecheck": 4.981251491699368,
+      "ui_tests": 55.41463694302365,
+      "model_request": 40.147557902149856,
+      "build": 2.0288899480365217
+    },
+    "Stage 11 | Design frontend interactions and API calls": {
+      "model_request": 65.56139155919664
+    },
+    "Stage 12 | Implement interactions and run end-to-end tests": {
+      "dependency_install": 0.2644900558516383,
+      "browser_install": 0.2783414130099118,
+      "ui_tests": 3.199917821912095,
+      "model_request": 155.83924853010103,
+      "typecheck": 29.931037677451968,
+      "e2e_tests": 164.6508193372283,
+      "read_failure_probe": 2.6483671530149877
+    }
+  },
+  "metrics": {
+    "log_sha256": "80fc0d07571560626614880dcb2b1cc6be2642cfb36e75776f10d25c740b3a2e",
+    "measurement": "SDK usage once per returned call; cumulative request time is not pipeline wall time",
+    "totals": {
+      "prompt_tokens": 1704139,
+      "completion_tokens": 87325,
+      "total_tokens": 1791464,
+      "prompt_cache_hit_tokens": 608640,
+      "calls": 93,
+      "model_seconds": 424.2481921252329
+    },
+    "stages": {
+      "Stage 01 | Read requirements and analyze reference images": {
+        "prompt_tokens": 3432,
+        "completion_tokens": 8481,
+        "total_tokens": 11913,
+        "prompt_cache_hit_tokens": 2816,
+        "calls": 3,
+        "model_seconds": 53.90727763599716
+      },
+      "Stage 02 | Design database schema": {
+        "prompt_tokens": 4871,
+        "completion_tokens": 1381,
+        "total_tokens": 6252,
+        "prompt_cache_hit_tokens": 3072,
+        "calls": 3,
+        "model_seconds": 7.811200178926811
+      },
+      "Stage 03 | Infer database read/write obligations": {
+        "prompt_tokens": 9115,
+        "completion_tokens": 1579,
+        "total_tokens": 10694,
+        "prompt_cache_hit_tokens": 6272,
+        "calls": 5,
+        "model_seconds": 10.654245672049
+      },
+      "Stage 05 | Implement database": {
+        "prompt_tokens": 2531,
+        "completion_tokens": 254,
+        "total_tokens": 2785,
+        "prompt_cache_hit_tokens": 512,
+        "calls": 2,
+        "model_seconds": 2.539244988001883
+      },
+      "Stage 06 | Decompose backend APIs": {
+        "prompt_tokens": 9533,
+        "completion_tokens": 1818,
+        "total_tokens": 11351,
+        "prompt_cache_hit_tokens": 5888,
+        "calls": 3,
+        "model_seconds": 10.339990015141666
+      },
+      "Stage 07 | Infer API preconditions and postconditions": {
+        "prompt_tokens": 9149,
+        "completion_tokens": 1395,
+        "total_tokens": 10544,
+        "prompt_cache_hit_tokens": 768,
+        "calls": 3,
+        "model_seconds": 9.123698880895972
+      },
+      "Stage 08 | Implement backend with test-first acceptance": {
+        "prompt_tokens": 77009,
+        "completion_tokens": 9885,
+        "total_tokens": 86894,
+        "prompt_cache_hit_tokens": 12928,
+        "calls": 9,
+        "model_seconds": 42.40375024918467
+      },
+      "Stage 09 | Design UI and frontend data": {
+        "prompt_tokens": 24119,
+        "completion_tokens": 6675,
+        "total_tokens": 30794,
+        "prompt_cache_hit_tokens": 4864,
+        "calls": 3,
+        "model_seconds": 25.821307295933366
+      },
+      "Stage 10 | Implement UI and run existence tests": {
+        "prompt_tokens": 79583,
+        "completion_tokens": 10403,
+        "total_tokens": 89986,
+        "prompt_cache_hit_tokens": 15104,
+        "calls": 4,
+        "model_seconds": 40.15131342061795
+      },
+      "Stage 11 | Design frontend interactions and API calls": {
+        "prompt_tokens": 142708,
+        "completion_tokens": 10797,
+        "total_tokens": 153505,
+        "prompt_cache_hit_tokens": 43520,
+        "calls": 24,
+        "model_seconds": 65.59314244729467
+      },
+      "Stage 12 | Implement interactions and run end-to-end tests": {
+        "prompt_tokens": 1342089,
+        "completion_tokens": 34657,
+        "total_tokens": 1376746,
+        "prompt_cache_hit_tokens": 512896,
+        "calls": 34,
+        "model_seconds": 155.90302134118974
+      }
+    },
+    "groups": {
+      "design_or_other": {
+        "prompt_tokens": 205458,
+        "completion_tokens": 32380,
+        "total_tokens": 237838,
+        "prompt_cache_hit_tokens": 67712,
+        "calls": 46,
+        "model_seconds": 185.79010711424053
+      },
+      "test_generation": {
+        "prompt_tokens": 106557,
+        "completion_tokens": 9927,
+        "total_tokens": 116484,
+        "prompt_cache_hit_tokens": 26880,
+        "calls": 5,
+        "model_seconds": 37.62191310804337
+      },
+      "test_review": {
+        "prompt_tokens": 10297,
+        "completion_tokens": 544,
+        "total_tokens": 10841,
+        "prompt_cache_hit_tokens": 384,
+        "calls": 3,
+        "model_seconds": 5.9807922332547605
+      },
+      "implementation_or_repair": {
+        "prompt_tokens": 118001,
+        "completion_tokens": 13232,
+        "total_tokens": 131233,
+        "prompt_cache_hit_tokens": 21248,
+        "calls": 7,
+        "model_seconds": 52.4373781864997
+      },
+      "creation": {
+        "prompt_tokens": 1263826,
+        "completion_tokens": 31242,
+        "total_tokens": 1295068,
+        "prompt_cache_hit_tokens": 492416,
+        "calls": 32,
+        "model_seconds": 142.41800148319453
+      }
+    },
+    "requests_without_returned_usage": [],
+    "replay_scope": "Same recorded calls, payload character counts only; no model execution, output or inferred token savings"
+  },
+  "cache_hit_ratio": 0.35715396455336096,
+  "cookie_mismatch": {
+    "frozen_spec": "frontend/tests/e2e/req-1-homepage-session.spec.ts",
+    "observed_failure": "Expected signed-in username was absent in frozen valid-session test",
+    "backend_wire": "Set-Cookie is raw credential; Chromium stores name empty and returns raw credential",
+    "fixture_wire": "Generated fixture supplies name=credential and value=credential, producing credential=credential; backend does not match it",
+    "static_cookie_admission_limit": "No named producer extracted, so existing name validator deliberately skipped instead of guessing",
+    "browser_replay": {
+      "returncode": 0,
+      "files_sha256": {
+        ".arc/implementation_paths.json": "e1577a307922bb17e73258f8f07c1420a049de4ae6243325944db47eab354133",
+        ".arc/backend_contracts.json": "72782b7660fe41e31dda7410925179e35c93ffd0cd791db5e6e8ceeb29dd5276",
+        "backend/src/register-account.ts": "e9034552fa253277146e45f40669e339eab3db1502113d8362985992e8d61681",
+        "backend/src/api/get-homepage-session.ts": "83bea3e3b134266092d589231c3921f62fd9c77816af9855b3a96761a3e110a5",
+        "frontend/tests/e2e/req-1-homepage-session.spec.ts": "d1b58aaaf4e3d0d2328f95874059081bef25c0d478bc55180ae2db8eb9b99170"
+      },
+      "result": {
+        "scope": "Actual generated register/session handlers, isolated memory DB, real Chromium; frozen tests and application source unchanged",
+        "registration_status": 201,
+        "natural_browser": {
+          "cookie_count": 1,
+          "cookie_names": [
+            ""
+          ],
+          "authenticated": true,
+          "username_matches": true
+        },
+        "generated_fixture_shape": {
+          "name_equals_value": true,
+          "authenticated": false
+        },
+        "matching_empty_name_fixture": {
+          "authenticated": true,
+          "username_matches": true
+        }
+      }
+    },
+    "replay_command": ".venv/bin/python scripts/replay_empty_cookie.py ../work/timing-baseline-1101 --output ../work/timing-baseline-1101/.arc/diagnostics/NEW_REPLAY.json",
+    "interpretation": "Not evidence that raw-cookie application is inherently unusable: actual registration/session works in Chromium. Frozen test setup and actual wire behavior differ."
+  },
+  "independent_acceptance": {
+    "automatic_adapter": "Refused before running tests: no unique named cookie inferred",
+    "explicit_reviewed_adapter": ".arc/diagnostics/empty-cookie-adapter.json",
+    "scope": "Diagnostic only, cookie_name empty derived from actual wire probe; schema roles unchanged; no assertion edits; failed internal E2E retained",
+    "result": {
+      "status": "GREEN",
+      "stats": {
+        "startTime": "2026-11-01T13:11:54.731Z",
+        "duration": 8071.772999999999,
+        "expected": 14,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "teacher_test_count": 4,
+      "fixed_test_count": 10,
+      "input_sha256": "54db4df5b11b5e88d97ff7726c8abc93d55e9d0124f04f23c85fef20ff8d94ee",
+      "assertions_sha256": {
+        "setup.ts": "8ca72acab19bdf22241f5d6c60071d0e2f173378cfdfabf9ced3365f2f32653b",
+        "context.ts": "66119abec3af5878f8514e4998f6437fe0c76dc26137ad2df80a7ae433a75fa4",
+        "fixed.spec.ts": "b28c46fcd1ee660ec70d4d594a238aa366f57246807cc4bc69926d1c9baa0cf4"
+      },
+      "preserved_gates": {
+        "backend_tdd.json": "GREEN",
+        "ui_checks.json": "GREEN",
+        "frontend_e2e.json": "FAILED"
+      },
+      "diagnostic_only": true,
+      "all_preserved_gates_green": false,
+      "production_build_passed": true
+    }
+  },
+  "integrity": {
+    "timing_log_sha256": "2a4ad71bcec3a9ec8a89907328d7f7e020c3c4c0c07d7b1d8bbf481b621944c4",
+    "model_log_sha256": "80fc0d07571560626614880dcb2b1cc6be2642cfb36e75776f10d25c740b3a2e",
+    "timing_bad_records": [],
+    "timing_unknown_duration_spans": [],
+    "timing_orphan_end_spans": [],
+    "requests_without_returned_usage": []
+  },
+  "interpretation": {
+    "entrypoint_wall_seconds_until_interrupt": 707.572083628038,
+    "model_fraction_of_interrupted_wall": 0.5994074436074359,
+    "browser_checks_fraction_of_interrupted_wall": 0.31553728484790244,
+    "nonzero_checks_include_expected_TDD_RED": true,
+    "no_claim_of_speedup_or_token_reduction": true,
+    "fixed_acceptance_outside_entrypoint_wall": true
+  },
+  "next_priority": "Before cache A/B, bind positive session fixtures to observed browser cookie transport (including empty name) before freezing; preserve immutable tests after freezing and original acceptance gates.",
+  "archive": {
+    "run": "timing-baseline-1101",
+    "archive": "artifacts/optimization-runs/timing-baseline-1101.tar.gz",
+    "sha256": "44608c104057822e80d8412cc97dffdcf738cf01a2e3ebcfa79847759e96e982",
+    "archive_bytes": 10317562,
+    "verified_files": 107,
+    "dependencies_pruned": false
+  }
+}
