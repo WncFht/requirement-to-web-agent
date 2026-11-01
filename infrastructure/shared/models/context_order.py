@@ -4,7 +4,7 @@ import os
 
 
 def cache_prefix_enabled():
-    return os.getenv("ARC_CACHE_PREFIX", "0") == "1"
+    return os.getenv("ARC_CACHE_PREFIX", "1") == "1"
 
 
 def stable_first(value, keys):

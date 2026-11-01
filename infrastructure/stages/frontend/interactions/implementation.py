@@ -486,7 +486,7 @@ def run_interaction_tdd(
                     workspace = FileWorkspace.for_target(
                         output, "event", new_event, references, writable
                     )
-                    if os.getenv("ARC_EVENT_CONTEXT", "0") == "1":
+                    if os.getenv("ARC_EVENT_CONTEXT", "1") == "1":
                         task = creation_context(
                             context, new_event, event_paths, page_paths
                         )
