@@ -2,8 +2,11 @@
 
 import os
 import unittest
-from unittest.mock import patch
-from infrastructure.stages.backend.test_admission import validate_backend_test
+from unittest.mock import Mock, patch
+from infrastructure.stages.backend.test_admission import (
+    validate_backend_test,
+    review_backend_test,
+)
 
 BAD = """function readSafe(headers: Record<string, string | string[]> | undefined): string {
   return JSON.stringify(headers ?? {});
@@ -13,6 +16,50 @@ assert.ok(!readSafe(result.headers));
 
 
 class BackendAdmissionTests(unittest.TestCase):
+    def test_independent_contradiction_rejects_candidate_without_editing_it(self):
+        model = Mock()
+        model.generate_json.return_value = {
+            "status": "CONTRADICTORY",
+            "reason": "Helper forbids a supplied object key",
+        }
+        with self.assertRaisesRegex(ValueError, "before freezing"):
+            review_backend_test(BAD, model, {})
+        self.assertEqual(model.generate_json.call_args.args[1]["source"], BAD)
+
+    def test_review_does_not_admit_unknown_or_empty_verdicts(self):
+        for verdict in [
+            {},
+            {"status": "UNKNOWN", "reason": "uncertain"},
+            {"status": "NO_CONTRADICTION_FOUND", "reason": ""},
+        ]:
+            with (
+                self.subTest(verdict=verdict),
+                self.assertRaisesRegex(ValueError, "invalid verdict"),
+            ):
+                review_backend_test(
+                    "candidate", Mock(generate_json=Mock(return_value=verdict)), {}
+                )
+
+    def test_clean_review_and_legacy_rollback_preserve_other_gates(self):
+        model = Mock(
+            generate_json=Mock(
+                return_value={
+                    "status": "NO_CONTRADICTION_FOUND",
+                    "reason": "No conflicting assertions identified",
+                }
+            )
+        )
+        self.assertEqual(
+            review_backend_test("candidate", model, {})["status"],
+            "NO_CONTRADICTION_FOUND",
+        )
+        with patch.dict(os.environ, {"ARC_LEGACY_TEST_REVIEW": "1"}):
+            untouched = Mock()
+            self.assertEqual(
+                review_backend_test(BAD, untouched, {})["status"], "DISABLED"
+            )
+            untouched.generate_json.assert_not_called()
+
     @patch.dict(os.environ, {"ARC_LEGACY_TEST_SANITY": "0"})
     def test_actual_impossible_helper_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "Contradictory"):

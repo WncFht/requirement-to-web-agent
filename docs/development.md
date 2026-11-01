@@ -29,6 +29,7 @@
 | `ARC_LEGACY_INTERACTION_RETRY` | 0 | =1 回退交互提案失败后“已接受状态”基准说明 |
 | `ARC_LEGACY_UI_PREDICATES` | 0 | =1 回退完整可见性谓词提示；UI IR 与 gate 不变 |
 | `ARC_LEGACY_TEST_SANITY` | 0 | =1 回退后端恒假 header 断言的冻结前准入检查 |
+| `ARC_LEGACY_TEST_REVIEW` | 0 | =1 回退冻结前独立模型矛盾审阅；其他 gate 保留 |
 | `ARC_FULL_FEEDBACK`           | 0                  | =1 恢复旧的字符串修复反馈与重复 output                           |
 | `ARC_FULL_CONTEXT`            | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）              |
 | `ARC_UI_DESIGN_FRESH`         | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                        |

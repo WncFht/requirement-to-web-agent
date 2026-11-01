@@ -10,7 +10,10 @@ from infrastructure.shared.agent.files import (
     source_paths,
 )
 from infrastructure.shared.agent.loop import run_file_agent
-from infrastructure.stages.backend.test_admission import validate_backend_test
+from infrastructure.stages.backend.test_admission import (
+    validate_backend_test,
+    review_backend_test,
+)
 from infrastructure.shared.models.text import TextModel
 from infrastructure.shared.project.dependencies import install_dependencies
 from infrastructure.shared.project.entrypoints import selected_path
@@ -240,12 +243,19 @@ def implement_backend_tdd(
                     f"{label} | Test Generation: P / Q / R / W",
                     json.dumps(api, ensure_ascii=False, indent=2),
                 )
+                reviewed_sources = set()
 
                 def test_gate(aid=aid):
                     chosen = selected_path(output, "backend_test", aid) or relative
-                    validate_backend_test(
-                        (output / chosen).read_text(encoding="utf-8-sig")
-                    )
+                    source = (output / chosen).read_text(encoding="utf-8-sig")
+                    validate_backend_test(source)
+                    if source not in reviewed_sources:
+                        console.show(
+                            label + " | Independent test contradiction review",
+                            "Review helpers and assertions before freezing; existing compilation and RED/GREEN gates remain.",
+                        )
+                        review_backend_test(source, model, api)
+                        reviewed_sources.add(source)
                     targets[aid] = chosen
                     files_by_api[aid] = [chosen]
                     generation_files = [
