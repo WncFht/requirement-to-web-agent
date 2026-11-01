@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -31,6 +32,8 @@ def profile(path):
                 responses[row["call_id"]] = row
     stages = defaultdict(Counter)
     groups = defaultdict(Counter)
+    edit_rounds = defaultdict(Counter)
+    stage_edit_rounds = defaultdict(lambda: defaultdict(Counter))
     replay = []
     for call_id, response in responses.items():
         usage = response["response"].get("usage")
@@ -61,6 +64,16 @@ def profile(path):
         values.update(calls=1, model_seconds=response.get("elapsed_seconds", 0))
         stages[response["stage"]].update(values)
         groups[kind].update(values)
+        round_match = re.search(r"\bEdit round (\d+)/\d+", activity)
+        round_group = (
+            "first_edit_round"
+            if round_match and int(round_match[1]) == 1
+            else "later_edit_round"
+            if round_match
+            else "not_labeled_as_edit_round"
+        )
+        edit_rounds[round_group].update(values)
+        stage_edit_rounds[response["stage"]][round_group].update(values)
         arguments = request.get("arguments", {})
         message = arguments.get("messages", [{}])[-1].get("content")
         if kind != "creation" or not isinstance(message, str):
@@ -98,12 +111,32 @@ def profile(path):
     totals = Counter()
     for values in stages.values():
         totals.update(values)
+
+    def cache_breakdown(values):
+        return {
+            **values,
+            "uncached_input_tokens": values["prompt_tokens"]
+            - values["prompt_cache_hit_tokens"],
+            "weighted_input_cache_hit_ratio": values["prompt_cache_hit_tokens"]
+            / values["prompt_tokens"]
+            if values["prompt_tokens"]
+            else None,
+        }
+
     return {
         "log_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "measurement": "SDK usage once per returned call; cumulative request time is not pipeline wall time",
         "totals": dict(totals),
         "stages": dict(stages),
         "groups": dict(groups),
+        "edit_round_groups": {
+            key: cache_breakdown(values) for key, values in edit_rounds.items()
+        },
+        "stage_edit_round_groups": {
+            stage: {key: cache_breakdown(values) for key, values in categories.items()}
+            for stage, categories in stage_edit_rounds.items()
+        },
+        "edit_round_scope": "Activity-label partition of returned SDK usage: first/later edit rounds and other calls. Later rounds include both expected TDD repair and unproductive retries; this is descriptive, not proof that caching caused success, failure or speedup. Missing usage remains unknown.",
         "requests_without_returned_usage": sorted(set(requests) - set(responses)),
         "creation_replay": replay,
         "replay_scope": "Same recorded calls, payload character counts only; no model execution, output or inferred token savings",
