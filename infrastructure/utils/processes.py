@@ -64,11 +64,7 @@ def stop_process(process) -> None:
             check=False,
         )
     else:
-        descendants = (
-            owned_descendants(process.pid)
-            if os.getenv("ARC_LEGACY_PROCESS_CLEANUP", "0") != "1"
-            else []
-        )
+        descendants = owned_descendants(process.pid)
         try:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:

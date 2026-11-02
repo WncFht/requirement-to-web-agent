@@ -5,7 +5,7 @@ import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from coding_agent.acceptance import adapter_from_schema, evaluation_directory
+from scripts.evaluation import adapter_from_schema, evaluation_directory
 
 
 class AcceptanceAdapterTests(unittest.TestCase):

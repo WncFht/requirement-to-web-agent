@@ -1,12 +1,9 @@
 """IR radio ownership must be observable through the real semantic group."""
 
-import os
 import unittest
-from unittest.mock import patch
 
 from test_frontend_flow import frontend_fixture, node, binding
 from infrastructure.stages.frontend.ui.testing import existence_suite
-from infrastructure.stages.frontend.ui.label_contracts import radio_group_instructions
 
 
 class RadioContainmentTests(unittest.TestCase):
@@ -35,8 +32,7 @@ class RadioContainmentTests(unittest.TestCase):
         return design
 
     def test_roles_and_labels_resolve_actual_radios_inside_their_group(self):
-        with patch.dict(os.environ, {"ARC_LEGACY_RADIO_CONTAINMENT": "0"}):
-            suite = existence_suite(self.fixture(), "editor")
+        suite = existence_suite(self.fixture(), "editor")
         self.assertIn(
             'getByRole("radiogroup", { name: "Gender", exact: true })).toHaveAttribute("data-testid", "UI-GENDER")',
             suite,
@@ -59,11 +55,3 @@ class RadioContainmentTests(unittest.TestCase):
             'getByTestId("UI-GENDER").getByRole("radio", { name: "Male", exact: true })',
             suite,
         )
-
-    def test_rollback_keeps_the_original_radio_and_label_checks(self):
-        with patch.dict(os.environ, {"ARC_LEGACY_RADIO_CONTAINMENT": "1"}):
-            suite = existence_suite(self.fixture(), "editor")
-            self.assertEqual(radio_group_instructions(), "")
-        self.assertNotIn('getByRole("radiogroup"', suite)
-        self.assertIn('getByTestId("UI-MALE")).toHaveValue("Male")', suite)
-        self.assertIn('getByTestId("UI-MALE")).toBeChecked()', suite)

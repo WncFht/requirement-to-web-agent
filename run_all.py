@@ -1,9 +1,6 @@
 """Run tutorial steps 00 through 12 sequentially without teaching pauses."""
 
 import argparse
-import json
-import os
-from contextlib import nullcontext
 from pathlib import Path
 import subprocess
 import sys
@@ -33,98 +30,30 @@ STEPS = (
     "12_implement_frontend_tdd.py",
 )
 
-# Legacy compatibility only. These existence checks are not completion proof.
-SENTINELS = {
-    "00_project_initialization.py": ("package.json",),
-    "01_explore_requirement.py": (
-        ".arc/requirements.json",
-        ".arc/visual_analysis.json",
-    ),
-    "02_build_db_schema.py": (".arc/db_schema.json",),
-    "03_infer_db_obligations.py": (".arc/db_obligations.json",),
-    "04_check_db_obligations.py": (),
-    "05_implement_db.py": (),  # 哨兵在 legacy_step_completed 特判：tables 目录须含至少一个 .sql
-    "06_decompose_backend_apis.py": (".arc/backend_apis.json",),
-    "07_infer_api_contracts.py": (".arc/backend_contracts.json",),
-    "08_implement_backend_tdd.py": (".arc/backend_tdd.json",),
-    "09_design_ui.py": (),
-    "10_implement_ui.py": (".arc/ui_checks.json",),
-    "11_design_ui_interactions.py": (".arc/ui_interactions.json",),
-    "12_implement_frontend_tdd.py": (".arc/frontend_e2e.json",),
-}
-
-# Steps whose sentinel must additionally report status GREEN to count as done.
-GREEN_SENTINELS = {
-    "08_implement_backend_tdd.py": ".arc/backend_tdd.json",
-    "12_implement_frontend_tdd.py": ".arc/frontend_e2e.json",
-}
-
-
-def step_path(source: Path, step: str) -> Path:
-    """Prefer organized entrypoints, while supporting historical root layouts."""
-    relocated = source / "legacy" / step
-    return relocated if relocated.is_file() else source / step
-
-
-def legacy_step_completed(output: Path, step: str) -> bool:
-    """True when every sentinel artifact exists (and reports GREEN where required)."""
-    if step == "05_implement_db.py":
-        # The scaffold creates an empty backend/src/db/tables directory; stage 05
-        # is only complete when at least one generated .sql table lives in it.
-        tables = output / "backend/src/db/tables"
-        return tables.is_dir() and any(tables.glob("*.sql"))
-    sentinels = SENTINELS.get(step, ())
-    if not sentinels or not all((output / relative).exists() for relative in sentinels):
-        return False
-    green_path = GREEN_SENTINELS.get(step)
-    if green_path is None:
-        return True
-    try:
-        return (
-            json.loads((output / green_path).read_text(encoding="utf-8-sig")).get(
-                "status"
-            )
-            == "GREEN"
-        )
-    except (OSError, ValueError):
-        return False
-
 
 def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
     """Run sequential passes; publish successful receipts only after exit and gate validation."""
-    legacy = os.getenv("ARC_LEGACY_PIPELINE_RESUME", "0") == "1"
     with (
         timed("pipeline", output=output_dir),
-        nullcontext() if legacy else pipeline_lock(output_dir),
+        pipeline_lock(output_dir),
     ):
-        state = (
-            None
-            if legacy
-            else PipelineState(COMPILER_DIR, input_dir, output_dir, STEPS, resume)
-        )
+        state = PipelineState(COMPILER_DIR, input_dir, output_dir, STEPS, resume)
         for index, step in enumerate(STEPS, 1):
-            complete = resume and (
-                legacy_step_completed(output_dir, step)
-                if legacy
-                else state.completed(step)
-            )
+            complete = state.completed(step)
             if resume and complete:
                 with timed("stage_skip", stage=stage_label(step), name=step) as timing:
                     timing["status"] = "skipped"
                 show_panel(
                     f"[{index}/{len(STEPS)}] {stage_label(step)}",
-                    "Verified completion record; skipping (--resume)."
-                    if state
-                    else "Legacy sentinel hit; skipping (--resume).",
+                    "Verified completion record; skipping (--resume).",
                 )
                 continue
             show_panel(f"[{index}/{len(STEPS)}] {stage_label(step)}", f"Running {step}")
             with timed("pipeline_stage", stage=stage_label(step), name=step):
-                if state:
-                    state.begin(step)
+                state.begin(step)
                 command = [
                     sys.executable,
-                    str(step_path(COMPILER_DIR, step)),
+                    str(COMPILER_DIR / "legacy" / step),
                     "--input",
                     str(input_dir),
                     "--output",
@@ -149,7 +78,7 @@ def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
                         )
                     success = True
                 finally:
-                    if state and checkpoint_safe:
+                    if checkpoint_safe:
                         state.finish(step, success)
 
 

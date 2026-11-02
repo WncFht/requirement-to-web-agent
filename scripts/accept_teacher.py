@@ -143,14 +143,7 @@ def make_adapter(output):
     ]
     contracts = json.loads((output / ".arc/backend_contracts.json").read_text())["apis"]
     observed = observe_cookie_transport(output, contracts)
-    if observed["status"] == "DISABLED":
-        from infrastructure.stages.frontend.interactions.testing import (
-            backend_cookie_names,
-        )
-
-        cookies = set(backend_cookie_names(output))
-    else:
-        cookies = set(observed["names"])
+    cookies = set(observed["names"])
     if len(cookies) != 1 or len(paths) != 1:
         raise ValueError(
             f"Cannot identify unique session cookie/path: cookies={sorted(cookies)}, paths={paths}; provide --adapter"

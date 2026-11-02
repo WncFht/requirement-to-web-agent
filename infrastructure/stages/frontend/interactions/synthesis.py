@@ -1,7 +1,6 @@
 """Step 11: simple trigger/action design followed by shared event P/Q inference."""
 
 import json
-import os
 from infrastructure.shared.models.context_order import stable_first
 from infrastructure.stages.frontend.interactions.read_failures import (
     read_failure_instructions,
@@ -13,7 +12,6 @@ from infrastructure.stages.frontend.interactions.design import (
     InteractionCoverageError,
     apply_decomposition,
     empty_interactions,
-    event_ids,
     relevant_pages,
     require_fields,
     validate_interactions,
@@ -43,10 +41,7 @@ def propose(model, instructions, request, validate, console, label, max_attempts
             return validate(response), response
         except ValueError as error:
             correction = {"error": str(error), "previous_response": response}
-            if (
-                "existing_interactions" in request
-                and os.getenv("ARC_LEGACY_INTERACTION_RETRY", "0") != "1"
-            ):
+            if "existing_interactions" in request:
                 correction["trigger_record_example"] = {
                     "TR-example": {
                         "source": "UI-example",

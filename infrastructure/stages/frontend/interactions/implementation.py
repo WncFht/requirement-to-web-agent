@@ -24,7 +24,6 @@ from infrastructure.stages.frontend.interactions.testing import (
     require_behavioral_red,
     test_path,
     validate_e2e_source,
-    backend_cookie_names,
 )
 from infrastructure.stages.frontend.interactions.cookie_transport import (
     observe_cookie_transport,
@@ -228,13 +227,12 @@ def run_interaction_tdd(
     accepted E2E/UI tests, build the app, and update the caller's report."""
     output = arc_dir.parent.resolve()
     test_instructions = TEST_INSTRUCTIONS
-    if os.getenv("ARC_LEGACY_RED_GUIDANCE", "0") != "1":
-        test_instructions += (
-            "\nBefore EVERY click/fill/check/selectOption/press, await expect(the same locator).toBeVisible() "
-            "and, when necessary, toBeEnabled(). During RED, controls can be hidden until their mount handler exists. "
-            "A missing target must fail with this assertion before the action can time out. "
-            "Preserve scenario behavior and all database assertions; do not implement event handlers in test generation."
-        )
+    test_instructions += (
+        "\nBefore EVERY click/fill/check/selectOption/press, await expect(the same locator).toBeVisible() "
+        "and, when necessary, toBeEnabled(). During RED, controls can be hidden until their mount handler exists. "
+        "A missing target must fail with this assertion before the action can time out. "
+        "Preserve scenario behavior and all database assertions; do not implement event handlers in test generation."
+    )
     # Creation calls carry a slim context by default: one target event, the
     # compiler-owned wiring files and this requirement's page sources. Set
     # ARC_FULL_CONTEXT=1 to restore the unsimplified per-call context (A/B runs).
@@ -250,17 +248,8 @@ def run_interaction_tdd(
     checks, ui_checks = E2EChecks(output, max_tests), FrontendChecks(output)
     checks.install_browser()
     observed_transport = observe_cookie_transport(output, backend["apis"])
-    cookie_names = (
-        backend_cookie_names(output)
-        if observed_transport["status"] == "DISABLED"
-        else observed_transport["names"]
-    )
-    admission_names = (
-        cookie_names
-        if os.getenv("ARC_LEGACY_E2E_COOKIE_NAMES", "0") != "1"
-        and observed_transport["status"] != "DISABLED"
-        else None
-    )
+    cookie_names = observed_transport["names"]
+    admission_names = cookie_names
     ui_files = [ui_test_path(pid) for pid in ui["pages"]]
     baseline = ui_checks.tests(ui_files)
     require_green(baseline)

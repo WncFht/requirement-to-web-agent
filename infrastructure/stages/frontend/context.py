@@ -1,7 +1,6 @@
 """Frontend inputs retain image/page evidence alongside normalized requirements."""
 
 import json
-import os
 import re
 
 from infrastructure.stages.backend.context import load_context
@@ -16,8 +15,6 @@ REFERENCE = re.compile(r"\\ref\[image\]\(([^)]+)\)")
 
 def reference_tests(input_dir):
     """Expose supplied interaction contracts as read-only evidence, never generated tests."""
-    if os.getenv("ARC_LEGACY_REFERENCE_TESTS", "0") == "1":
-        return {}
     root = input_dir.resolve()
     return {
         path.relative_to(root).as_posix(): path.read_text(encoding="utf-8-sig")
@@ -28,11 +25,9 @@ def reference_tests(input_dir):
 
 def validate_reference_controls(design, context):
     """Reject a select where a supplied external contract requires a radio group."""
-    if os.getenv("ARC_LEGACY_REFERENCE_TESTS", "0") == "1":
-        return
     sources = "\n".join(context.get("reference_tests", {}).values())
-    if os.getenv("ARC_LEGACY_IDENTITY_DISPLAY", "0") != "1" and re.search(
-        r"getByText\(\s*account\.username\s*,\s*\{\s*exact:\s*true", sources
+    if re.search(
+        "getByText\\(\\s*account\\.username\\s*,\\s*\\{\\s*exact:\\s*true", sources
     ):
         from infrastructure.stages.frontend.ui.design import page_elements
 

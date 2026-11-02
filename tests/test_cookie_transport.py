@@ -1,7 +1,6 @@
 """Cookie evidence must be observed, immutable, cached by backend content, and checked before freezing."""
 
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -39,9 +38,6 @@ class CookieTransportTests(unittest.TestCase):
         self.calls = []
         self.names = [""]
         self.bindings = None
-        self.env = patch.dict(os.environ, {"ARC_LEGACY_COOKIE_TRANSPORT": "0"})
-        self.env.start()
-        self.addCleanup(self.env.stop)
 
     def execute(self, command, *, cwd, timeout):
         self.calls.append(command)
@@ -125,17 +121,13 @@ class CookieTransportTests(unittest.TestCase):
                 observe_cookie_transport(self.root, self.apis)
         self.assertFalse((self.root / REPORT).exists())
 
-    def test_explicit_rollback_and_no_api_do_not_run_probe(self):
+    def test_no_api_does_not_run_probe(self):
         with patch(
             "infrastructure.stages.frontend.interactions.cookie_transport.capture_process"
         ) as execute:
             self.assertEqual(
                 observe_cookie_transport(self.root, {})["status"], "NO_APIS"
             )
-            with patch.dict(os.environ, {"ARC_LEGACY_COOKIE_TRANSPORT": "1"}):
-                self.assertEqual(
-                    observe_cookie_transport(self.root, self.apis)["status"], "DISABLED"
-                )
             execute.assert_not_called()
 
     def test_literal_guard_supports_empty_name_and_rejects_historical_mismatch(self):

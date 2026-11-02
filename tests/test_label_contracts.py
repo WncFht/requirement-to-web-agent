@@ -1,12 +1,9 @@
 """The browser gate must match a label to the actual control, not a wrapper."""
 
 from copy import deepcopy
-import os
 import unittest
-from unittest.mock import patch
 
 from test_frontend_flow import frontend_fixture, node, binding
-from infrastructure.stages.frontend.ui.label_contracts import label_instructions
 from infrastructure.stages.frontend.ui.testing import existence_suite
 
 
@@ -31,10 +28,3 @@ class LabelContractTests(unittest.TestCase):
         self.assertIn(
             'getByTestId("UI-PASSWORD")).toHaveAccessibleName("Password")', suite
         )
-
-    def test_legacy_flag_only_removes_added_label_gate_and_guidance(self):
-        with patch.dict(os.environ, {"ARC_LEGACY_LABEL_LOCATORS": "1"}):
-            suite = existence_suite(self.fixture(), "editor")
-            self.assertNotIn(".getByLabel(", suite)
-            self.assertIn("toHaveAccessibleName", suite)
-            self.assertEqual(label_instructions(), "")

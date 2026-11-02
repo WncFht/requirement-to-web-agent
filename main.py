@@ -35,13 +35,7 @@ def main():
         parser.error("Output directory must not equal or be inside the input directory")
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535")
-    profile_path = source / "engine.json"
-    packaged_default = (
-        json.loads(profile_path.read_text()).get("default", "legacy")
-        if profile_path.exists()
-        else "legacy"
-    )
-    engine = os.getenv("ARC_AGENT_ENGINE", packaged_default)
+    engine = os.getenv("ARC_AGENT_ENGINE", "legacy")
     if engine not in {"legacy", "coding"}:
         parser.error("ARC_AGENT_ENGINE must be legacy or coding")
     if engine == "coding":

@@ -2,7 +2,6 @@
 
 from hashlib import sha256
 import json
-import os
 from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
@@ -95,8 +94,6 @@ def observe_cookie_transport(output, apis):
     production DB remain untouched. The report stores names, hashes and counts,
     never credentials. No observed names is unknown, not a guessed empty name.
     """
-    if os.getenv("ARC_LEGACY_COOKIE_TRANSPORT", "0") == "1":
-        return {"status": "DISABLED", "names": None}
     output = Path(output).resolve()
     if not apis:
         return {"status": "NO_APIS", "names": [], "producers": {}}

@@ -13,16 +13,8 @@
             "characters": 12000
         },
         {
-            "glob": "docs/experiments/*.md",
-            "characters": 14000
-        },
-        {
             "glob": ".agents/notes/implemented/*/*.md",
             "characters": 5000
-        },
-        {
-            "glob": "docs/history/*.md",
-            "characters": 18000
         }
     ]
 }

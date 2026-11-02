@@ -1,194 +1,94 @@
-# 操作指南：运行、续跑与度量
+# 开发指南
 
-## 前提
+在源码仓库修改生成器，生成结果写到仓库外的独立目录。当前真实模型 API 已停用，下面的生成命令仅作接口参考；离线检查可正常执行。
 
-- Python 3.12 venv 位于 `source/.venv`（含编译器依赖）
-- Node 22（mise：`~/.local/share/mise/installs/node/22.23.2/bin`）。**构建产物必须用
-  Node 22 运行**——系统 Node 24 的 ABI 与已编译的 better-sqlite3 不符（ERR_DLOPEN_FAILED）
-- 模型 key 在 `.env`（gitignored）：`OPENAI_API_KEY` / `OPENAI_BASE_URL` / `MODEL`
-- npm 镜像与 Playwright 下载 host 参见 `../tools/run-stage.sh`
+## 团队开发
 
-## 全流程运行
+从 main 创建短期 `feat/*` 或 `fix/*` 分支，修改所属模块并补充能暴露真实问题的回归，运行 `make check` 后合回。分支管理见[维护指南](maintenance.md)。
 
-按固定提交打包及本地运行的统一入口为 `make package`、`make run` 和 `make serve`，版本与网站操作见[提交指南](submission.md)。下面的源码入口适用于当前工作区，包含未提交改动。
+| 需要改变                        | 主要位置                                            | 验证重点                               |
+| ------------------------------- | --------------------------------------------------- | -------------------------------------- |
+| legacy 阶段设计、提示词与修复   | `legacy/`、`infrastructure/stages/`                 | IR、权限、准入与原门禁完整保留         |
+| coding 工具、循环、预算与提示词 | `coding_agent/`                                     | 文件边界、冻结测试、失败终态和真实检查 |
+| 共享模型连接、进程、模板        | `infrastructure/shared/`、`infrastructure/utils/`   | 两种引擎均不回归；凭据与模板身份正确   |
+| 独立验收与上传包                | `scripts/evaluation.py`、`scripts/package_agent.py` | 固定断言不变，包中源码与指定提交一致   |
 
-以下原有全流程与续跑说明适用于默认 legacy。候选 coding 的运行和审计见下节；两种
-引擎必须使用不同的新目录。
+两种引擎都先生成测试、观察有效 RED，再实现到 GREEN。legacy 按阶段/事件重复这一步；coding 冻结全应用测试后在同一循环修改前后端。日常开发修改智能体源码，通过新提交交付；生成应用只作为验证证据，不回填成智能体版本。
+
+## 环境与离线检查
+
+Python 3.12、Node 22、npm 与 uv 为前提。根 README 的安装步骤完成后：
 
 ```sh
-.venv/bin/python main.py input -o ../work/<目录> [--resume]
-# run_all 结束后自动：npm run db:init && npm run build，并生成 deploy.sh
+make check
+make format
 ```
 
-- 单阶段：`.venv/bin/python -u legacy/08_implement_backend_tdd.py --input input --output ../work/<目录>`
-- 断点续跑：`--resume` 只跳过具有可信完成记录的连续成功阶段，条件与迁移见下节。
-
-## 单循环候选的运行与审计
-
-真实模型 API 调用已按用户要求停止，此前付费实验授权已经撤销。以下生成命令保留为接口参考，未经用户重新明确授权不得执行；本地静态检查、离线测试和已有证据整理不调用模型。
-
-本地先把 Node 22 放入 PATH，并将模型配置注入环境。已有 `.env` 可在自己的 shell 中
-加载；候选不主动读取它，平台包只依赖平台注入的地址和 Key，`MODEL` 缺省为
-`deepseek-flash`。真实模型验证目前限于这个兼容端点与模型，不代表其他服务已验证。
+`make check` 执行 Python 单测、文档与 Notes 检查、Ruff、Prettier 和 Markdownlint。常规单测跳过重浏览器集成。若有已准备好的 Node 22 依赖快照及 Chromium，可显式执行本地模拟测试，不连接真实模型：
 
 ```sh
 export PATH="$HOME/.local/share/mise/installs/node/22.23.2/bin:$PATH"
-set -a
-. ./.env
-set +a
-ARC_AGENT_ENGINE=coding .venv/bin/python main.py input --output-dir ../work/my-coding-run
-```
-
-输出目录必须全新，可预置独立的 `node_modules`；失败目录保留，不覆盖续跑。
-`APP_CONTRACT.md` 是实现约定，事实以文件和真实执行为准。生成器非零退出时，先看
-`.arc/agent/result.json` 的终态，再按 `events.jsonl` 的 turn、阶段和附件定位原因。
-`INVALID_TEST` 表示冻结边界内的测试问题；`NO_PROGRESS` 和预算耗尽是失败终态。
-`INTERNAL_GREEN` 只证明内部测试与构建通过。
-
-需要复用参考照片时，模型可发出 `{"action":"edit","edits":[{"path":"frontend/public/assets/photo.png","copy_from":"input/reference/image.png"}]}`。该动作只在实现阶段可用，图片以 `/assets/photo.png` 发布；已有素材不可覆盖。浏览器检查列出的错误快照与失败截图可以通过 `read` 只读查看。
-
-| 候选环境变量                  | 默认值                          | 作用                                                  |
-| ----------------------------- | ------------------------------- | ----------------------------------------------------- |
-| `ARC_AGENT_ENGINE`            | 源码 legacy；ZIP 按打包参数固定 | 选择引擎；legacy 的其他开关不控制新循环               |
-| `ARC_AGENT_MAX_TURNS`         | 100                             | 全流程模型轮次上限                                    |
-| `ARC_AGENT_MAX_TOKENS`        | 2500000                         | 已返回 SDK 总用量预算，最后一次调用的实际用量完整计入 |
-| `ARC_AGENT_MAX_SECONDS`       | 1200                            | 安装、模型与检查共享的本地预算，不是平台限额          |
-| `ARC_AGENT_OUTPUT_TOKENS`     | 8192                            | 每次响应输出上限                                      |
-| `ARC_AGENT_TRANSPORT_RETRIES` | 1                               | 唯一外层传输重试；SDK 内部重试为零                    |
-
-下列检查不发起付费模型请求。浏览器集成需要已准备的依赖快照和 Chromium；快照应与
-Node 22 的 better-sqlite3 ABI 一致。常规单测跳过这项重集成，需显式执行：
-
-```sh
-.venv/bin/python -m unittest discover -s tests -q
-.venv/bin/python -m unittest discover -s scripts/tests -q
 ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
   .venv/bin/python -m unittest discover -s tests -p test_coding_checks.py -q
 ```
 
-对已结束的登录生成运行独立验收；每个证据路径必须不存在。新评估入口同时支持两种
-引擎，不能通过 `--allow-incomplete` 或合成阶段报告接纳未完成产物：
+Node 22.23.2 是本机已验证版本。不要将 Node 24 与 Node 22 编译的 better-sqlite3 混用。Windows 可直接执行 `python scripts/run_checks.py --config scripts/checks.json --mode ci`；make、自动 Git hook 与 `deploy.sh` 的 Bash 部分需要相应环境。
+
+## 运行与配置
+
+需要固定提交的结果时，用[提交指南](submission.md)中的 `make run`，它执行对应上传包。直接运行当前工作区则包含未提交改动：
 
 ```sh
-.venv/bin/python scripts/accept_agent.py ../work/my-coding-run --evidence ../work/my-fixed --mode fixed
-.venv/bin/python scripts/accept_agent.py ../work/my-coding-run --evidence ../work/my-production --mode production
+# 真实模型生成目前禁止执行；保留接口示例。
+.venv/bin/python main.py input --output-dir ../work/new-legacy
+ARC_AGENT_ENGINE=coding .venv/bin/python main.py input --output-dir ../work/new-coding
+.venv/bin/python legacy/08_implement_backend_tdd.py --input input --output ../work/new-legacy
 ```
 
-每次外部验收使用隔离 DB；原应用的源码、测试和日志前后核对。会话适配错误归评估错误，
-不能直接判成模型业务失败。诊断修复另建证据，不回填原次成功与耗时。行为通过后仍需
-检查生产截图与参考布局，当前固定断言没有视觉相似度指标。
+直接运行前须把模型配置放入环境；legacy 客户端也能读取本地 `.env`。`make run` 统一加载本地 `.env`，以已有环境变量为优先。平台包读取平台注入的 URL 和 Key，不携带 `.env`。
 
-候选上传包与源码备份分开。包命令只取已提交运行源码，不包含需求示例、固定独立断言、
-已生成网站、依赖、凭据和 `.git`。解压验证通过本地假兼容 API 跑真实检查及生产 PORT：
+| 配置                                        | 行为                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
+| `OPENAI_BASE_URL`、`OPENAI_API_KEY`         | 必需的模型接口和凭据                                                    |
+| `MODEL`                                     | 模型名；平台包与 coding 缺省为 `deepseek-flash`，legacy 直接运行需配置  |
+| `ARC_AGENT_ENGINE`                          | 源码默认 legacy；上传包固定所选引擎                                     |
+| `ARC_AGENT_MAX_TURNS/TOKENS/SECONDS`        | coding 默认 100 轮、2,500,000 token、1200 秒，共享安装、模型和检查预算  |
+| `ARC_AGENT_OUTPUT_TOKENS/TRANSPORT_RETRIES` | coding 默认每次输出 8192、额外传输重试 1 次                             |
+| `ARC_MODEL_TRANSPORT_RETRIES`               | legacy 瞬态传输额外重试次数，默认 2                                     |
+| `ARC_DISABLE_THINKING`                      | legacy 默认 0；平台入口遇 DeepSeek 模型时缺省设为 1                     |
+| `ARC_EVENT_CONTEXT`、`ARC_CACHE_PREFIX`     | legacy 单事件上下文与稳定排序，默认 1；支持显式消融，不代表稳定性能收益 |
+| `ARC_FULL_CONTEXT`、`ARC_FULL_FEEDBACK`     | legacy 完整上下文/原始反馈诊断，默认 0                                  |
+| `ARC_UI_DESIGN_FRESH`                       | legacy 忽略本阶段 UI checkpoint 重做，默认 0                            |
+
+`ARC_LEGACY_*`、旧哨兵恢复和未晋升的 `ARC_CACHE_PREFIX_V2` 已移除；需要旧行为时运行固定标签中的源码。当前版本不可使用旧输出目录续跑。
+
+## 可信续跑
+
+legacy 在同一输入、源码、配置下普通失败或 Ctrl+C 后，可用原命令加 `--resume`。`.arc/pipeline_state.json` 仅在子进程成功退出并满足阶段完成条件后登记成功前缀；局部 checkpoint 不算成功证明。
+
+状态核对输入、运行源码、依赖声明、关键配置和整体应用工作区哈希。后续阶段会合法修改页面，所以按整体工作区封存；日志、依赖、数据库与构建输出不作为完成证明。配置只保存指纹，不保存原值，API Key 轮换不影响身份。
+
+输入、源码、配置或受保护文件改变、锁残留或强制终止造成未封存时，保留原目录并使用新目录。不要手工补写状态、删除下游 IR 或信任旧哨兵。coding 要求新输出，不支持断点续跑。
+
+## 诊断与独立验收
+
+legacy 查看阶段 `.arc/*.json`、`compiler.log` 和 `model_calls.jsonl`。coding 先看 `.arc/agent/result.json`，再按事件定位检查、请求与附件；`INTERNAL_GREEN` 仅代表内部通过。`INVALID_TEST`、无进展和预算耗尽都保留为失败，不能靠修改冻结测试修绿。
+
+对已有的登录应用运行独立验收，每个证据路径必须全新：
 
 ```sh
-make package REF=coding-agent-candidate-2026-11-02 ENGINE=coding ZIP=../work/my-coding-agent.zip
-.venv/bin/python scripts/test_agent_package.py ../work/my-coding-agent.zip \
-  --output ../work/my-package-check --dependencies /absolute/dependency-snapshot
+.venv/bin/python scripts/accept_agent.py ../work/my-run --evidence ../work/my-fixed --mode fixed
+.venv/bin/python scripts/accept_agent.py ../work/my-run --evidence ../work/my-production --mode production
 ```
 
-受控付费实验用 `scripts/run_coding_campaign.py`。`--credentials` 接受包含 `.env` 的目录；启动前检查必需模型配置与 SQLite 依赖 ABI，并将注册的 Node 路径同时用于生成和进程内验收。要求干净且固定提交的受测 worktree，
-新目录预登记顺序、源码、输入/断言/依赖哈希与预算。运行中不编辑受测源码。原始生成、
-开发验收和生产验收分开保存，失败不替换。完成后独立重算实际用例和 SDK 返回用量：
+验收使用隔离数据库，核对原应用与固定断言身份。映射/环境错误记为评估错误，诊断不回填原成绩；视觉截图仍需另行复核。Notes 示例另有固定正负控制，不代表已完成真实模型泛化。
+
+单循环上传包可用本地假兼容服务验证解压入口、全检查、生产端口和静态图片；不会调用真实模型：
 
 ```sh
-.venv/bin/python scripts/audit_coding_campaign.py ../work/my-campaign --output ../work/my-campaign/audit.json
+make package ENGINE=coding ZIP=../work/new-coding-package.zip
+.venv/bin/python scripts/test_agent_package.py ../work/new-coding-package.zip \
+  --output ../work/new-package-check --dependencies /absolute/dependency-snapshot
 ```
 
-审计不证明提供方账单或路由固定。缓存字段缺失保持未知，不将 token 自动折算金额。
-实验规模、停止规则与默认晋升条件由[候选验证计划](experiments/2026-11-02-编码智能体候选验证计划.md)
-维护；完整参数和每次结果以具体 `protocol.json`、原始 reporter 和审计为准。
-
-## 可信断点续跑与旧目录迁移
-
-首次生成使用新的输出目录；普通失败或 Ctrl+C 后，用完全相同的输入、编译器和配置加 `--resume` 继续。编译器在 `.arc/pipeline_state.json` 原子发布状态：子进程成功退出且阶段完成条件通过，才把阶段加入 completed。部分 checkpoint 保留在工作区，不作为完成证明。Stage 02 必须覆盖全部叶子需求；Stage 05 必须具有 schema 中全部表的 SQL 和初始化代码；08/10/12 必须 GREEN，空设计仅在对应集合确实为空时接受 NO_APIS/NO_UI。
-
-状态保存输入目录文件、legacy 编号脚本/infrastructure/依赖声明的内容指纹，以及模型、端点、输出上限、源码中直接读取的 ARC 开关和 Python 版本的配置指纹。`.env` 中配置与环境覆盖一起参与计算，API key 不参与，状态不保存配置原值。编译器 IR、应用源码、生成测试和构建配置使用整体工作区哈希：后续合法阶段会修改先前页面，不能拿先前页面的旧哈希误判为外部修改。日志、依赖、数据库、构建输出和固定验收证据不作为编译完成证明。
-
-输入、源码、配置或受保护工作区文件变化会使整条流水线的复用资格失效，程序保留旧目录并提示换新输出目录。第一版采用保守的整体失效，尚不支持按 DAG 最小范围自动重建；不会自动删除、搬移旧产物，或让新阶段读取旧条件下的 UI checkpoint。文档、提交号或 API key 单独变化不会导致失效。不要手工修改 pipeline_state.json 来接纳旧目录。
-
-旧版本生成的目录没有完成记录，默认拒绝自动接纳。需要继续旧实验时，先保留原实验身份和证据，再显式使用 `ARC_LEGACY_PIPELINE_RESUME=1` 回退旧哨兵行为；该模式保留旧误判风险，不生成可信记录。新实验优先使用新目录。直接运行单阶段脚本仍可用于诊断，但不会生成流水线完成记录；改动已记录目录的文件后，下一次可信续跑会拒绝复用。
-
-同一目录的流水线写入由 `.arc/pipeline.lock` 排他保护。正常失败/中断会先停止所属子进程，再封存当前局部工作并释放锁；SIGKILL、断电或状态写入中断可能留下锁及 active 状态。仅在确认原写入进程已经退出后移除遗留锁；active 尚未封存时仍需新目录，不自动相信其局部文件。独立验收和构建需等流水线退出，不支持与生成同时修改同一目录。依赖环境仍须按前述 Node 22 要求准备；指纹不替代运行环境和验收检查。
-
-## 环境变量
-
-| 变量                           | 默认               | 作用                                                                                     |
-| ------------------------------ | ------------------ | ---------------------------------------------------------------------------------------- |
-| `ARC_DISABLE_TIMING`           | 0                  | =1 停用新增 timings.jsonl，不影响 gate 或原模型审计                                      |
-| `ARC_LEGACY_PIPELINE_RESUME`   | 0                  | =1 显式回退旧哨兵恢复；不接入可信记录，保留部分产物误判风险                              |
-| `ARC_EVENT_CONTEXT`            | 1                  | 非终验单事件上下文收窄；=0 回退基础瘦身，终验保持全量，FULL_CONTEXT=1 优先回退           |
-| `ARC_CACHE_PREFIX`             | 1                  | 共享字段与文件稳定部分前置；=0 回退后期可开关排序，仍不等于教师原始代码                  |
-| `ARC_CACHE_PREFIX_V2`          | 0                  | =1 显式启用更强共享字段排序，须同时启用 CACHE_PREFIX；两次完整候选均未通过，保持默认关闭 |
-| `ARC_LEGACY_LABEL_LOCATORS`    | 0                  | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留                       |
-| `ARC_LEGACY_READ_FAILURES`     | 0                  | =1 回退只读 mount 处理器故障探针和提示；原浏览器错误上报保留                             |
-| `ARC_LEGACY_E2E_COOKIE_NAMES`  | 0                  | =1 回退有效会话场景的字面量 Cookie 名称准入；测试仍可读取后端源码证据                    |
-| `ARC_LEGACY_E2E_SOURCE_CHECK`  | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留                         |
-| `ARC_LEGACY_REFERENCE_TESTS`   | 0                  | =1 不向前端设计/实现提供 input/tests 外部交互契约                                        |
-| `ARC_LEGACY_RADIO_ASSERTIONS`  | 0                  | =1 回退 radio 存在性测试的选项值/checked 分离断言                                        |
-| `ARC_LEGACY_API_SCOPE`         | 0                  | =1 回退 API 分解中叶子需求边界与 excess 修正提示                                         |
-| `ARC_LEGACY_INTERACTION_RETRY` | 0                  | =1 回退交互提案失败后“已接受状态”基准说明                                                |
-| `ARC_LEGACY_UI_PREDICATES`     | 0                  | =1 回退完整可见性谓词提示；UI IR 与 gate 不变                                            |
-| `ARC_LEGACY_TEST_SANITY`       | 0                  | =1 回退后端恒假 header 断言的冻结前准入检查                                              |
-| `ARC_LEGACY_TEST_REVIEW`       | 0                  | =1 回退冻结前独立模型矛盾审阅；其他 gate 保留                                            |
-| `ARC_FULL_FEEDBACK`            | 0                  | =1 恢复旧的字符串修复反馈与重复 output                                                   |
-| `ARC_FULL_CONTEXT`             | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）                                      |
-| `ARC_UI_DESIGN_FRESH`          | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                                                |
-| `ARC_MODEL_TRANSPORT_RETRIES`  | 2                  | 瞬态传输错误额外重试次数（退避 10/30/90s）                                               |
-| `ARC_REUSE_E2E_TESTS`          | 0                  | =1 复用既有 E2E 测试（重新校验，不重新生成）                                             |
-| `ARC_DISABLE_THINKING`         | 1（deepseek 自动） | 关闭 DeepSeek 思考模式                                                                   |
-
-## 度量
-
-- 逐阶段 token/耗时：聚合 `<输出目录>/model_calls.jsonl`（每条含 usage 与 elapsed_seconds）
-- 历史阶段 wall time：`compiler.log` 中各 `[DONE] Completed in`，不含被中断未完成部分；新运行使用下述结构化计时。
-- 正确性：`.arc/backend_tdd.json`、`.arc/ui_checks.json`、`.arc/frontend_e2e.json` 的 status 与 summary
-
-### 流水线与检查耗时
-
-新运行在输出目录追加 `timings.jsonl`，每个步骤有独立 span_id、trace_id、parent_id 和 start/end。耗时使用单调时钟，UTC 时间戳只用于定位。一次 main.py 启动测 entrypoint（包括 run_all、db:init、最终 build 与 deploy.sh 写出），run_all 独立记录 pipeline 与各阶段；单阶段脚本也通过 console_log 记录 stage_session。续跑使用新的 trace，不覆盖失败尝试，跳过阶段显式标为 skipped。强制终止只有 start 的记录按未知耗时保留。
-
-按以下命令汇总，拒绝覆盖已有摘要：
-
-```sh
-.venv/bin/python scripts/summarize_timings.py ../work/<目录>/timings.jsonl --output ../work/<目录>/timing-summary.json
-```
-
-`entrypoint_seconds` 是一次入口调用的 wall time，`pipeline_seconds` 不含入口最后的数据库初始化与构建。阶段 seconds 包括子进程启动、实际工作及完成记录检查。categories 列出 SDK 模型请求、模型外层退避、typecheck、backend_tests、ui_tests、e2e_tests、dependency_install、browser_install、read_failure_probe、build/db_init 等累计耗时与成功/失败次数。SDK 请求含其内部重试与网络等待；外层显式 sleep 单列，原 model_calls.jsonl 的 call_id 与 model_request.name 对应。模型 SDK 计时只包围实际 SDK create，不包括请求预览、JSON 解析和完整日志写出。
-
-父级耗时包含子级，不能把 pipeline、阶段和各检查相加；分类累计时间也不能直接当 wall time 或 CPU 时间，并发执行时会重叠。非零返回含预期的 TDD RED，不能直接算作阶段失败次数。categories 未覆盖的部分包括提案校验、上下文组装、序列化、部分测试准备和计时记账。不从差值自动归因于缓存或网络。固定老师验收是 main.py 结束后的独立步骤，不计入该入口的 wall time。历史日志没有这些测点，不能补造旧阶段或 gate 的实测耗时。
-
-计时只写类别、内部标识符、状态、错误类型和耗时，不复制命令参数、请求正文、凭据或异常消息。写日志失败会发出固定警告并保留原操作结果，此时测量不完整；开关 `ARC_DISABLE_TIMING=1` 可以停用新增计时，原模型 I/O 审计仍保留。该开关与内部 trace 标识不参与可信恢复的配置指纹；timings.jsonl 和固定命名 timing-summary.json 属于测量记录，不使已完成工作区失效。归档工具会保存并逐文件校验原始计时日志。
-
-### 已记录的计时反例
-
-`work/timing-baseline-1101` 在 Stage 12 重复修复错误的已冻结会话 fixture 后主动中断，入口 wall time 707.57s；模型 SDK 请求 424.12s，UI/E2E 检查累计 223.27s，typecheck 39.75s。93 次已返回调用共 1,791,464 token，输入缓存命中 35.7%。这是失败/中断轨迹，不能作为成功基线或性能改进。
-
-该后端采用空名称 Cookie，实际 Chromium 注册后可恢复会话；生成测试却把凭据同时当名称和值。冻结前静态名称检查在没有识别到命名 producer 时跳过，未覆盖此形式。默认固定验收适配器也无法自动推断空名；显式按实测空名提供结构适配器后，固定 14 条检查和构建通过，但内部 E2E 保持 FAILED，故不晋升稳定标签。证据与边界归 [计时记录](experiments/timing-validation.json)，真实处理器与浏览器重放脚本为 `scripts/replay_empty_cookie.py`；重放使用隔离内存数据库，需要该运行的 npm 依赖、Node 22 和 Chromium，不修改应用或冻结测试。
-
-## 启动生成的网站
-
-```sh
-cd <输出目录> && PORT=3309 npm start   # 或使用生成的 deploy.sh
-```
-
-注意：`.venv`、`node_modules` 迁移或重建后，需以 Node 22 执行
-`npm rebuild better-sqlite3`（npm_config_nodedir 指向 mise Node 22 的安装目录）。
-
-## 已知坑
-
-- 生成测试禁止写死 localhost/127.0.0.1（运行器使用随机端口；Cookie 域不匹配会造成假失败）
-- Quiz/提交类平台故障（502/断连）由 OPT-C 退避重试兜底；超过重试上限的阶段用 `--resume` 续跑
-- 输出目录之间不复用 `.arc` 工件；对比实验必须使用全新输出目录
-
-维护检查、版本与实验管理见 [maintenance.md](maintenance.md)。
-
-## 老师原版稳定验收
-
-默认 `input/` 已恢复教师 ZIP 原字节，哈希归 `input/source.json`；旧 pending 输入迁到 `examples/registration-pending/`，必须分开运行和记录。完整生成后额外运行 `scripts/accept_teacher.py`，命令及准入标准见 [固定验收](../acceptance/README.md)。现有阶段 GREEN 和独立验收/最终构建同时通过，才可记录为稳定运行。
-
-`ARC_LEGACY_TEST_SANITY=1` 回退后端冻结前新增的恒假 header 断言检查；原有类型、RED/GREEN 和回归仍保留。该开关不影响固定的老师独立验收。
-
-页面存在性测试额外检查精确标签定位到实际控件；带必填星号时仅 aria-hidden 不足，控件应保留精确 aria-label。Stage 12 在创建/修复和终验时对已实现的只读 GET mount 处理器注入 503 与传输失败，报告归 `.arc/frontend_read_failures.json`。这不是完整浏览器故障验收；NOT_EXERCISED 表示条件路径未到 API，仍需固定验收检查身份与持久化。
-
-编译器单元检查包含纯 JavaScript 故障探针，需要 PATH 中有 Node；Node 22 仍是完整生成的已验证版本。
+legacy 的 `timings.jsonl` 用单调时钟记录父子 span，父子耗时有包含关系，不能相加；中断缺失 end 保持未知。`scripts/summarize_calls.py` 汇总已返回 SDK 用量，`scripts/summarize_timings.py` 汇总计时。它们不证明供应商账单、缓存路由或模型速度因果关系。

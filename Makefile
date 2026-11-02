@@ -19,11 +19,11 @@ help:
 	  'make check                               Offline tests, formatting and documentation checks' \
 	  'make format                              Apply project formatters'
 versions:
-	@$(PYTHON) scripts/package_coding_agent.py --list
+	@$(PYTHON) scripts/package_agent.py --list
 package:
-	@$(PYTHON) scripts/package_coding_agent.py $(if $(ZIP),"$(ZIP)") --ref "$(REF)" --engine "$(ENGINE)"
+	@$(PYTHON) scripts/package_agent.py $(if $(ZIP),"$(ZIP)") --ref "$(REF)" --engine "$(ENGINE)"
 package-check: package
-	@$(PYTHON) scripts/package_coding_agent.py $(if $(ZIP),"$(ZIP)") --ref "$(REF)" --engine "$(ENGINE)" --check
+	@$(PYTHON) scripts/package_agent.py $(if $(ZIP),"$(ZIP)") --ref "$(REF)" --engine "$(ENGINE)" --check
 run:
 	@$(PYTHON) scripts/run_submission.py --ref "$(REF)" --engine "$(ENGINE)" --input "$(INPUT)" --output "$(OUT)" --port "$(PORT)"
 serve:

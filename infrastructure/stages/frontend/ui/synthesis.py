@@ -12,7 +12,6 @@ from infrastructure.stages.frontend.ui.design import (
     INSTRUCTIONS,
     apply_proposal,
     empty_design,
-    page_elements,
     validate_design,
 )
 from infrastructure.stages.frontend.ui.proposals import (
@@ -177,11 +176,7 @@ def synthesize_ui(
                     INSTRUCTIONS
                     + "\n\n"
                     + EXAMPLE_INSTRUCTIONS
-                    + (
-                        ""
-                        if os.getenv("ARC_LEGACY_UI_PREDICATES", "0") == "1"
-                        else "\n\n" + VISIBILITY_RULES
-                    ),
+                    + ("\n\n" + VISIBILITY_RULES),
                     request,
                 )
                 proposal = response

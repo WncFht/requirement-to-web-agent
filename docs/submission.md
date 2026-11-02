@@ -14,7 +14,7 @@
 | 教师契约旧版       | `teacher-contracts-2026-11-01`      | `legacy` | `590dd8c`；教师原需求与契约检查点，后续工程修复不包含在该提交内                        |
 | 早期验证旧版       | `optimized-verified-2026-11-01`     | `legacy` | `e910eed`；保留当时验证和输入条件，不能把历史结果移植为当前平台成绩                    |
 
-`make versions` 列出这些引用的完整解析起点与支持引擎。教师原始 `teacher-baseline` 的入口只解析参数，没有接通生成，不属于可直接提交运行的成品。较早 `bd700aa` 单循环运行存在参考图片缺失，保留历史证据，不列为推荐交付。实验条件与负结果见[候选报告](experiments/2026-11-02-单循环编码智能体对照验证.md)和[旧版报告](experiments/2026-11-01-baseline-optimization.md)。
+`make versions` 列出这些引用的提交 SHA 与支持引擎。教师原始 `teacher-baseline` 的入口只解析参数，没有接通生成，不属于可直接提交运行的成品。较早 `bd700aa` 单循环运行存在参考图片缺失，保留历史证据，不列为推荐交付。实验条件与负结果见[结果摘要](results.md)。
 
 ## 生成上传包
 
@@ -29,13 +29,11 @@ make package-check REF=teacher-contracts-2026-11-01 ENGINE=legacy
 make package-check REF=optimized-verified-2026-11-01 ENGINE=legacy
 ```
 
-默认产物为 `dist/agent-<引擎>-<12位SHA>.zip` 和同名 `.json` 清单；`dist/` 不入库。可用 `ZIP=../work/my-agent.zip` 指定位置。相同内容可重复执行；目标已存在且内容不同时拒绝覆盖，换新文件名即可。清单记录完整提交 SHA、引擎、ZIP 哈希及逐文件哈希，分享或上传前保留它。
+默认产物为 `dist/agent-<引擎>-<12位SHA>-v2.zip` 和同名 `.json` 清单；`dist/` 不入库。可用 `ZIP=../work/my-agent.zip` 指定位置。相同内容可重复执行；目标已存在且内容不同时拒绝覆盖，换新文件名即可。清单记录完整提交 SHA、引擎、ZIP 哈希及逐文件哈希，分享或上传前保留它。
 
-ZIP 根目录有 `main.py`、`requirements.txt`、所选引擎及实际依赖的模块、模板和提示词。原入口原字节保存在 `_agent_main.py`；薄入口固定所选引擎，并补足平台未注入时的默认 `MODEL=deepseek-flash`，地址和 Key 仍由平台注入。环境中的模型名可以覆盖默认值，`ARC_AGENT_ENGINE` 不能改变已打包的引擎。
+包内源码、模板与排除规则见[打包范围](packaging.md)。旧标签保持当时布局，当前源码不再保留旧入口或行为的兼容分支。
 
-包内排除 `.env`、`.git`、依赖、生成网站、示例需求和独立验收材料。旧标签仍使用当时根目录的编号脚本；当前版本使用 `legacy/`。不要手工把两种布局混到一个包中。
-
-`package-check` 校验清单、原源码哈希、入口布局和所有 Python 文件语法。它不安装依赖、不执行生成，也不证明完整平台运行通过。单循环包另有本地模拟服务集成，运行方式见[操作指南](development.md#单循环候选的运行与审计)。
+`package-check` 校验清单、原源码哈希、入口布局和所有 Python 文件语法。它不安装依赖、不执行生成，也不证明完整平台运行通过。单循环包另有本地模拟服务集成，运行方式见[操作指南](development.md#诊断与独立验收)。
 
 ## 在 ARC-Bench 选择并上传
 
@@ -61,4 +59,4 @@ make serve OUT=../work/manual-legacy-001 PORT=3000
 
 `make run` 每次要求全新的、位于源码与输入目录之外的 `OUT`，拒绝覆盖。相邻的 `<OUT>.run.json` 记录提交、引擎与 ZIP 哈希，失败产物也保留；临时解压的源码在退出时删除。生成完成后 `make serve` 通过应用自己的 `deploy.sh` 安装依赖、初始化数据库、构建并启动服务；`PORT` 控制应用端口，多实例使用不同端口。停止前台服务使用 Ctrl+C。
 
-希望运行未提交代码或使用 legacy 可信续跑时，改用[操作指南](development.md#全流程运行)中的源码入口；不要把该运行混称为某个已提交 ZIP 的结果。Windows 无 make 时，使用 `scripts/package_coding_agent.py`、`scripts/run_submission.py` 的同名参数；启动 `deploy.sh` 需要 Bash 环境。
+希望运行未提交代码或使用 legacy 可信续跑时，改用[操作指南](development.md#运行与配置)中的源码入口；不要把该运行混称为某个已提交 ZIP 的结果。Windows 无 make 时，使用 `scripts/package_agent.py`、`scripts/run_submission.py` 的同名参数；启动 `deploy.sh` 需要 Bash 环境。

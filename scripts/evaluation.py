@@ -481,7 +481,7 @@ def evaluate_notes(output, evidence, mode="fixed"):
     if not internal_green(output):
         raise ValueError("Internal gates incomplete")
     before = file_manifest(output, logs=True)
-    oracle = ROOT / "experiments/notes-oracle/fixed.spec.ts"
+    oracle = ROOT / "acceptance/notes/fixed.spec.ts"
     with evaluation_directory(evidence) as owner:
         mirror = owner / "mirror"
         mirror.mkdir()

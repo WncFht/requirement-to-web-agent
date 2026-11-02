@@ -10,6 +10,7 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_FORMAT = 2
 VERSIONS = (
     ("HEAD", "Current integration; both engines, default legacy"),
     (
@@ -94,12 +95,16 @@ def runtime_files(revision, engine, root=ROOT):
 
 def default_output(ref, engine, root=ROOT):
     revision = resolve_revision(ref, root)
-    return root / "dist" / f"agent-{engine}-{revision[:12]}.zip"
+    return root / "dist" / f"agent-{engine}-{revision[:12]}-v{PACKAGE_FORMAT}.zip"
 
 
 def inspect_package(output):
     output = Path(output).resolve()
     manifest = json.loads(output.with_suffix(".json").read_text())
+    if manifest.get("package_format") != PACKAGE_FORMAT:
+        raise ValueError(
+            "Unsupported package manifest format; rebuild with the current packager"
+        )
     content = output.read_bytes()
     if hashlib.sha256(content).hexdigest() != manifest["zip_sha256"]:
         raise ValueError("ZIP hash differs from manifest")
@@ -107,9 +112,7 @@ def inspect_package(output):
         names = archive.namelist()
         if len(names) != len(set(names)):
             raise ValueError("Duplicate archive paths")
-        if not {"main.py", "_agent_main.py", "requirements.txt", "engine.json"} <= set(
-            names
-        ):
+        if not {"main.py", "_agent_main.py", "requirements.txt"} <= set(names):
             raise ValueError("Required submission entrypoints are missing")
         files = {}
         for name in names:
@@ -125,15 +128,10 @@ def inspect_package(output):
             packaged_name = "_agent_main.py" if name == "main.py" else name
             if files.get(packaged_name) != digest:
                 raise ValueError("Original committed source differs: " + name)
-        if (
-            json.loads(archive.read("engine.json"))["default"]
-            != manifest["default_engine"]
-        ):
-            raise ValueError("Packaged engine differs from manifest")
     return manifest
 
 
-def package(output=None, ref="HEAD", engine="coding", *, root=ROOT):
+def package(output=None, ref="HEAD", engine="legacy", *, root=ROOT):
     if engine not in {"legacy", "coding"}:
         raise ValueError("Engine must be legacy or coding")
     revision = resolve_revision(ref, root)
@@ -154,7 +152,6 @@ def package(output=None, ref="HEAD", engine="coding", *, root=ROOT):
         f'os.environ["ARC_AGENT_ENGINE"] = {engine!r}\n'
         'runpy.run_path(str(Path(__file__).with_name("_agent_main.py")), run_name="__main__")\n'
     ).encode()
-    files["engine.json"] = (json.dumps({"default": engine}) + "\n").encode()
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for name, data in sorted(files.items()):
@@ -165,6 +162,7 @@ def package(output=None, ref="HEAD", engine="coding", *, root=ROOT):
             archive.writestr(info, data)
     content = buffer.getvalue()
     manifest = {
+        "package_format": PACKAGE_FORMAT,
         "revision": revision,
         "requested_ref": ref,
         "default_engine": engine,
@@ -216,7 +214,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, nargs="?")
     parser.add_argument("--ref", default="HEAD")
-    parser.add_argument("--engine", choices=("legacy", "coding"), default="coding")
+    parser.add_argument("--engine", choices=("legacy", "coding"), default="legacy")
     actions = parser.add_mutually_exclusive_group()
     actions.add_argument("--list", action="store_true")
     actions.add_argument("--check", action="store_true")

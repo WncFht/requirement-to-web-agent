@@ -1,9 +1,7 @@
 """A designed signed-in fixture must display the username required by supplied tests."""
 
 from copy import deepcopy
-import os
 import unittest
-from unittest.mock import patch
 
 from test_frontend_flow import frontend_fixture, binding, node
 from infrastructure.stages.frontend.context import validate_reference_controls
@@ -35,8 +33,6 @@ class IdentityDisplayTests(unittest.TestCase):
         )
         validate_reference_controls(design, context)
 
-    def test_check_requires_external_contract_and_supports_rollback(self):
-        design, context = self.fixture()
+    def test_check_requires_external_contract(self):
+        design, _ = self.fixture()
         validate_reference_controls(design, {})
-        with patch.dict(os.environ, {"ARC_LEGACY_IDENTITY_DISPLAY": "1"}):
-            validate_reference_controls(design, context)

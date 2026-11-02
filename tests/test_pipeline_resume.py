@@ -33,14 +33,12 @@ class PipelineResumeTests(unittest.TestCase):
             path.mkdir()
         (self.inputs / "requirements.yaml").write_text("requirements: teacher\n")
         (self.source / "run_all.py").write_text("# compiler\n")
+        (self.source / "legacy").mkdir()
         self.steps = run_all.STEPS
         self.calls = []
         self.failure = None
         self.patches = ExitStack()
         self.addCleanup(self.patches.close)
-        self.patches.enter_context(
-            patch.dict(os.environ, {"ARC_LEGACY_PIPELINE_RESUME": "0"})
-        )
         self.patches.enter_context(patch.object(run_all, "COMPILER_DIR", self.source))
         self.patches.enter_context(patch.object(run_all, "show_panel"))
 
@@ -336,16 +334,6 @@ class PipelineResumeTests(unittest.TestCase):
         self.assertEqual(self.state()["completed"], [])
         self.assertEqual(self.state()["active"], self.steps[0])
 
-    def test_legacy_flag_explicitly_keeps_old_sentinel_behavior(self):
-        self.artifact(self.steps[0])
-        with (
-            patch.dict(os.environ, {"ARC_LEGACY_PIPELINE_RESUME": "1"}),
-            patch.object(run_all, "STEPS", (self.steps[0],)),
-        ):
-            self.run_pipeline(resume=True)
-        self.assertEqual(self.calls, [])
-        self.assertFalse((self.output / STATE).exists())
-
     def test_real_subprocess_failure_resume_and_noop(self):
         # Deterministic child fixtures exercise the actual process/CLI boundary,
         # with no model calls and no altered teacher input or acceptance tests.
@@ -362,7 +350,7 @@ class PipelineResumeTests(unittest.TestCase):
                     for name in after
                     if after.get(name) != before.get(name)
                 }
-                (self.source / step).write_text(
+                (self.source / "legacy" / step).write_text(
                     "import argparse,os,pathlib,sys\n"
                     "p=argparse.ArgumentParser();p.add_argument('--input');p.add_argument('--output');p.add_argument('--no-browse',action='store_true');a=p.parse_args()\n"
                     "root=pathlib.Path(a.output);root.mkdir(parents=True,exist_ok=True)\n"
@@ -400,10 +388,8 @@ class PipelineResumeTests(unittest.TestCase):
 
     def test_relocated_legacy_sources_invalidate_resume(self):
         directory = self.source / "legacy"
-        directory.mkdir()
         stage = directory / self.steps[0]
         stage.write_text("# first implementation\n")
-        self.assertEqual(run_all.step_path(self.source, self.steps[0]), stage)
         self.run_pipeline()
         stage.write_text("# changed implementation\n")
         with self.assertRaisesRegex(ValueError, "compiler"):

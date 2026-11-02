@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from dotenv import dotenv_values
 from infrastructure.utils.processes import start_process, stop_process
-from package_coding_agent import package
+from package_agent import package
 
 
 def prepare(inputs, output, port, environment):

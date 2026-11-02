@@ -4,7 +4,6 @@ Tests are rendered deterministically from the complete step 09 design. A shared
 file agent implements one page at a time, with previously accepted page tests
 included in its checks. Tests and compiler-owned wiring are supplied as read-only files."""
 
-import json
 from pathlib import Path
 from infrastructure.stages.frontend.ui.label_contracts import (
     label_instructions,

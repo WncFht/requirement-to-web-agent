@@ -49,7 +49,6 @@ def walk_files(root: Path):
 def identity(source: Path, inputs: Path) -> dict:
     """Hash executable sources, input bytes and allowlisted effective configuration; never keys."""
     sources = [
-        *source.glob("[0-9][0-9]_*.py"),
         *(source / "legacy").glob("*.py"),
         source / "run_all.py",
         source / "main.py",
@@ -76,7 +75,7 @@ def identity(source: Path, inputs: Path) -> dict:
                     path.read_text(encoding="utf-8-sig"),
                 )
             )
-    names.difference_update({"ARC_LEGACY_PIPELINE_RESUME", "ARC_DISABLE_TIMING"})
+    names.discard("ARC_DISABLE_TIMING")
     effective = {**dotenv_values(source / ".env"), **os.environ}
     configuration = {name: effective.get(name) for name in sorted(names)}
     configuration["python"] = list(sys.version_info[:3])

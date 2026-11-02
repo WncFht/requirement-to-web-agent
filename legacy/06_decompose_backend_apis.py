@@ -1,7 +1,6 @@
 """Step 06: decompose APIs, allocate obligations, and design fixed I/O interfaces."""
 
 import json
-import os
 from contextlib import ExitStack
 from pathlib import Path
 import sys
@@ -164,12 +163,7 @@ def decompose_backend_apis(arc_dir: Path, pause: bool = False, top_k: int = 6) -
             )
             try:
                 response = model.generate_json(
-                    INSTRUCTIONS
-                    + (
-                        ""
-                        if os.getenv("ARC_LEGACY_API_SCOPE", "0") == "1"
-                        else "\n" + SCOPE_RULES
-                    ),
+                    INSTRUCTIONS + ("\n" + SCOPE_RULES),
                     request,
                 )
                 updated = apply_decomposition(

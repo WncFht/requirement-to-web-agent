@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from coding_agent.acceptance import execute, servers
+from scripts.evaluation import execute, servers
 from coding_agent.trace import file_manifest, json_write
 
 SCRIPT = """import {chromium} from '@playwright/test';

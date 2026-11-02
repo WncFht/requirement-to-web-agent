@@ -11,14 +11,13 @@ from urllib.request import urlopen
 from coding_agent.checks import (
     application_environment,
     validate_tests,
-    prepare_project,
     Checks,
 )
 from coding_agent.config import Config
 from coding_agent.loop import run
 from coding_agent.protocol import InvalidTest
 from coding_agent.trace import audit
-from coding_agent.acceptance import servers
+from scripts.evaluation import servers
 from coding_fixture import FixtureModel, SETUP, REFERENCE_IMAGE
 
 

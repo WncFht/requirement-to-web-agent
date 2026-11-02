@@ -25,9 +25,7 @@ class RedGuidanceTests(unittest.TestCase):
         report = self.report(
             "Test timeout of 30000ms exceeded.\nError: locator.click: Test timeout of 30000ms exceeded.\nwaiting for button"
         )
-        with patch.dict(
-            os.environ, {"ARC_LEGACY_RED_GUIDANCE": "0", "ARC_FULL_FEEDBACK": "0"}
-        ):
+        with patch.dict(os.environ, {"ARC_FULL_FEEDBACK": "0"}):
             with self.assertRaises(CheckFailure) as raised:
                 require_behavioral_red(report)
             self.assertIs(raised.exception.report, report)
@@ -37,18 +35,8 @@ class RedGuidanceTests(unittest.TestCase):
         self.assertEqual(feedback["checks"], report)
 
     def test_original_assertion_red_is_accepted_and_runtime_failure_is_not(self):
-        with patch.dict(os.environ, {"ARC_LEGACY_RED_GUIDANCE": "0"}):
-            require_behavioral_red(
-                self.report("Error: expect(locator).toBeVisible() failed")
-            )
-            with self.assertRaises(CheckFailure):
-                require_behavioral_red(self.report("ReferenceError: missing runtime"))
-
-    def test_legacy_switch_restores_original_rejection_diagnostic(self):
-        with patch.dict(os.environ, {"ARC_LEGACY_RED_GUIDANCE": "1"}):
-            with self.assertRaises(ValueError) as raised:
-                require_behavioral_red(
-                    self.report("Error: locator.fill: Timeout 30000ms exceeded")
-                )
-        self.assertNotIsInstance(raised.exception, CheckFailure)
-        self.assertNotIn("Before EVERY", str(raised.exception))
+        require_behavioral_red(
+            self.report("Error: expect(locator).toBeVisible() failed")
+        )
+        with self.assertRaises(CheckFailure):
+            require_behavioral_red(self.report("ReferenceError: missing runtime"))

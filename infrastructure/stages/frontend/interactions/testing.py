@@ -3,7 +3,6 @@
 from hashlib import sha256
 import json
 import os
-from pathlib import Path
 import re
 from tempfile import TemporaryDirectory
 
@@ -11,28 +10,10 @@ from infrastructure.stages.frontend.interactions.e2e_runtime import RUNNER
 from infrastructure.stages.frontend.ui.testing import (
     FrontendChecks,
     parse_playwright_result,
-    require_green,
     require_red,
 )
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.shared.agent.loop import CheckFailure
-
-
-def backend_cookie_names(output):
-    """Expose literal cookie producers from the tested backend as bounded setup evidence."""
-    names = set()
-    for path in (output / "backend/src").rglob("*.ts"):
-        source = path.read_text(encoding="utf-8-sig")
-        constants = dict(
-            re.findall(
-                r"""const\s+(\w+)\s*=\s*["']([A-Za-z_][A-Za-z0-9_-]*)["']""", source
-            )
-        )
-        for variable in re.findall(r"`\$\{(\w+)\}=\$\{", source):
-            if variable in constants:
-                names.add(constants[variable])
-        names.update(re.findall(r"""[`"']([A-Za-z_][A-Za-z0-9_-]*)=\$\{""", source))
-    return sorted(names)
 
 
 def validate_e2e_source(source: str, cookie_names=None) -> None:
@@ -43,16 +24,13 @@ def validate_e2e_source(source: str, cookie_names=None) -> None:
             "for Cookie.url and relative page.goto paths; the runner uses a random "
             "port on 127.0.0.1."
         )
-    if (
-        os.getenv("ARC_LEGACY_E2E_SOURCE_CHECK", "0") != "1"
-        and "__ARC_UI_FIXTURE__" in source
-    ):
+    if "__ARC_UI_FIXTURE__" in source:
         raise ValueError(
             "E2E tests cannot reference __ARC_UI_FIXTURE__. It is reserved for "
             "compiler-owned UI presence tests. Replace fixture injection with "
             "a real browser interaction scenario before this suite is frozen."
         )
-    if not cookie_names or os.getenv("ARC_LEGACY_E2E_COOKIE_NAMES", "0") == "1":
+    if not cookie_names:
         return
     tests = list(
         re.finditer(
@@ -98,26 +76,25 @@ def require_behavioral_red(result):
     try:
         require_red(result)
     except ValueError as error:
-        if os.getenv("ARC_LEGACY_RED_GUIDANCE", "0") != "1":
-            message = (
-                "Expected behavioral assertion RED, not server/browser/runtime failure"
+        message = (
+            "Expected behavioral assertion RED, not server/browser/runtime failure"
+        )
+        if any(
+            re.search(
+                r"locator\.(click|fill|check|selectOption|press):.*(?:[Tt]imeout|[Tt]imed out)",
+                failure,
+                re.DOTALL,
             )
-            if any(
-                re.search(
-                    r"locator\.(click|fill|check|selectOption|press):.*(?:[Tt]imeout|[Tt]imed out)",
-                    failure,
-                    re.DOTALL,
-                )
-                for failure in result.get("failures", [])
-            ):
-                message += (
-                    ". A test action timed out on a missing/unready control. Before EVERY click/fill/check/selectOption/press, "
-                    "await expect(the same locator).toBeVisible() (and toBeEnabled() when required). "
-                    "This must fail by an assertion before attempting the action while handlers are not implemented. "
-                    "Keep all workflows, assertions and database checks; repair the test's wait/assertion ordering. "
-                    "Do not implement missing handlers or edit compiler-owned ui-events.ts to force RED/GREEN."
-                )
-            raise CheckFailure(message, result) from error
+            for failure in result.get("failures", [])
+        ):
+            message += (
+                ". A test action timed out on a missing/unready control. Before EVERY click/fill/check/selectOption/press, "
+                "await expect(the same locator).toBeVisible() (and toBeEnabled() when required). "
+                "This must fail by an assertion before attempting the action while handlers are not implemented. "
+                "Keep all workflows, assertions and database checks; repair the test's wait/assertion ordering. "
+                "Do not implement missing handlers or edit compiler-owned ui-events.ts to force RED/GREEN."
+            )
+        raise CheckFailure(message, result) from error
         raise ValueError(
             f"Expected behavioral assertion RED, not server/browser/runtime failure: {result}"
         ) from error

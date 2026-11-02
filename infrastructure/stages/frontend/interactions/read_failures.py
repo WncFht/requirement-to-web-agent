@@ -1,7 +1,6 @@
 """Exercise generated read-only mount handlers before expensive browser regressions."""
 
 import json
-import os
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
@@ -48,8 +47,6 @@ process.exitCode = failures.length ? 1 : 0;
 
 def read_failure_instructions():
     """Clarify expected lookup faults without hiding unexpected programming errors."""
-    if os.getenv("ARC_LEGACY_READ_FAILURES", "0") == "1":
-        return ""
     return """Read-only page-load API failures are handled UI outcomes, not uncaught exceptions.
 Handle non-success HTTP statuses including an unexpected 503 and rejected API promises.
 For session lookup, clear authenticated identity before awaiting, and keep it cleared
@@ -92,8 +89,6 @@ def read_failure_subjects(output, interactions, backend, active):
 
 def check_read_failures(output, ui, interactions, backend, active):
     """Use isolated handler contexts; browser tests still prove UI and persistence behavior."""
-    if os.getenv("ARC_LEGACY_READ_FAILURES", "0") == "1":
-        return {"returncode": 0, "status": "DISABLED"}
     subjects = read_failure_subjects(output, interactions, backend, active)
     if not subjects:
         return {"returncode": 0, "status": "NO_IMPLEMENTED_READ_MOUNTS"}

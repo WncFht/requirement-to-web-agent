@@ -58,8 +58,6 @@ def test_path(pid: str) -> str:
 
 def radio_group_assertions(design, page, elements, values):
     """A semantic group must own its real controls, not only a decorative label."""
-    if os.getenv("ARC_LEGACY_RADIO_CONTAINMENT", "0") == "1":
-        return []
     lines = []
     for gid, group in elements.items():
         prop = group.get("prop", {})
@@ -140,12 +138,11 @@ def existence_suite(design: dict, pid: str) -> str:
                     lines.append(
                         f"  await expect({locator}).toHaveAccessibleName({json.dumps(prop['label'])});"
                     )
-                    if os.getenv("ARC_LEGACY_LABEL_LOCATORS", "0") != "1":
-                        lines.append(
-                            f"  await expect(page.getByTestId({json.dumps(page['root'])})"
-                            f".getByLabel({json.dumps(prop['label'])}, {{ exact: true }}))"
-                            f'.toHaveAttribute("data-testid", {json.dumps(uid)});'
-                        )
+                    lines.append(
+                        f"  await expect(page.getByTestId({json.dumps(page['root'])})"
+                        f".getByLabel({json.dumps(prop['label'])}, {{ exact: true }}))"
+                        f'.toHaveAttribute("data-testid", {json.dumps(uid)});'
+                    )
                 if "placeholder" in prop:
                     if kind == "select":
                         lines.append(
@@ -175,11 +172,7 @@ def existence_suite(design: dict, pid: str) -> str:
                         lines.append(
                             f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();"
                         )
-                    elif (
-                        kind == "input"
-                        and prop.get("input_type") == "radio"
-                        and os.getenv("ARC_LEGACY_RADIO_ASSERTIONS", "0") != "1"
-                    ):
+                    elif kind == "input" and prop.get("input_type") == "radio":
                         value = prop["value"]
                         lines.append(
                             f"  await expect({locator}).toHaveValue({json.dumps(value)});"

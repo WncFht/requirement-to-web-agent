@@ -31,13 +31,12 @@ class DetachedCleanupTests(unittest.TestCase):
                 [sys.executable, "-c", heartbeat, "unrelated"], cwd=root
             )
             try:
-                with patch.dict(os.environ, {"ARC_LEGACY_PROCESS_CLEANUP": "0"}):
-                    with self.assertRaises(subprocess.TimeoutExpired):
-                        capture_process(
-                            [sys.executable, "-c", parent, heartbeat],
-                            cwd=root,
-                            timeout=1,
-                        )
+                with self.assertRaises(subprocess.TimeoutExpired):
+                    capture_process(
+                        [sys.executable, "-c", parent, heartbeat],
+                        cwd=root,
+                        timeout=1,
+                    )
                 owned = (root / "owned").read_bytes()
                 unrelated = (root / "unrelated").read_bytes()
                 time.sleep(0.2)

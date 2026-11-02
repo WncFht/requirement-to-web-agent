@@ -4,7 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from infrastructure.stages.requirements.tree import RequirementTree
 from infrastructure.stages.frontend.context import (
@@ -13,7 +13,6 @@ from infrastructure.stages.frontend.context import (
     validate_reference_controls,
 )
 from infrastructure.stages.frontend.ui.design import (
-    apply_proposal,
     empty_design,
     page_context,
     validate_design,
@@ -550,9 +549,6 @@ class FrontendFlow(unittest.TestCase):
         self.assertIn('getByTestId("radio-Female")).toHaveValue("Female")', suite)
         self.assertIn('getByTestId("radio-Female")).not.toBeChecked()', suite)
         self.assertIn('getByTestId("radio-Male")).toBeChecked()', suite)
-        with patch.dict("os.environ", {"ARC_LEGACY_RADIO_ASSERTIONS": "1"}):
-            legacy = existence_suite(ui, "editor")
-            self.assertIn('getByTestId("radio-Female")).toHaveValue("Male")', legacy)
 
     def test_radio_design_requires_its_static_option_value(self):
         with self.assertRaisesRegex(ValueError, "prop.value"):
@@ -560,7 +556,7 @@ class FrontendFlow(unittest.TestCase):
                 {"elements": {"x": node("input", None, input_type="radio")}}, {}
             )
 
-    def test_supplied_reference_tests_remain_exact_and_can_be_disabled(self):
+    def test_supplied_reference_tests_remain_exact(self):
         tests = self.output / "tests"
         tests.mkdir()
         content = "// Historical ID; exact accessible contract\n"
@@ -568,8 +564,6 @@ class FrontendFlow(unittest.TestCase):
         self.assertEqual(
             reference_tests(self.output), {"tests/REQ-old.spec.ts": content}
         )
-        with patch.dict("os.environ", {"ARC_LEGACY_REFERENCE_TESTS": "1"}):
-            self.assertEqual(reference_tests(self.output), {})
 
     def test_reference_tests_are_available_without_filename_requirement_mapping(self):
         save_json(self.arc / "requirements.json", self.raw)

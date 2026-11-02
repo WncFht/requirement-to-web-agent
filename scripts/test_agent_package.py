@@ -3,7 +3,6 @@
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -17,7 +16,8 @@ sys.path.insert(0, str(ROOT / "tests"))
 from coding_fixture import FixtureModel, REFERENCE_IMAGE
 from coding_agent.trace import json_write, audit
 from coding_agent.checks import application_environment
-from coding_agent.acceptance import servers
+from scripts.evaluation import servers
+from package_agent import inspect_package
 
 
 def verify(package, directory, dependencies):
@@ -120,7 +120,7 @@ def verify(package, directory, dependencies):
         "status": proof["result"]["status"],
         "model_calls": proof["result"]["model_calls"],
         "no_env_in_package": not (source / ".env").exists(),
-        "default_engine": json.loads((source / "engine.json").read_text())["default"],
+        "default_engine": inspect_package(package)["default_engine"],
         "credentials": "local mock only, no paid requests",
         "production_health_at_injected_port": production_health,
         "production_reference_asset": production_reference_asset,

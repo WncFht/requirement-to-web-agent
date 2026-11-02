@@ -2,7 +2,6 @@
 
 import ast
 import json
-import os
 import re
 
 REVIEW_INSTRUCTIONS = """Independently review generated backend tests BEFORE they are frozen.
@@ -24,8 +23,6 @@ NO_CONTRADICTION_FOUND is a review result, not a formal proof or application acc
 
 def review_backend_test(source, model, contract):
     """Add independent fallible review without replacing deterministic gates."""
-    if os.getenv("ARC_LEGACY_TEST_REVIEW", "0") == "1":
-        return {"status": "DISABLED", "reason": "Explicit legacy rollback"}
     result = model.generate_json(
         REVIEW_INSTRUCTIONS, {"source": source, "contract": contract}
     )
@@ -53,8 +50,6 @@ def validate_backend_test(source):
     result cannot test header absence. Unsupported source shapes are left to
     existing compilation and RED/GREEN gates; this is not a JS theorem prover.
     """
-    if os.getenv("ARC_LEGACY_TEST_SANITY", "0") == "1":
-        return
     literal = r"""(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')"""
     stringify = r"JSON\.stringify\(\s*[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\)"
     for pattern in (

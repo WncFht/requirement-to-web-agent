@@ -1,35 +1,24 @@
-# AGENTS.md — CS4810J Lab 6 需求编译器（改良版）
+# AGENTS.md
 
-把 `requirements.yaml`（需求 + 参考截图）编译为可运行 React/Express/SQLite 网站的规格编译器。
-原始基线来自 Canvas Lab 6 zip（git tag `teacher-baseline`）；当前 HEAD 在其上叠加了
-鲁棒性修正（2026-10-29）与性能优化（2026-11-01），版本以本仓库 Git 历史为准；课程侧 `../upstream.patch` 是导出的源码补丁。
+本仓库把需求与参考图编译为 React/Express/SQLite 网站，包含默认 legacy 和候选 coding 两种引擎。
 
-## 硬性规则
+## 工作边界
 
-1. **验收口径不可削弱**：任何修改不得删除或放松 gate —— typecheck、后端契约回归、
-   UI 存在性测试、Playwright E2E、生产构建。性能优化只发生在上下文组装、调度与传输层。
-2. **教师代码语义冻结**：`legacy/` 下 00–12 号脚本的语义是 baseline 口径。语义性修改必须落一份
-   Agent Note（`.agents/notes/`），并提供环境变量回退开关（如 `ARC_FULL_CONTEXT=1`）。
-3. **凭据隔离**：模型 key 只存 `.env`（gitignored）；不得进入源码、日志、上传包或文档。
-4. **输出目录隔离**：编译产物只写 `--output-dir` 指定目录；不同实验使用不同目录，禁止覆盖。
-5. **模型 API 已停用**：用户于 2026-11-02 明确要求停止比较并禁止后续 API 调用，撤销此前付费实验授权。未经用户重新明确授权，不得调用真实模型 API、启动或续跑生成实验；仅可进行本地整理、静态检查和不调用模型的离线测试。
+- 用户已禁止真实模型 API 调用。未经新的明确授权，不运行生成、重试或平台评测；仅做本地整理、静态检查和离线测试。
+- 保留 typecheck、后端契约、UI 存在性、Playwright E2E 与生产构建门禁。不得修改冻结测试或放松断言使生成物转绿。
+- 教师原件 `input/`、固定验收 `acceptance/` 与应用模板保持字节身份；示例与运行结果分别记录。修改生成语义须更新决策和有意义的回归。
+- 模型凭据只存 gitignored 的 `.env` 或环境变量，不进入代码、日志、文档或上传包。环境变量优先于本地配置。
+- 每次运行使用独立输出目录。不同源码、输入、引擎不能共用 checkpoint；失败证据保留。
+- 当前代码不保留 `ARC_LEGACY_*` 旧行为开关和旧哨兵恢复。需要旧行为时使用固定 Git 标签；历史版本兼容仅限打包工具读取其原始布局。
 
-## 工作区与检查
+## 开发与交付
 
-团队在独立源码仓库的 main 集成两套引擎，默认 legacy；功能分支与 worktree 按需创建，完成后移除。外层 JI 仓库只保存课程材料。共享、清理与格式规则见 `docs/maintenance.md`，禁止未经授权启动文档中的模型生成命令。
+团队维护唯一 main，功能分支与临时 worktree 按需创建，合入后删除。源码提交前执行：
 
 ```sh
-.venv/bin/python scripts/run_checks.py --config scripts/checks.json --mode ci
-npm run format:check
-npm run lint:md
+make check
 ```
 
-Python 用 Ruff，文档与配置用锁定的 Prettier/Markdownlint；提交时通过 git-format-staged 格式化暂存内容。教师输入、固定验收、应用模板、vendor 和冻结归档排除，保留字节身份。
+Python 使用 Ruff，文档与配置工具版本由 `package.json` 和锁文件确定。提交 hook 格式化暂存快照，CI 使用相同检查。真实浏览器集成需按[开发指南](docs/development.md)单独启用。
 
-## 文档与决策
-
-- 所有权地图：`docs/AGENTS.md`；读者导航：`docs/README.md`
-- 实验报告：`docs/experiments/`；长期决策：`.agents/notes/`（遵循 maintain-decision-notes）
-- 上游 diff：`../upstream.patch`（相对 teacher-baseline 的源码导出；生成方式见维护指南）
-
-维护规则与技能来自 agent-maintenance 工具包（引入于 2026-11-01）；规则本体见 `.agents/`。
+文档归属见 [docs/AGENTS.md](docs/AGENTS.md)，架构见 [docs/architecture.md](docs/architecture.md)，打包契约见 [docs/packaging.md](docs/packaging.md)。长期理由归 `.agents/notes/`，遵循已引入的 agent-maintenance 技能；旧实验与计划通过 Git 标签查阅，不在当前入口并行维护。

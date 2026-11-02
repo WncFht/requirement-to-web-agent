@@ -13,7 +13,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-from package_coding_agent import inspect_package, package
+from package_agent import inspect_package, package
 import run_submission
 
 

@@ -1,8 +1,7 @@
 """Impossible assertions are rejected before entering frozen RED/GREEN."""
 
-import os
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from infrastructure.stages.backend.test_admission import (
     validate_backend_test,
     review_backend_test,
@@ -40,7 +39,7 @@ class BackendAdmissionTests(unittest.TestCase):
                     "candidate", Mock(generate_json=Mock(return_value=verdict)), {}
                 )
 
-    def test_clean_review_and_legacy_rollback_preserve_other_gates(self):
+    def test_clean_review_preserves_other_gates(self):
         model = Mock(
             generate_json=Mock(
                 return_value={
@@ -53,14 +52,7 @@ class BackendAdmissionTests(unittest.TestCase):
             review_backend_test("candidate", model, {})["status"],
             "NO_CONTRADICTION_FOUND",
         )
-        with patch.dict(os.environ, {"ARC_LEGACY_TEST_REVIEW": "1"}):
-            untouched = Mock()
-            self.assertEqual(
-                review_backend_test(BAD, untouched, {})["status"], "DISABLED"
-            )
-            untouched.generate_json.assert_not_called()
 
-    @patch.dict(os.environ, {"ARC_LEGACY_TEST_SANITY": "0"})
     def test_actual_impossible_helper_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "Contradictory"):
             validate_backend_test(BAD)
@@ -87,7 +79,3 @@ class BackendAdmissionTests(unittest.TestCase):
         validate_backend_test(
             'assert.equal(JSON.stringify(body).includes("cred-unknown"), false);'
         )
-
-    @patch.dict(os.environ, {"ARC_LEGACY_TEST_SANITY": "1"})
-    def test_legacy_flag_restores_previous_admission(self):
-        validate_backend_test(BAD)

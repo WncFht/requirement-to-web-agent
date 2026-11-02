@@ -1,17 +1,13 @@
 """Execute the fault runner against bad, handled and non-exercised real JS handlers."""
 
 import json
-import os
 from pathlib import Path
 import shutil
 from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import patch
 
 from infrastructure.stages.frontend.interactions.read_failures import (
     RUNNER,
-    check_read_failures,
-    read_failure_instructions,
     read_failure_subjects,
 )
 from infrastructure.utils.processes import capture_process
@@ -125,16 +121,3 @@ class ReadFailureTests(unittest.TestCase):
                 root, interactions, backend, interactions["events"]
             )
             self.assertEqual([s["event"] for s in subjects], ["load"])
-
-    def test_legacy_rollback_avoids_probe_and_new_guidance(self):
-        with (
-            patch.dict(os.environ, {"ARC_LEGACY_READ_FAILURES": "1"}),
-            patch(
-                "infrastructure.stages.frontend.interactions.read_failures.capture_process"
-            ) as capture,
-        ):
-            self.assertEqual(
-                check_read_failures(Path("."), {}, {}, {}, [])["status"], "DISABLED"
-            )
-            self.assertEqual(read_failure_instructions(), "")
-            capture.assert_not_called()
