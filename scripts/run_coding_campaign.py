@@ -169,6 +169,14 @@ def campaign(args):
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "authorization": "User explicitly authorized completing the plan and paid generation on 2026-11-02; each batch remains bounded and failures retained.",
         "kind": args.kind,
+        "task": args.task,
+        "python": sys.version,
+        "node": subprocess.check_output(
+            [str(args.node_bin.resolve() / "node"), "--version"], text=True
+        ).strip(),
+        "notes_oracle_sha256": sha(ROOT / "experiments/notes-oracle/fixed.spec.ts")
+        if args.task == "notes"
+        else None,
         "sources": {
             "A": {
                 "path": str(baseline),
