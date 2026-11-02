@@ -1,6 +1,7 @@
 """ARC-Bench entrypoint for the Lab 6 numbered requirement compiler."""
 
 import argparse
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -34,6 +35,37 @@ def main():
         parser.error("Output directory must not equal or be inside the input directory")
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535")
+    profile_path = source / "engine.json"
+    packaged_default = (
+        json.loads(profile_path.read_text()).get("default", "legacy")
+        if profile_path.exists()
+        else "legacy"
+    )
+    engine = os.getenv("ARC_AGENT_ENGINE", packaged_default)
+    if engine not in {"legacy", "coding"}:
+        parser.error("ARC_AGENT_ENGINE must be legacy or coding")
+    if engine == "coding":
+        from coding_agent.config import Config
+        from coding_agent.loop import run
+
+        result = run(Config.environment(inputs, output, args.port))
+        print(
+            json.dumps(
+                {
+                    "status": result["status"],
+                    "tokens": result["total_tokens"],
+                    "output": str(output),
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+        if result["status"] != "INTERNAL_GREEN":
+            parser.exit(
+                1,
+                f"Coding agent stopped: {result['status']}; inspect .arc/agent/result.json\n",
+            )
+        return
     if os.getenv("MODEL", "").lower().startswith("deepseek"):
         os.environ.setdefault("ARC_DISABLE_THINKING", "1")
     pipeline_command = [
