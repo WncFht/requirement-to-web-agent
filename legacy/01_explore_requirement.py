@@ -4,8 +4,13 @@ import json
 import re
 from contextlib import ExitStack
 from pathlib import Path
+import sys
 
 import yaml
+
+# Direct script execution still imports the repository-owned infrastructure.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from infrastructure.shared.models.vision import VisualModel
 from infrastructure.stages.requirements.tree import RequirementTree
 from infrastructure.utils.cli import create_parser, resolve_directories

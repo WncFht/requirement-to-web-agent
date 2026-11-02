@@ -60,6 +60,12 @@ GREEN_SENTINELS = {
 }
 
 
+def step_path(source: Path, step: str) -> Path:
+    """Prefer organized entrypoints, while supporting historical root layouts."""
+    relocated = source / "legacy" / step
+    return relocated if relocated.is_file() else source / step
+
+
 def legacy_step_completed(output: Path, step: str) -> bool:
     """True when every sentinel artifact exists (and reports GREEN where required)."""
     if step == "05_implement_db.py":
@@ -118,7 +124,7 @@ def run_pipeline(input_dir: Path, output_dir: Path, resume: bool) -> None:
                     state.begin(step)
                 command = [
                     sys.executable,
-                    str(COMPILER_DIR / step),
+                    str(step_path(COMPILER_DIR, step)),
                     "--input",
                     str(input_dir),
                     "--output",

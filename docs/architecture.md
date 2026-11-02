@@ -10,7 +10,7 @@
 源码默认 `legacy`；`ARC_AGENT_ENGINE=coding` 显式选择单循环候选。上传候选包通过
 `engine.json` 选择 coding，不要求平台配置额外开关。默认版本的晋升由完整实验决定。
 
-legacy 的 13 个阶段脚本（`00`–`12`，`run_all.py` 顺序执行）共享输出目录下的 `.arc/*.json` 工件链；
+legacy 的 13 个阶段脚本位于 `legacy/`（`00`–`12`，根目录 `run_all.py` 顺序执行）共享输出目录下的 `.arc/*.json` 工件链；
 每个阶段的输出是下一阶段的输入，链路逐层可追溯。
 
 ## 单循环候选
@@ -115,6 +115,7 @@ flowchart LR
 - `input/`：按教师 ZIP 原字节冻结的需求、截图与原始 E2E；pending 扩展在 `examples/registration-pending/`
 - `tests/`：编译器单元测试（含文件编辑、流程与反馈回归）
 - `coding_agent/`：单循环候选与独立评估入口；核心不依赖旧阶段 IR
+- `legacy/`：编号阶段入口；可独立执行，阶段实现仍由 infrastructure 提供。旧标签的根目录布局保持原样。
 - `main.py`：平台入口；legacy 执行 run_all，coding 进入新循环，两者产物均遵守平台启动约定
 
 历史成本剖析与候选方向见 [整体优化审阅](2026-11-01-整体优化审阅.md)，最新固定次数结果见[串行消融与缓存验证](experiments/2026-11-02-串行消融与缓存验证.md)。JSON 形状/义务校验、行为测试与固定外部验收分别承担不同职责，不把任一 IR 检查称为完整业务证明。

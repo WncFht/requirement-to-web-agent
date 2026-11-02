@@ -398,6 +398,17 @@ class PipelineResumeTests(unittest.TestCase):
                 run_all.run_pipeline(self.inputs, self.output, True)
                 start.assert_not_called()
 
+    def test_relocated_legacy_sources_invalidate_resume(self):
+        directory = self.source / "legacy"
+        directory.mkdir()
+        stage = directory / self.steps[0]
+        stage.write_text("# first implementation\n")
+        self.assertEqual(run_all.step_path(self.source, self.steps[0]), stage)
+        self.run_pipeline()
+        stage.write_text("# changed implementation\n")
+        with self.assertRaisesRegex(ValueError, "compiler"):
+            self.run_pipeline(resume=True)
+
     def test_symlink_metadata_and_output_escape_are_rejected(self):
         outside = self.root / "outside"
         outside.mkdir()

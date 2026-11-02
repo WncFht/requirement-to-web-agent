@@ -10,6 +10,8 @@
 
 ## 全流程运行
 
+按固定提交打包及本地运行的统一入口为 `make package`、`make run` 和 `make serve`，版本与网站操作见[提交指南](submission.md)。下面的源码入口适用于当前工作区，包含未提交改动。
+
 以下原有全流程与续跑说明适用于默认 legacy。候选 coding 的运行和审计见下节；两种
 引擎必须使用不同的新目录。
 
@@ -18,7 +20,7 @@
 # run_all 结束后自动：npm run db:init && npm run build，并生成 deploy.sh
 ```
 
-- 单阶段：`.venv/bin/python -u 08_implement_backend_tdd.py --input input --output ../work/<目录>`
+- 单阶段：`.venv/bin/python -u legacy/08_implement_backend_tdd.py --input input --output ../work/<目录>`
 - 断点续跑：`--resume` 只跳过具有可信完成记录的连续成功阶段，条件与迁移见下节。
 
 ## 单循环候选的运行与审计
@@ -45,14 +47,14 @@ ARC_AGENT_ENGINE=coding .venv/bin/python main.py input --output-dir ../work/my-c
 
 需要复用参考照片时，模型可发出 `{"action":"edit","edits":[{"path":"frontend/public/assets/photo.png","copy_from":"input/reference/image.png"}]}`。该动作只在实现阶段可用，图片以 `/assets/photo.png` 发布；已有素材不可覆盖。浏览器检查列出的错误快照与失败截图可以通过 `read` 只读查看。
 
-| 候选环境变量                  | 默认值                       | 作用                                                  |
-| ----------------------------- | ---------------------------- | ----------------------------------------------------- |
-| `ARC_AGENT_ENGINE`            | 源码 legacy；候选 ZIP coding | 选择引擎；legacy 的其他开关不控制新循环               |
-| `ARC_AGENT_MAX_TURNS`         | 100                          | 全流程模型轮次上限                                    |
-| `ARC_AGENT_MAX_TOKENS`        | 2500000                      | 已返回 SDK 总用量预算，最后一次调用的实际用量完整计入 |
-| `ARC_AGENT_MAX_SECONDS`       | 1200                         | 安装、模型与检查共享的本地预算，不是平台限额          |
-| `ARC_AGENT_OUTPUT_TOKENS`     | 8192                         | 每次响应输出上限                                      |
-| `ARC_AGENT_TRANSPORT_RETRIES` | 1                            | 唯一外层传输重试；SDK 内部重试为零                    |
+| 候选环境变量                  | 默认值                          | 作用                                                  |
+| ----------------------------- | ------------------------------- | ----------------------------------------------------- |
+| `ARC_AGENT_ENGINE`            | 源码 legacy；ZIP 按打包参数固定 | 选择引擎；legacy 的其他开关不控制新循环               |
+| `ARC_AGENT_MAX_TURNS`         | 100                             | 全流程模型轮次上限                                    |
+| `ARC_AGENT_MAX_TOKENS`        | 2500000                         | 已返回 SDK 总用量预算，最后一次调用的实际用量完整计入 |
+| `ARC_AGENT_MAX_SECONDS`       | 1200                            | 安装、模型与检查共享的本地预算，不是平台限额          |
+| `ARC_AGENT_OUTPUT_TOKENS`     | 8192                            | 每次响应输出上限                                      |
+| `ARC_AGENT_TRANSPORT_RETRIES` | 1                               | 唯一外层传输重试；SDK 内部重试为零                    |
 
 下列检查不发起付费模型请求。浏览器集成需要已准备的依赖快照和 Chromium；快照应与
 Node 22 的 better-sqlite3 ABI 一致。常规单测跳过这项重集成，需显式执行：
@@ -80,7 +82,7 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
 已生成网站、依赖、凭据和 `.git`。解压验证通过本地假兼容 API 跑真实检查及生产 PORT：
 
 ```sh
-.venv/bin/python scripts/package_coding_agent.py ../work/my-coding-agent.zip
+make package REF=coding-agent-candidate-2026-11-02 ENGINE=coding ZIP=../work/my-coding-agent.zip
 .venv/bin/python scripts/test_agent_package.py ../work/my-coding-agent.zip \
   --output ../work/my-package-check --dependencies /absolute/dependency-snapshot
 ```
@@ -101,7 +103,7 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
 
 首次生成使用新的输出目录；普通失败或 Ctrl+C 后，用完全相同的输入、编译器和配置加 `--resume` 继续。编译器在 `.arc/pipeline_state.json` 原子发布状态：子进程成功退出且阶段完成条件通过，才把阶段加入 completed。部分 checkpoint 保留在工作区，不作为完成证明。Stage 02 必须覆盖全部叶子需求；Stage 05 必须具有 schema 中全部表的 SQL 和初始化代码；08/10/12 必须 GREEN，空设计仅在对应集合确实为空时接受 NO_APIS/NO_UI。
 
-状态保存输入目录文件、编号脚本/infrastructure/依赖声明的内容指纹，以及模型、端点、输出上限、源码中直接读取的 ARC 开关和 Python 版本的配置指纹。`.env` 中配置与环境覆盖一起参与计算，API key 不参与，状态不保存配置原值。编译器 IR、应用源码、生成测试和构建配置使用整体工作区哈希：后续合法阶段会修改先前页面，不能拿先前页面的旧哈希误判为外部修改。日志、依赖、数据库、构建输出和固定验收证据不作为编译完成证明。
+状态保存输入目录文件、legacy 编号脚本/infrastructure/依赖声明的内容指纹，以及模型、端点、输出上限、源码中直接读取的 ARC 开关和 Python 版本的配置指纹。`.env` 中配置与环境覆盖一起参与计算，API key 不参与，状态不保存配置原值。编译器 IR、应用源码、生成测试和构建配置使用整体工作区哈希：后续合法阶段会修改先前页面，不能拿先前页面的旧哈希误判为外部修改。日志、依赖、数据库、构建输出和固定验收证据不作为编译完成证明。
 
 输入、源码、配置或受保护工作区文件变化会使整条流水线的复用资格失效，程序保留旧目录并提示换新输出目录。第一版采用保守的整体失效，尚不支持按 DAG 最小范围自动重建；不会自动删除、搬移旧产物，或让新阶段读取旧条件下的 UI checkpoint。文档、提交号或 API key 单独变化不会导致失效。不要手工修改 pipeline_state.json 来接纳旧目录。
 
@@ -111,30 +113,30 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
 
 ## 环境变量
 
-| 变量                           | 默认               | 作用                                                                                    |
-| ------------------------------ | ------------------ | --------------------------------------------------------------------------------------- |
-| `ARC_DISABLE_TIMING`           | 0                  | =1 停用新增 timings.jsonl，不影响 gate 或原模型审计                                     |
-| `ARC_LEGACY_PIPELINE_RESUME`   | 0                  | =1 显式回退旧哨兵恢复；不接入可信记录，保留部分产物误判风险                             |
-| `ARC_EVENT_CONTEXT`            | 1                  | 非终验单事件上下文收窄；=0 回退基础瘦身，终验保持全量，FULL_CONTEXT=1 优先回退          |
-| `ARC_CACHE_PREFIX`             | 1                  | 共享字段与文件稳定部分前置；=0 回退后期可开关排序，仍不等于教师原始代码                 |
-| `ARC_CACHE_PREFIX_V2`          | 0                  | =1 显式启用更强共享字段排序，须同时启用CACHE_PREFIX；两次完整候选均未通过，保持默认关闭 |
-| `ARC_LEGACY_LABEL_LOCATORS`    | 0                  | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留                      |
-| `ARC_LEGACY_READ_FAILURES`     | 0                  | =1 回退只读 mount 处理器故障探针和提示；原浏览器错误上报保留                            |
-| `ARC_LEGACY_E2E_COOKIE_NAMES`  | 0                  | =1 回退有效会话场景的字面量 Cookie 名称准入；测试仍可读取后端源码证据                   |
-| `ARC_LEGACY_E2E_SOURCE_CHECK`  | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留                        |
-| `ARC_LEGACY_REFERENCE_TESTS`   | 0                  | =1 不向前端设计/实现提供 input/tests 外部交互契约                                       |
-| `ARC_LEGACY_RADIO_ASSERTIONS`  | 0                  | =1 回退 radio 存在性测试的选项值/checked 分离断言                                       |
-| `ARC_LEGACY_API_SCOPE`         | 0                  | =1 回退 API 分解中叶子需求边界与 excess 修正提示                                        |
-| `ARC_LEGACY_INTERACTION_RETRY` | 0                  | =1 回退交互提案失败后“已接受状态”基准说明                                               |
-| `ARC_LEGACY_UI_PREDICATES`     | 0                  | =1 回退完整可见性谓词提示；UI IR 与 gate 不变                                           |
-| `ARC_LEGACY_TEST_SANITY`       | 0                  | =1 回退后端恒假 header 断言的冻结前准入检查                                             |
-| `ARC_LEGACY_TEST_REVIEW`       | 0                  | =1 回退冻结前独立模型矛盾审阅；其他 gate 保留                                           |
-| `ARC_FULL_FEEDBACK`            | 0                  | =1 恢复旧的字符串修复反馈与重复 output                                                  |
-| `ARC_FULL_CONTEXT`             | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）                                     |
-| `ARC_UI_DESIGN_FRESH`          | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                                               |
-| `ARC_MODEL_TRANSPORT_RETRIES`  | 2                  | 瞬态传输错误额外重试次数（退避 10/30/90s）                                              |
-| `ARC_REUSE_E2E_TESTS`          | 0                  | =1 复用既有 E2E 测试（重新校验，不重新生成）                                            |
-| `ARC_DISABLE_THINKING`         | 1（deepseek 自动） | 关闭 DeepSeek 思考模式                                                                  |
+| 变量                           | 默认               | 作用                                                                                     |
+| ------------------------------ | ------------------ | ---------------------------------------------------------------------------------------- |
+| `ARC_DISABLE_TIMING`           | 0                  | =1 停用新增 timings.jsonl，不影响 gate 或原模型审计                                      |
+| `ARC_LEGACY_PIPELINE_RESUME`   | 0                  | =1 显式回退旧哨兵恢复；不接入可信记录，保留部分产物误判风险                              |
+| `ARC_EVENT_CONTEXT`            | 1                  | 非终验单事件上下文收窄；=0 回退基础瘦身，终验保持全量，FULL_CONTEXT=1 优先回退           |
+| `ARC_CACHE_PREFIX`             | 1                  | 共享字段与文件稳定部分前置；=0 回退后期可开关排序，仍不等于教师原始代码                  |
+| `ARC_CACHE_PREFIX_V2`          | 0                  | =1 显式启用更强共享字段排序，须同时启用 CACHE_PREFIX；两次完整候选均未通过，保持默认关闭 |
+| `ARC_LEGACY_LABEL_LOCATORS`    | 0                  | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留                       |
+| `ARC_LEGACY_READ_FAILURES`     | 0                  | =1 回退只读 mount 处理器故障探针和提示；原浏览器错误上报保留                             |
+| `ARC_LEGACY_E2E_COOKIE_NAMES`  | 0                  | =1 回退有效会话场景的字面量 Cookie 名称准入；测试仍可读取后端源码证据                    |
+| `ARC_LEGACY_E2E_SOURCE_CHECK`  | 0                  | =1 回退新增的 E2E fixture 准入检查，既有 loopback URL 检查仍保留                         |
+| `ARC_LEGACY_REFERENCE_TESTS`   | 0                  | =1 不向前端设计/实现提供 input/tests 外部交互契约                                        |
+| `ARC_LEGACY_RADIO_ASSERTIONS`  | 0                  | =1 回退 radio 存在性测试的选项值/checked 分离断言                                        |
+| `ARC_LEGACY_API_SCOPE`         | 0                  | =1 回退 API 分解中叶子需求边界与 excess 修正提示                                         |
+| `ARC_LEGACY_INTERACTION_RETRY` | 0                  | =1 回退交互提案失败后“已接受状态”基准说明                                                |
+| `ARC_LEGACY_UI_PREDICATES`     | 0                  | =1 回退完整可见性谓词提示；UI IR 与 gate 不变                                            |
+| `ARC_LEGACY_TEST_SANITY`       | 0                  | =1 回退后端恒假 header 断言的冻结前准入检查                                              |
+| `ARC_LEGACY_TEST_REVIEW`       | 0                  | =1 回退冻结前独立模型矛盾审阅；其他 gate 保留                                            |
+| `ARC_FULL_FEEDBACK`            | 0                  | =1 恢复旧的字符串修复反馈与重复 output                                                   |
+| `ARC_FULL_CONTEXT`             | 0                  | =1 恢复 Stage 12 未瘦身的创建调用上下文（A/B 对照）                                      |
+| `ARC_UI_DESIGN_FRESH`          | 0                  | =1 强制 Stage 09 忽略 checkpoint 全新设计                                                |
+| `ARC_MODEL_TRANSPORT_RETRIES`  | 2                  | 瞬态传输错误额外重试次数（退避 10/30/90s）                                               |
+| `ARC_REUSE_E2E_TESTS`          | 0                  | =1 复用既有 E2E 测试（重新校验，不重新生成）                                             |
+| `ARC_DISABLE_THINKING`         | 1（deepseek 自动） | 关闭 DeepSeek 思考模式                                                                   |
 
 ## 度量
 

@@ -50,6 +50,7 @@ def identity(source: Path, inputs: Path) -> dict:
     """Hash executable sources, input bytes and allowlisted effective configuration; never keys."""
     sources = [
         *source.glob("[0-9][0-9]_*.py"),
+        *(source / "legacy").glob("*.py"),
         source / "run_all.py",
         source / "main.py",
     ]

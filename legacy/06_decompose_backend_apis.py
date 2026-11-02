@@ -4,6 +4,10 @@ import json
 import os
 from contextlib import ExitStack
 from pathlib import Path
+import sys
+
+# Direct script execution still imports the repository-owned infrastructure.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from infrastructure.shared.models.text import TextModel
 from infrastructure.shared.rag.apis import ApiRetriever

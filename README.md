@@ -27,7 +27,7 @@ npm run lint:md
 | 路径                                 | 职责                                                |
 | ------------------------------------ | --------------------------------------------------- |
 | `main.py`                            | 平台参数与引擎选择；生成命令需另外获得授权          |
-| `00_*.py`–`12_*.py`、`run_all.py`    | 保留的 legacy 教学流水线                            |
+| `legacy/`、`run_all.py`              | 保留的 legacy 教学流水线                            |
 | `coding_agent/`                      | 单循环候选、工具、检查与运行记录                    |
 | `infrastructure/`                    | 两个引擎使用的模板、阶段实现和基础工具              |
 | `input/`、`examples/`、`acceptance/` | 教师输入、扩展示例和固定验收；保持原字节            |
@@ -41,4 +41,12 @@ npm run lint:md
 
 GitHub 共享这个独立源码仓库。`main` 同时包含两个引擎，默认保持 legacy；成员使用短期 `feat/*`、`fix/*` 分支提交改动，不维护长期平行的源码副本。版本、worktree、首次发布和不应上传的本地材料见[维护指南](docs/maintenance.md#仓库共享与分支)。
 
-ARC-Bench 上传的是智能体 ZIP，不是 Git bundle 或生成的网站。已封存候选为 `65220fd`，源码与打包方式见[操作指南](docs/development.md#单循环候选的运行与审计)；格式整理后的新提交不冒充原受测版本。平台评测会调用模型，目前禁止执行。
+ARC-Bench 上传智能体 ZIP。统一入口支持按提交与引擎打包，默认生成 legacy：
+
+```sh
+make versions
+make package-check ENGINE=legacy
+make package-check REF=coding-agent-candidate-2026-11-02 ENGINE=coding
+```
+
+产物位于 `dist/`，文件名含引擎和 SHA，附带同名版本与哈希清单；只打包已提交文件。版本选择、网站上传、`make run` 与 `make serve` 见[提交与本地运行](docs/submission.md)。真实生成及平台评测会调用模型，目前禁止执行。

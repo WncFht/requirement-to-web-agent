@@ -101,7 +101,11 @@ def environment(source, node_bin):
     # Every legacy bypass must be explicitly disabled in this frozen revision.
     import re
 
-    for path in [*source.glob("*.py"), *(source / "infrastructure").rglob("*.py")]:
+    for path in [
+        *source.glob("*.py"),
+        *(source / "legacy").glob("*.py"),
+        *(source / "infrastructure").rglob("*.py"),
+    ]:
         for name in re.findall(
             r"""os\.getenv\(\s*["'](ARC_LEGACY_[A-Z0-9_]+)["']""",
             path.read_text(encoding="utf-8-sig"),

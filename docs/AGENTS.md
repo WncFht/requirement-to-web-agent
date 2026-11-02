@@ -5,6 +5,7 @@
 | 用途与最短使用路径 | 根 `README.md`（当前入口）+ `AGENTS.md`（代理规则）               | 入口或前提变化时                                                |
 | 架构参考           | `docs/architecture.md`                                            | 阶段、工件链或模块职责变化时                                    |
 | 操作指南           | `docs/development.md`                                             | 运行方式、环境变量、排错路径变化时                              |
+| 提交与版本操作     | `docs/submission.md`                                              | 打包布局、版本选择、上传与本地运行入口变化时                    |
 | 实验报告           | `docs/experiments/*.md`                                           | 同条件新证据出现时更新所属报告                                  |
 | Agent Notes        | `.agents/notes/{proposed,implemented,rejected,archived}/{class}/` | 长期取舍产生或反转时（maintain-decision-notes）                 |
 | 开发历史           | `docs/history.md`                                                 | 已实施里程碑或验证结论变化时                                    |
