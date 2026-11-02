@@ -1,22 +1,22 @@
 """Engine-independent execution of the unchanged teacher/fixed oracle in a mirror."""
 
-from contextlib import contextmanager
 import hashlib
 import json
-import os
-from pathlib import Path
 import shutil
 import subprocess
+from contextlib import contextmanager
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic, sleep
 from urllib.error import URLError
 from urllib.request import urlopen
 
+from infrastructure.utils.processes import process_options, stop_process
+from scripts.accept_teacher import ALIASES, free_port, normalized, verify_input
+
 from coding_agent.checks import application_environment
 from coding_agent.protocol import green
 from coding_agent.trace import audit, file_manifest, json_write, sha
-from infrastructure.utils.processes import start_process, stop_process, process_options
-from scripts.accept_teacher import ALIASES, normalized, free_port, verify_input
 
 ROOT = Path(__file__).resolve().parents[1]
 

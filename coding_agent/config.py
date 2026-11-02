@@ -1,7 +1,7 @@
 """Immutable runtime settings; platform credentials never enter public records."""
 
-from dataclasses import dataclass, field
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 

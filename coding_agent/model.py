@@ -1,15 +1,15 @@
 """One observable JSON/multimodal client with a single bounded retry policy."""
 
-import time
 import json
+import time
 from uuid import uuid4
 
 import httpx
 from openai import (
-    OpenAI,
     APIConnectionError,
     APITimeoutError,
     InternalServerError,
+    OpenAI,
     RateLimitError,
 )
 

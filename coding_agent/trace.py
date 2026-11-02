@@ -1,8 +1,8 @@
 """Append-only events, content-addressed attachments and independently auditable seals."""
 
-from datetime import datetime, timezone
 import hashlib
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from time import monotonic
 from uuid import uuid4

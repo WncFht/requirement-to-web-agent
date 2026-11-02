@@ -1,9 +1,9 @@
 """A single read/edit/check loop, with coarse test freezing and global budgets."""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from time import monotonic
 
 import yaml
@@ -12,7 +12,7 @@ from coding_agent.checks import Checks, prepare_project
 from coding_agent.model import Model
 from coding_agent.protocol import BudgetExhausted, InvalidTest, green, observation
 from coding_agent.trace import Trace, file_manifest, fingerprint, json_write
-from coding_agent.workspace import Workspace, TEST_FILES
+from coding_agent.workspace import TEST_FILES, Workspace
 
 
 def compact(value, limit=12000):

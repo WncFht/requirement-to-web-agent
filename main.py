@@ -3,12 +3,12 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
-from infrastructure.utils.timing import timed
 from infrastructure.utils.processes import child_environment
+from infrastructure.utils.timing import timed
 
 
 def main():

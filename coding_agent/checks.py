@@ -2,33 +2,33 @@
 
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
-import tempfile
+from pathlib import Path
 from time import monotonic
 from uuid import uuid4
 
-from coding_agent.protocol import BudgetExhausted, InvalidTest, green
-from coding_agent.trace import file_manifest, fingerprint, json_write, sha
-from coding_agent.workspace import TEST_FILES
 from infrastructure.shared.project.initialize import initialize_project
 from infrastructure.stages.backend.testing import BackendChecks
+from infrastructure.stages.frontend.interactions.e2e_runtime import (
+    CONFIG_SOURCE,
+    RUNNER_SOURCE,
+    prepare_e2e,
+)
 from infrastructure.stages.frontend.ui.runtime import (
-    configure_tailwind,
     PLAYWRIGHT_VERSION,
+    configure_tailwind,
 )
 from infrastructure.stages.frontend.ui.testing import (
     FrontendChecks,
     parse_playwright_result,
 )
-from infrastructure.stages.frontend.interactions.e2e_runtime import (
-    prepare_e2e,
-    CONFIG_SOURCE,
-    RUNNER_SOURCE,
-)
-from infrastructure.utils.processes import stop_process, process_options, npm_command
+from infrastructure.utils.processes import npm_command, process_options, stop_process
+
+from coding_agent.protocol import BudgetExhausted, InvalidTest, green
+from coding_agent.trace import file_manifest, fingerprint, json_write, sha
+from coding_agent.workspace import TEST_FILES
 
 HTTP_FIXTURE = """// Program-owned real HTTP/SQLite fixture. No application behavior is mocked.
 import type { TestContext } from "node:test";
@@ -131,9 +131,11 @@ def validate_tests(output):
                 if re.search(
                     r"existing session|valid session|seeded session|signed in",
                     title,
-                    re.I,
+                    re.IGNORECASE,
                 ) and re.search(
-                    r"seed\w*Session\s*\(|INSERT\s+INTO\s+[\"`]?Session", chunk, re.I
+                    r"seed\w*Session\s*\(|INSERT\s+INTO\s+[\"`]?Session",
+                    chunk,
+                    re.IGNORECASE,
                 ):
                     if "addCookies" not in chunk and not re.search(
                         r"\.(?:click|fill)\s*\(", chunk
@@ -141,7 +143,9 @@ def validate_tests(output):
                         raise InvalidTest(
                             "A seeded database session needs its browser credential before asserting signed-in UI"
                         )
-                selections = re.findall(r"\b(male|female)\.check\s*\(", chunk, re.I)
+                selections = re.findall(
+                    r"\b(male|female)\.check\s*\(", chunk, re.IGNORECASE
+                )
                 asserted = re.findall(
                     r"(?:gender\??\.?|gender\])[^\n]{0,80}?toBe\s*\(\s*[\"'](Male|Female)[\"']",
                     chunk,
@@ -268,7 +272,7 @@ class Checks(FrontendChecks):
             ("skipped", "skipped"),
             ("todo", "todo"),
         ):
-            found = re.search(rf"^# {key} (\d+)\s*$", result["stdout"], re.M)
+            found = re.search(rf"^# {key} (\d+)\s*$", result["stdout"], re.MULTILINE)
             result[field] = int(found.group(1)) if found else 0
         if not result["tests"]:
             result["errors"] = ["Backend runner produced no test cases"]
@@ -403,7 +407,7 @@ class Checks(FrontendChecks):
                 )
             if name == "backend":
                 failure_names = re.findall(
-                    r"^\s+name: ['\"]?([A-Za-z]+)['\"]?\s*$", diagnostic, re.M
+                    r"^\s+name: ['\"]?([A-Za-z]+)['\"]?\s*$", diagnostic, re.MULTILINE
                 )
                 valid_red = (
                     report.get("failed", 0) > 0
