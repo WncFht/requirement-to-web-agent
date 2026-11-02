@@ -160,6 +160,7 @@ class Checks(FrontendChecks):
         self.trace, self.remaining = trace, remaining or (lambda: 1200)
         self.reports = {}
         self.frozen = None
+        self.required_ids = []
 
     def execute(self, args, *, env=None, timeout=None, executable=None):
         allowance = min(timeout or self.timeout, self.remaining())
@@ -359,6 +360,14 @@ class Checks(FrontendChecks):
 
     def freeze(self):
         validate_tests(self.output)
+        test_source = "\n".join((self.output / name).read_text() for name in TEST_FILES)
+        missing = [
+            identity for identity in self.required_ids if identity not in test_source
+        ]
+        if missing:
+            raise ValueError(
+                "Generated tests omit requirement identifiers: " + ", ".join(missing)
+            )
         compiled = self.run("typecheck")
         if not green(compiled):
             raise ValueError(
@@ -405,5 +414,7 @@ class Checks(FrontendChecks):
                 )
         self.frozen = self.test_hashes()
         if self.trace:
-            self.trace.emit("tests.freeze", files=self.frozen)
+            self.trace.emit(
+                "tests.freeze", files=self.frozen, requirement_ids=self.required_ids
+            )
         return self.frozen

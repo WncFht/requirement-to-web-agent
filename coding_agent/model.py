@@ -67,7 +67,12 @@ class Model:
                 remaining -= 2
                 continue
             raw = response.model_dump(mode="json")
-            trace.response(call_id, raw)
+            try:
+                trace.response(call_id, raw)
+            except ValueError as error:
+                raise RuntimeError(
+                    "Unknown model usage: stop before spending more"
+                ) from error
             if not response.choices:
                 raise ValueError("Empty model response")
             choice = response.choices[0]
