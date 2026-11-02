@@ -1,4 +1,4 @@
-exclude: ^(input/|examples/|acceptance/|infrastructure/shared/project/templates/|\.agents/notes/archived/)
+exclude: ^(input/|examples/|acceptance/|coding_agent/support/shared/project/templates/|upstream/|\.agents/notes/archived/)
 repos:
   - repo: local
     hooks:

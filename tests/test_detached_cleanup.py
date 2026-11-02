@@ -9,7 +9,7 @@ import time
 import unittest
 from unittest.mock import patch
 
-from infrastructure.utils.processes import (
+from runtime.processes import (
     capture_process,
     start_process,
     stop_process,
@@ -52,7 +52,5 @@ class DetachedCleanupTests(unittest.TestCase):
         result = subprocess.CompletedProcess(
             [], 0, stdout="10 1\n11 10\n12 11\n99 1\n100 99\n"
         )
-        with patch(
-            "infrastructure.utils.processes.subprocess.run", return_value=result
-        ):
+        with patch("runtime.processes.subprocess.run", return_value=result):
             self.assertEqual(set(owned_descendants(10)), {11, 12})

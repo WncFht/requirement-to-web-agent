@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 from coding_fixture import FixtureModel, REFERENCE_IMAGE
 from coding_agent.trace import json_write, audit
-from infrastructure.shared.project.initialize import initialize_project
+from coding_agent.support.shared.project.initialize import initialize_project
 from coding_agent.checks import application_environment
 from scripts.evaluation import servers
 from package_agent import inspect_package

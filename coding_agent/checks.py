@@ -9,22 +9,22 @@ from pathlib import Path
 from time import monotonic
 from uuid import uuid4
 
-from infrastructure.shared.project.initialize import initialize_project
-from infrastructure.stages.backend.testing import BackendChecks
-from infrastructure.stages.frontend.interactions.e2e_runtime import (
+from coding_agent.support.shared.project.initialize import initialize_project
+from coding_agent.support.stages.backend.testing import BackendChecks
+from coding_agent.support.stages.frontend.interactions.e2e_runtime import (
     CONFIG_SOURCE,
     RUNNER_SOURCE,
     prepare_e2e,
 )
-from infrastructure.stages.frontend.ui.runtime import (
+from coding_agent.support.stages.frontend.ui.runtime import (
     PLAYWRIGHT_VERSION,
     configure_tailwind,
 )
-from infrastructure.stages.frontend.ui.testing import (
+from coding_agent.support.stages.frontend.ui.testing import (
     FrontendChecks,
     parse_playwright_result,
 )
-from infrastructure.utils.processes import npm_command, process_options, stop_process
+from runtime.processes import npm_command, process_options, stop_process
 
 from coding_agent.protocol import BudgetExhausted, InvalidTest, green
 from coding_agent.trace import file_manifest, fingerprint, json_write, sha

@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.webp -text
+*.gif -text
+*.pdf -text
+
+# Preserve the pinned snapshot bytes, including mixed line endings.
+* -text

@@ -7,7 +7,7 @@ import mimetypes
 import re
 from pathlib import Path
 
-from infrastructure.utils.paths import check_path_case, relative_path
+from coding_agent.support.utils.paths import check_path_case, relative_path
 
 from coding_agent.trace import sha
 

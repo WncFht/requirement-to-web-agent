@@ -12,7 +12,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from infrastructure.shared.project.initialize import initialize_project
+from coding_agent.support.shared.project.initialize import initialize_project
 from package_agent import inspect_package
 
 GUARD = """import json,os,socket,sys
@@ -106,6 +106,16 @@ def verify(package, output):
             raise ValueError(
                 "Legacy Stage 00 did not complete before the offline boundary"
             )
+    elif manifest["default_engine"] == "upstream":
+        state = json.loads((application / ".arc/compilation.json").read_text())
+        stage_zero = (
+            state["stages"].get("00_project_initialization", {}).get("status")
+            == "GREEN"
+        )
+        if not stage_zero:
+            raise ValueError(
+                "Upstream Stage 00 did not complete before the offline boundary"
+            )
     elif not (application / "frontend/playwright.agent.config.ts").is_file():
         raise ValueError("Coding application initialization did not complete")
     result = {
@@ -117,7 +127,7 @@ def verify(package, output):
         "model_client_blocked_before_request": True,
         "real_model_requests": 0,
         "initial_output_unchanged": True,
-        "legacy_stage_zero_passed": stage_zero,
+        "initialization_passed": stage_zero if stage_zero is not None else True,
         "retained_workspace": str(application),
     }
     if (

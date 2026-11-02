@@ -13,10 +13,10 @@ from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from infrastructure.stages.frontend.interactions.e2e_runtime import CONFIG_SOURCE
-from infrastructure.utils.processes import capture_process
-from infrastructure.utils.processes import npm_command
-from infrastructure.stages.frontend.interactions.cookie_transport import (
+from coding_agent.support.stages.frontend.interactions.e2e_runtime import CONFIG_SOURCE
+from runtime.processes import capture_process
+from runtime.processes import npm_command
+from coding_agent.support.stages.frontend.interactions.cookie_transport import (
     observe_cookie_transport,
 )
 

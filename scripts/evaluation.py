@@ -11,7 +11,7 @@ from time import monotonic, sleep
 from urllib.error import URLError
 from urllib.request import urlopen
 
-from infrastructure.utils.processes import process_options, stop_process
+from runtime.processes import process_options, stop_process
 from scripts.accept_teacher import ALIASES, free_port, normalized, verify_input
 
 from coding_agent.checks import application_environment
@@ -294,6 +294,12 @@ def internal_green(output):
             == {"typecheck", "backend", "ui", "e2e", "build"}
             and all(green(v) for v in proof["result"]["checks"].values())
         )
+    compilation = Path(output) / ".arc/compilation.json"
+    if (
+        compilation.is_file()
+        and json.loads(compilation.read_text()).get("status") != "GREEN"
+    ):
+        return False
     return all(
         json.loads((Path(output) / ".arc" / f"{n}.json").read_text()).get("status")
         == "GREEN"

@@ -163,6 +163,43 @@ class SubmissionPackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported runtime source"):
             self.build("coding")
 
+    def test_current_upstream_and_coding_packages_are_isolated(self):
+        self.write("runtime/output.py", "# platform output adapter\n")
+        self.write("runtime/processes.py", "# platform process ownership\n")
+        self.write("upstream.json", '{"revision":"pinned-fixture"}')
+        self.write("upstream/main.py", "# upstream CLI\n")
+        self.write("upstream/infrastructure/compiler.py", "# upstream compiler\n")
+        self.write(
+            "upstream/infrastructure/shared/project/templates/deploy.sh",
+            "#!/bin/sh\nexit 0\n",
+        )
+        for number in range(13):
+            self.write(f"upstream/{number:02d}_stage.py", f"STAGE = {number}\n")
+        self.write("upstream/tests/test_compiler.py", "# development only\n")
+        self.write("upstream/input/requirements.yaml", "private fixture\n")
+        self.write("coding_agent/support/shared/project/templates/package.json", "{}")
+        self.commit()
+        teacher = self.build("upstream", name="upstream.zip")
+        coding = self.build("coding", name="coding-current.zip")
+        with zipfile.ZipFile(teacher["zip_path"]) as archive:
+            names = archive.namelist()
+            self.assertIn("upstream/infrastructure/compiler.py", names)
+            self.assertIn("runtime/output.py", names)
+            self.assertNotIn("coding_agent/loop.py", names)
+            self.assertNotIn("upstream/tests/test_compiler.py", names)
+            self.assertNotIn("upstream/input/requirements.yaml", names)
+            self.assertNotIn("legacy/00_stage.py", names)
+        with zipfile.ZipFile(coding["zip_path"]) as archive:
+            names = archive.namelist()
+            self.assertIn("coding_agent/loop.py", names)
+            self.assertIn(
+                "coding_agent/support/shared/project/templates/package.json", names
+            )
+            self.assertNotIn("upstream/main.py", names)
+            self.assertNotIn("infrastructure/utils/cli.py", names)
+        with self.assertRaisesRegex(ValueError, "archived"):
+            self.build("legacy", name="invalid-current-legacy.zip")
+
 
 class SubmissionRunnerTests(unittest.TestCase):
     def setUp(self):

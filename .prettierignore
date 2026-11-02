@@ -3,7 +3,8 @@ node_modules/
 input/
 examples/
 acceptance/
-infrastructure/
+coding_agent/support/shared/project/templates/
+upstream/
 .agents/notes/archived/
 .agents/skills/
 .agents/references/

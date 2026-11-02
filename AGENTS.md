@@ -1,24 +1,25 @@
 # AGENTS.md
 
-本仓库把需求与参考图编译为 React/Express/SQLite 网站，包含默认 legacy 和候选 coding 两种引擎。
+需求到 Web 应用的智能体仓库，默认 upstream 教师路线，coding 为独立候选。
 
 ## 工作边界
 
-- 用户已禁止真实模型 API 调用。未经新的明确授权，不运行生成、重试或平台评测；仅做本地整理、静态检查和离线测试。
-- 保留 typecheck、后端契约、UI 存在性、Playwright E2E 与生产构建门禁。不得修改冻结测试或放松断言使生成物转绿。
-- 教师原件 `input/`、固定验收 `acceptance/` 与应用模板保持字节身份；示例与运行结果分别记录。修改生成语义须更新决策和有意义的回归。
-- 模型凭据只存 gitignored 的 `.env` 或环境变量，不进入代码、日志、文档或上传包。环境变量优先于本地配置。
-- 每次运行使用独立工作区。平台首次传入的预置输出目录由统一入口隔离生成、成功后备份交付；已有编译记录仍禁止覆盖。不同源码、输入、引擎不能共用 checkpoint；失败证据保留。
-- 当前代码不保留 `ARC_LEGACY_*` 旧行为开关和旧哨兵恢复。需要旧行为时使用固定 Git 标签；历史版本兼容仅限打包工具读取其原始布局。
+- 用户禁止真实模型 API 调用。未经新的明确授权，不运行真实生成、重试或平台评测；仅做本地整理、静态检查及离线测试。
+- `upstream/` 对应 `upstream.json` 固定的教师源码。尽量照搬；必要修正必须同时登记原/新哈希、原因和 `upstream.patch`，不得隐式批量格式化或改写提示词。检查会核对完整文件集。
+- coding 的循环、冻结测试、预算与验收独立维护；`coding_agent/support/` 是从旧版本保留的检查/模板依赖，不与教师实现混装。
+- 保留两条路线各自的 typecheck、后端、UI、E2E 与构建检查。失败不得改冻结断言转绿，平台适配层不得将上游失败报告当作成功。
+- 根 `input/`、`acceptance/` 与 coding 模板保持原字节。上游模板来自固定快照，更新时按来源一起核对。不同版本、输入和引擎不能共用运行目录。
+- 模型配置来自环境或 gitignored 的 `.env`，环境变量优先；凭据不得进入源码、文档、日志或 ZIP。
+- 平台预置输出使用隔离生成、备份和交付；已有编译记录仍拒绝覆盖。当前 upstream/coding 都不承诺旧 legacy 的可信续跑。
 
 ## 开发与交付
 
-团队维护唯一 main，功能分支与临时 worktree 按需创建，合入后删除。源码提交前执行：
+长期维护 main，按需创建短期分支和 worktree，完成后移除。提交前执行：
 
 ```sh
 make check
 ```
 
-Python 使用 Ruff，文档与配置工具版本由 `package.json` 和锁文件确定。提交 hook 格式化暂存快照，CI 使用相同检查。真实浏览器集成需按[开发指南](docs/development.md)单独启用。
+上游原测试在独立解释器中执行，清除真实模型凭据并阻断外网。模型模拟和浏览器重集成按开发指南显式启用。上游快照、教师材料、固定验收与模板排除自动格式化；其余 Python 用 Ruff，文档工具版本来自 package.json 与锁文件。
 
-文档归属见 [docs/AGENTS.md](docs/AGENTS.md)，架构见 [docs/architecture.md](docs/architecture.md)，打包契约见 [docs/packaging.md](docs/packaging.md)。长期理由归 `.agents/notes/`，遵循已引入的 agent-maintenance 技能；旧实验与计划通过 Git 标签查阅，不在当前入口并行维护。
+架构、开发、打包分别见 `docs/architecture.md`、`docs/development.md`、`docs/packaging.md`。长期理由归 `.agents/notes/`，沿用 agent-maintenance 规则。旧版 legacy 只通过固定标签恢复，不在当前代码中添加别名或重建旧驱动。

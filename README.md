@@ -1,12 +1,17 @@
 # Requirement to Web Agent
 
-把 `requirements.yaml`、参考图和任务附带测试转换成 React、Express、SQLite 网站，输出 `package.json`、`deploy.sh`、`frontend/` 与 `backend/`。
+读取 `requirements.yaml`、参考图和附带测试，生成可运行的 React、Express、SQLite 网站。仓库保留两条独立路线：
 
-提供两个引擎：默认 `legacy` 按数据库、后端、页面与交互分阶段生成；`coding` 在同一编码循环中修改整个前后端。两者都由程序执行测试和构建来判断完成。coding 仍为候选，尚未证明稳定成本优势或视觉还原质量，已有证据见[结果摘要](docs/results.md)。
+| 引擎             | 实现                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `upstream`，默认 | 基于教师仓库固定提交 `13e78ef`，沿用其十三阶段、契约、triggers、模型配置和部署模板 |
+| `coding`         | 我们的单循环候选；先冻结测试，再由同一循环修改整个前后端                           |
 
-真实模型 API 已按用户要求停用；未经重新明确授权，仅进行本地整理与离线验证。
+`upstream/` 保存完整上游快照，141 个文件中，2 个运行源码文件有明确的小修正：失败退出码和 SDK 超时类型；另有 Git 属性调整，保护快照的原始换行字节。来源及逐文件哈希见 `upstream.json`，差异见 `upstream.patch`。`coding_agent/support/` 保留候选原有检查与模板依赖，避免上游升级改变候选行为。
 
-## 准备环境
+真实模型 API 按用户要求停用；未经重新明确授权，仅进行本地整理与离线验证。两条路线的真实效果尚未完成同期比较，已有结果及限制见[结果摘要](docs/results.md)。
+
+## 环境与离线检查
 
 使用 Python 3.12、Node 22、npm 和 uv：
 
@@ -18,28 +23,27 @@ pre-commit install
 make check
 ```
 
-依赖安装可能需要下载；`make check` 不调用模型。开发流程与浏览器集成见[开发指南](docs/development.md)。
+`make check` 核对上游快照、执行上游原测试、coding 与平台回归、文档和格式检查，不调用真实模型。依赖安装可能需要下载。
 
-## 生成提交包
+## 打包
 
 ```sh
 make versions
-make package-check ENGINE=legacy
+make package-check ENGINE=upstream
 make package-check ENGINE=coding
 ```
 
-`dist/` 中生成含引擎、提交 SHA 的 ZIP 和同名哈希清单，只包含已提交源码。[打包范围](docs/packaging.md)说明具体内容，[提交指南](docs/submission.md)说明历史版本选择、网站上传和本地运行。
+产物为 `dist/agent-<引擎>-<提交SHA>-v3.zip` 和同名哈希清单，只包含指定提交中的运行源码。[打包范围](docs/packaging.md)说明具体内容，[提交指南](docs/submission.md)说明上传及本地运行。
 
 ## 目录
 
-| 路径                                 | 职责                                 |
-| ------------------------------------ | ------------------------------------ |
-| `main.py`、`Makefile`                | 平台入口与开发命令                   |
-| `legacy/`、`run_all.py`              | 十三阶段引擎与调度                   |
-| `coding_agent/`                      | 单循环引擎、工具、检查和记录         |
-| `infrastructure/`                    | 阶段实现、模型客户端、模板和基础工具 |
-| `input/`、`examples/`、`acceptance/` | 原始教师任务、扩展示例和固定验收     |
-| `tests/`、`scripts/`                 | 离线回归、独立验收与维护工具         |
-| `docs/`、`.agents/`                  | 当前文档与维护规则、长期决策         |
+| 路径                                 | 职责                                                 |
+| ------------------------------------ | ---------------------------------------------------- |
+| `main.py`、`runtime/`                | 引擎选择、平台输出适配和所属进程治理                 |
+| `upstream/`                          | 固定版本的教师源码、模板和原测试                     |
+| `coding_agent/`                      | 独立循环、检查、工具和记录；support 是保留的检查依赖 |
+| `input/`、`examples/`、`acceptance/` | 原教师任务、扩展示例和固定独立验收                   |
+| `tests/`、`scripts/`                 | coding、适配层、打包、独立验收与维护检查             |
+| `docs/`、`.agents/`                  | 当前文档、维护规则与决策理由                         |
 
-GitHub 仓库建议命名为 `requirement-to-web-agent`，使用队伍私有仓库。维护一个 `main`，改动通过短期 `feat/*`、`fix/*` 分支合入；历史版本由标签保留。共享约定见[维护指南](docs/maintenance.md)，文档入口见[docs/README.md](docs/README.md)。
+共享仓库为 `WncFht/requirement-to-web-agent`。长期维护一个 main，用短期功能分支协作；原本地 legacy 及其实验保留在 `pre-upstream-migration-2026-11-02` 等历史标签中。更多说明见[文档导航](docs/README.md)。

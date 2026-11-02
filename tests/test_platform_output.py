@@ -7,9 +7,8 @@ import unittest
 from unittest.mock import patch
 
 import main
-from infrastructure.shared.project.initialize import initialize_project
-from infrastructure.utils.output import application_output, LOCK
-from infrastructure.utils.pipeline_state import PipelineState
+from coding_agent.support.shared.project.initialize import initialize_project
+from runtime.output import application_output, LOCK
 
 
 class PlatformOutputTests(unittest.TestCase):
@@ -28,16 +27,14 @@ class PlatformOutputTests(unittest.TestCase):
         )
         # Keep test failure evidence in the test-owned temporary root.
         self.workspace_patch = patch(
-            "infrastructure.utils.output.mkdtemp",
+            "runtime.output.mkdtemp",
             side_effect=lambda **kwargs: mkdtemp(dir=self.root, **kwargs),
         )
         self.workspace_patch.start()
         self.addCleanup(self.workspace_patch.stop)
 
-    def context(self, resume=False):
-        return application_output(
-            self.output, inputs=self.inputs, source=self.source, resume=resume
-        )
+    def context(self):
+        return application_output(self.output, inputs=self.inputs, source=self.source)
 
     def seed(self):
         initialize_project(self.output)
@@ -71,9 +68,6 @@ class PlatformOutputTests(unittest.TestCase):
                 (self.output / "frontend/src/App.tsx").read_text(),
                 "// platform starter\n",
             )
-            # The actual trusted pipeline now accepts the workspace before Stage 00.
-            state = PipelineState(self.source, self.inputs, output, [], False)
-            self.assertEqual(state.data["completed"], [])
             self.generated(output)
             workspace = output.parent
         self.assertEqual(self.output.stat().st_ino, inode)
@@ -121,7 +115,7 @@ class PlatformOutputTests(unittest.TestCase):
                 raise OSError("publication fixture failure")
             return move(source, target)
 
-        with patch("infrastructure.utils.output.shutil.move", side_effect=failed_move):
+        with patch("runtime.output.shutil.move", side_effect=failed_move):
             with self.assertRaisesRegex(OSError, "publication fixture failure"):
                 with self.context() as output:
                     self.generated(output)
@@ -144,8 +138,9 @@ class PlatformOutputTests(unittest.TestCase):
                 raise RuntimeError("stop")
         self.assertEqual(dependency.read_text(), "original")
 
-    def test_existing_compiler_output_stays_protected_and_resume_is_explicit(self):
+    def test_existing_compiler_output_stays_protected(self):
         for name in (
+            ".arc/compilation.json",
             ".arc/pipeline_state.json",
             ".arc/agent/result.json",
             ".arc/project/report.json",
@@ -161,8 +156,6 @@ class PlatformOutputTests(unittest.TestCase):
                     with self.context():
                         self.fail("Old run must not be treated as a scaffold")
                 self.assertEqual(marker.read_text(), "untouched")
-                with self.context(resume=True) as output:
-                    self.assertEqual(output, self.output)
 
     def test_concurrent_writer_and_unsafe_destinations_are_rejected(self):
         self.seed()
@@ -180,7 +173,7 @@ class PlatformOutputTests(unittest.TestCase):
                     self.fail("Unsafe destination accepted")
 
     def test_real_main_routes_both_engines_through_platform_adapter(self):
-        for engine in ("legacy", "coding"):
+        for engine in ("upstream", "coding"):
             with self.subTest(engine=engine):
                 if self.output.exists():
                     shutil.rmtree(self.output)

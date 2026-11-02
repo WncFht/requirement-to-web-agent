@@ -10,13 +10,14 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_FORMAT = 2
+PACKAGE_FORMAT = 3
 VERSIONS = (
-    ("HEAD", "Current integration; both engines, default legacy"),
+    ("HEAD", "Pinned upstream compiler (default) and independent coding agent"),
     (
         "coding-agent-candidate-2026-11-02",
         "Sealed coding candidate; not a platform score",
     ),
+    ("pre-upstream-migration-2026-11-02", "Archived local legacy and coding"),
     ("teacher-contracts-2026-11-01", "Legacy with teacher contracts"),
     ("optimized-verified-2026-11-01", "Earlier verified legacy checkpoint"),
 )
@@ -35,46 +36,75 @@ def resolve_revision(ref, root=ROOT):
 
 
 def runtime_files(revision, engine, root=ROOT):
-    selected = []
+    records = []
     for record in git("ls-tree", "-rz", "--full-tree", revision, root=root).split(
         b"\0"
     ):
-        if not record:
-            continue
-        metadata, name = record.split(b"\t", 1)
-        mode, kind, identity = metadata.decode().split()
-        name = name.decode()
-        include = name in {"main.py", "requirements.txt"} or name.startswith(
-            "infrastructure/"
+        if record:
+            metadata, name = record.split(b"\t", 1)
+            mode, kind, identity = metadata.decode().split()
+            records.append((name.decode(), identity, mode, kind))
+    names = {row[0] for row in records}
+    modern = "upstream/main.py" in names and "upstream.json" in names
+    if engine == "upstream" and not modern:
+        raise ValueError("Revision does not contain the pinned upstream engine")
+    if engine == "legacy" and modern:
+        raise ValueError(
+            "legacy is archived; select a historical REF or ENGINE=upstream"
         )
-        if engine == "coding":
-            include |= name.startswith("coding_agent/")
+    selected = []
+    for name, identity, mode, kind in records:
+        include = name in {"main.py", "requirements.txt"}
+        if modern:
+            include |= name == "upstream.json" or name.startswith("runtime/")
+            if engine == "upstream":
+                include |= (
+                    name == "upstream/main.py"
+                    or name.startswith("upstream/infrastructure/")
+                    or bool(re.fullmatch(r"upstream/\d\d_[^/]+\.py", name))
+                )
+            elif engine == "coding":
+                include |= name.startswith("coding_agent/")
         else:
-            include |= (
-                name == "run_all.py"
-                or name.startswith("legacy/")
-                or bool(re.fullmatch(r"\d\d_[^/]+\.py", name))
-            )
+            include |= name.startswith("infrastructure/")
+            if engine == "coding":
+                include |= name.startswith("coding_agent/")
+            else:
+                include |= (
+                    name == "run_all.py"
+                    or name.startswith("legacy/")
+                    or bool(re.fullmatch(r"\d\d_[^/]+\.py", name))
+                )
         if not include:
             continue
         if kind != "blob" or mode not in {"100644", "100755"}:
             raise ValueError("Unsupported runtime source: " + name)
         selected.append((name, identity, mode))
-    required = {"main.py", "requirements.txt", "infrastructure/utils/cli.py"}
+    required = {"main.py", "requirements.txt"}
+    if modern:
+        required |= {"runtime/output.py", "runtime/processes.py", "upstream.json"}
+    else:
+        required.add("infrastructure/utils/cli.py")
     if engine == "coding":
         required.add("coding_agent/loop.py")
+    elif engine == "upstream":
+        required |= {
+            "upstream/main.py",
+            "upstream/infrastructure/compiler.py",
+            "upstream/infrastructure/shared/project/templates/deploy.sh",
+        }
     else:
         required.add("run_all.py")
-        for number in range(13):
-            if not any(
-                re.fullmatch(rf"(?:legacy/)?{number:02d}_[^/]+\.py", row[0])
-                for row in selected
-            ):
-                raise ValueError(f"Revision lacks legacy stage {number:02d}")
-    names = {r[0] for r in selected}
-    if not required <= names:
+    for number in range(13) if engine in {"legacy", "upstream"} else ():
+        prefix = "upstream/" if engine == "upstream" else "(?:legacy/)?"
+        if not any(
+            re.fullmatch(rf"{prefix}{number:02d}_[^/]+\.py", row[0]) for row in selected
+        ):
+            raise ValueError(f"Revision lacks {engine} stage {number:02d}")
+    available = {row[0] for row in selected}
+    if not required <= available:
         raise ValueError(
-            f"Revision does not support {engine}: missing {sorted(required - names)}"
+            f"Revision does not support {engine}: missing {sorted(required - available)}"
         )
     raw = subprocess.check_output(
         ["git", "cat-file", "--batch"],
@@ -131,9 +161,9 @@ def inspect_package(output):
     return manifest
 
 
-def package(output=None, ref="HEAD", engine="legacy", *, root=ROOT):
-    if engine not in {"legacy", "coding"}:
-        raise ValueError("Engine must be legacy or coding")
+def package(output=None, ref="HEAD", engine="upstream", *, root=ROOT):
+    if engine not in {"upstream", "legacy", "coding"}:
+        raise ValueError("Engine must be upstream, coding, or historical legacy")
     revision = resolve_revision(ref, root)
     output = Path(output or default_output(revision, engine, root)).resolve()
     if output.suffix != ".zip":
@@ -202,6 +232,7 @@ def list_versions():
         engines = [
             name
             for name, path in (
+                ("upstream", "upstream/main.py"),
                 ("legacy", "run_all.py"),
                 ("coding", "coding_agent/loop.py"),
             )
@@ -214,7 +245,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, nargs="?")
     parser.add_argument("--ref", default="HEAD")
-    parser.add_argument("--engine", choices=("legacy", "coding"), default="legacy")
+    parser.add_argument(
+        "--engine", choices=("upstream", "coding", "legacy"), default="upstream"
+    )
     actions = parser.add_mutually_exclusive_group()
     actions.add_argument("--list", action="store_true")
     actions.add_argument("--check", action="store_true")

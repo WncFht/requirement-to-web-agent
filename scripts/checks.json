@@ -2,6 +2,22 @@
     "version": 1,
     "checks": [
         {
+            "id": "upstream-source",
+            "command": ["python3", "scripts/check_upstream.py"],
+            "modes": ["ci", "test"],
+            "needs": [],
+            "timeout": 30,
+            "allow_failure": false
+        },
+        {
+            "id": "upstream-tests",
+            "command": ["python3", "scripts/test_upstream.py"],
+            "modes": ["ci", "test"],
+            "needs": ["upstream-source"],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
             "id": "note-format",
             "command": ["python3", "scripts/notes_guard.py", "--root", "."],
             "modes": ["docs", "ci"],

@@ -12,7 +12,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from dotenv import dotenv_values
-from infrastructure.utils.processes import start_process, stop_process
+from runtime.processes import start_process, stop_process
 from package_agent import package
 
 
@@ -93,7 +93,7 @@ def run(ref, engine, inputs, output, port):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="HEAD")
-    parser.add_argument("--engine", choices=("legacy", "coding"), default="legacy")
+    parser.add_argument("--engine", choices=("upstream", "coding"), default="upstream")
     parser.add_argument("--input", default="input")
     parser.add_argument("--output", required=True)
     parser.add_argument("--port", type=int, default=3000)

@@ -1,5 +1,7 @@
 PyYAML
 openai
 python-dotenv
-jsonschema>=4,<5
 httpx
+rich>=13,<15
+Pillow>=11,<13
+jsonschema>=4,<5
