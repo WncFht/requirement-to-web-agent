@@ -300,6 +300,14 @@ class Checks(FrontendChecks):
         result = parse_playwright_result(result, include_files=True)
         result["expected_failures"] = expected_failures
         result["raw_report"] = raw
+        diagnostics = self.output / "frontend/test-results/e2e"
+        if self.trace and diagnostics.exists():
+            saved = self.trace.root / "artifacts" / ("browser-" + uuid4().hex)
+            shutil.copytree(diagnostics, saved, symlinks=True)
+            result["browser_evidence"] = {
+                "path": saved.relative_to(self.output).as_posix(),
+                "files": file_manifest(saved, logs=True),
+            }
         return result
 
     def run(self, name):
@@ -394,28 +402,36 @@ class Checks(FrontendChecks):
                     f"{name}: invalid runner/skip state before freezing: {diagnostic}"
                 )
             if name == "backend":
+                failure_names = re.findall(
+                    r"^\s+name: ['\"]?([A-Za-z]+)['\"]?\s*$", diagnostic, re.M
+                )
                 valid_red = (
                     report.get("failed", 0) > 0
-                    and "ERR_ASSERTION" in diagnostic
+                    and len(failure_names) == report["failed"]
+                    and set(failure_names) == {"AssertionError"}
                     and not re.search(
                         r"SQLITE_ERROR|ERR_MODULE|SyntaxError", diagnostic
                     )
                 )
             else:
-                valid_red = bool(failures) and all(
-                    re.search(r"expect\(|AssertionError", x.split("\n", 1)[0])
-                    and not re.search(
+                invalid_failures = [
+                    x
+                    for x in failures
+                    if not re.search(r"expect\(|AssertionError", x.split("\n", 1)[0])
+                    or re.search(
                         r"E2E_RUNTIME_ERROR|E2E_NETWORK_ERROR|page.goto:|browserType.launch",
                         x.split("\n", 1)[0],
                     )
-                    for x in failures
-                )
+                ]
+                valid_red = bool(failures) and not invalid_failures
             if not valid_red:
                 raise ValueError(
                     f"{name}: need assertion RED, not setup/runtime failure. BEFORE each click/fill/check/selectOption await expect(THE_SAME_LOCATOR).toBeVisible() and toBeEnabled() as needed. Missing stub UI must fail at the assertion, never by action timeout. Preserve business assertions. "
                     + json.dumps(
                         {
-                            "failures": failures[:4],
+                            "failures": (
+                                invalid_failures if name != "backend" else failures
+                            )[:4],
                             "output": diagnostic[:2000] if name == "backend" else None,
                         },
                         ensure_ascii=False,

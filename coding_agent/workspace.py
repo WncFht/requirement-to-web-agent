@@ -152,11 +152,20 @@ class Workspace:
                 raise ValueError("Each edit needs path")
             relative = edit["path"]
             path = self.path(relative)
-            if relative in staged or not self.writable(relative):
-                raise ValueError(f"Duplicate or protected edit: {relative}")
+            if not self.writable(relative):
+                hint = (
+                    "; create a NEW CSS file and import it from your component"
+                    if relative == "frontend/src/style.css"
+                    else ""
+                )
+                raise ValueError(f"Protected edit in current phase: {relative}{hint}")
             before = path.read_bytes() if path.exists() else None
             if "content" in edit:
-                if before is not None or not isinstance(edit["content"], str):
+                if (
+                    relative in staged
+                    or before is not None
+                    or not isinstance(edit["content"], str)
+                ):
                     raise ValueError(
                         "content creates a new file only; existing files need exact replacement"
                     )
@@ -167,7 +176,7 @@ class Workspace:
                         f"Stale/missing file hash: {relative}; read the file again"
                     )
                 old, new = edit.get("old_text"), edit.get("new_text")
-                text = before.decode("utf-8-sig")
+                text = staged.get(relative, before.decode("utf-8-sig"))
                 if (
                     not isinstance(old, str)
                     or not old

@@ -7,7 +7,12 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
-from coding_agent.checks import application_environment, validate_tests, prepare_project
+from coding_agent.checks import (
+    application_environment,
+    validate_tests,
+    prepare_project,
+    Checks,
+)
 from coding_agent.config import Config
 from coding_agent.loop import run
 from coding_agent.protocol import InvalidTest
@@ -16,6 +21,28 @@ from coding_fixture import FixtureModel, SETUP
 
 
 class CodingChecksTests(unittest.TestCase):
+    def test_assertion_failure_does_not_hide_another_backend_runtime_error(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, source in SETUP.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(source)
+            checks = Checks(root)
+            checks.required_ids = []
+            reports = [
+                {"returncode": 0, "passed": 1},
+                {
+                    "returncode": 1,
+                    "passed": 0,
+                    "failed": 2,
+                    "output": "  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  name: 'TypeError'\n",
+                },
+            ]
+            with patch.object(checks, "run", side_effect=reports):
+                with self.assertRaisesRegex(ValueError, "backend: need assertion RED"):
+                    checks.freeze()
+
     def test_application_process_cannot_inherit_model_credentials(self):
         with patch.dict(
             os.environ,
@@ -78,6 +105,14 @@ class CodingChecksTests(unittest.TestCase):
             self.assertEqual(result["turns"], 6)
             self.assertTrue(audit(output)["valid"])
             self.assertTrue(result["frozen_tests"])
+            saved = list((output / ".arc/agent/artifacts").glob("browser-*"))
+            images = [p for folder in saved for p in folder.rglob("*.png")]
+            self.assertGreaterEqual(len(saved), 3)
+            self.assertTrue(
+                images, "Original failed-check screenshots must survive later checks"
+            )
+            images[0].write_bytes(b"altered diagnostic")
+            self.assertFalse(audit(output)["valid"])
 
 
 if __name__ == "__main__":

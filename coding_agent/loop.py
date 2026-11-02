@@ -260,6 +260,7 @@ class Agent:
                 )
                 action = None
                 try:
+                    self.trace.emit("turn.start", turn=self.turn, phase=self.phase)
                     action, raw = self.model.generate(
                         self.context(supplied, images), self.remaining()
                     )

@@ -1,10 +1,32 @@
 """Location adapters preserve oracle semantics while accepting ordinary schema metadata."""
 
 import unittest
+import hashlib
 from coding_agent.acceptance import adapter_from_schema
 
 
 class AcceptanceAdapterTests(unittest.TestCase):
+    def test_hashed_session_is_adapted_only_after_actual_cookie_storage_proof(self):
+        schema = self.schema()
+        fields = schema["sessions"]["fields"]
+        fields["token_hash"] = fields.pop("token")
+        schema["sessions"]["sample"]["token_hash"] = hashlib.sha256(
+            b"observed-cookie"
+        ).hexdigest()
+        transport = {
+            "names": ["session"],
+            "paths": ["/api/session"],
+            "cookies": [{"name": "session", "value": "observed-cookie"}],
+        }
+        result = adapter_from_schema(schema, transport)
+        self.assertEqual(
+            result["session_seed"]["token_hash"],
+            hashlib.sha256(result["session_token"].encode()).hexdigest(),
+        )
+        transport["cookies"][0]["value"] = "different"
+        with self.assertRaisesRegex(ValueError, "not proved"):
+            adapter_from_schema(schema, transport)
+
     def schema(self):
         def field(**values):
             return {

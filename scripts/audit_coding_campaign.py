@@ -211,7 +211,11 @@ def audit(root, verify_dependencies=True):
                 found.append("Oracle summary changed: " + mode)
             if (
                 mode in record.get("sealed_evidence", {})
-                and file_manifest(directory / mode, logs=True)
+                and {
+                    p.relative_to(directory / mode).as_posix(): sha(p)
+                    for p in sorted((directory / mode).rglob("*"))
+                    if p.is_file()
+                }
                 != record["sealed_evidence"][mode]
             ):
                 found.append("Oracle original evidence changed: " + mode)

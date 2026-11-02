@@ -14,7 +14,7 @@ from time import monotonic, sleep
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from coding_agent.trace import json_write, sha, audit, file_manifest
+from coding_agent.trace import json_write, sha, audit, file_manifest, usage_values
 from coding_agent.acceptance import evaluate, evaluate_notes
 from infrastructure.utils.processes import start_process, stop_process
 from run_factorial_campaign import (
@@ -30,7 +30,23 @@ from summarize_factorial_campaign import wilson
 
 def usage(output, arm):
     if arm == "A":
-        return model_usage(output / "model_calls.jsonl")
+        result = model_usage(output / "model_calls.jsonl")
+        path = output / "model_calls.jsonl"
+        if path.exists():
+            for line in path.read_text().splitlines():
+                try:
+                    row = json.loads(line)
+                except ValueError:
+                    continue
+                if row.get("event") == "response":
+                    try:
+                        usage_values(row.get("response", {}).get("usage"))
+                    except ValueError:
+                        result["calls_with_unknown_usage"].append(row["call_id"])
+        result["calls_with_unknown_usage"] = sorted(
+            set(result["calls_with_unknown_usage"])
+        )
+        return result
     events = output / ".arc/agent/events.jsonl"
     totals = {
         k: 0
@@ -304,16 +320,26 @@ def campaign(args):
         used += record["usage"]["totals"].get("total_tokens", 0)
         record["wall_seconds"] = monotonic() - started
         record["completed_utc"] = datetime.now(timezone.utc).isoformat()
-        record["success"] = all(
-            record.get(k) and record[k]["status"] == "GREEN"
-            for k in ("fixed", "production")
-        )
         record["source_unchanged"] = git(source, "rev-parse", "HEAD") == record[
             "revision"
         ] and not git(source, "status", "--porcelain")
+        record["success"] = (
+            generation["status"] == "finished"
+            and generation["returncode"] == 0
+            and record["source_unchanged"]
+            and not record["usage"]["calls_with_unknown_usage"]
+            and all(
+                record.get(k) and record[k]["status"] == "GREEN"
+                for k in ("fixed", "production")
+            )
+        )
         record["sealed_application"] = file_manifest(output, logs=True)
         record["sealed_evidence"] = {
-            mode: file_manifest(runroot / mode, logs=True)
+            mode: {
+                p.relative_to(runroot / mode).as_posix(): sha(p)
+                for p in sorted((runroot / mode).rglob("*"))
+                if p.is_file()
+            }
             for mode in ("fixed", "production")
             if (runroot / mode).exists()
         }

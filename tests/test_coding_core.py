@@ -130,6 +130,25 @@ class CodingCoreTests(unittest.TestCase):
         self.assertEqual((self.output / "frontend/src/a.ts").read_text(), "a")
         self.assertEqual((self.output / "frontend/src/b.ts").read_text(), "b")
 
+    def test_multiple_replacements_share_original_hash_and_commit_atomically(self):
+        self.workspace.frozen = True
+        name = "frontend/src/a.ts"
+        self.workspace.apply([{"path": name, "content": "first\nsecond\n"}])
+        path = self.output / name
+        version = sha(path)
+        edits = [
+            {"path": name, "expected_sha256": version, "old_text": old, "new_text": new}
+            for old, new in (("first", "changed"), ("second", "done"))
+        ]
+        invalid = dict(edits[1], old_text="missing")
+        with self.assertRaises(ValueError):
+            self.workspace.apply([edits[0], invalid])
+        self.assertEqual(sha(path), version)
+        changes = self.workspace.apply(edits)
+        self.assertEqual(path.read_text(), "changed\ndone\n")
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0]["before_sha256"], version)
+
     def test_empty_skipped_todo_flaky_expected_failure_never_green(self):
         self.assertTrue(green({"returncode": 0, "passed": 2}))
         for row in (

@@ -1,6 +1,7 @@
 """Engine-independent execution of the unchanged teacher/fixed oracle in a mirror."""
 
 from contextlib import contextmanager
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -39,7 +40,8 @@ try{const context=await browser.newContext({baseURL:process.argv[2]});const page
  await entry(page);await page.waitForLoadState('networkidle');home=false;
  await openRegistration(page);await fillRegistration(page,newAccount());await button(page,'Next step').click();
  await page.waitForURL(new URL('/',process.argv[2]).href,{timeout:10000});await page.waitForLoadState('networkidle');
- console.log(JSON.stringify({names:[...new Set((await context.cookies()).map(c=>c.name))],paths:[...paths]}));
+ const cookies=await context.cookies();
+ console.log(JSON.stringify({names:[...new Set(cookies.map(c=>c.name))],cookies:cookies.map(c=>({name:c.name,value:c.value})),paths:[...paths]}));
 }finally{await browser.close();}"""
 
 
@@ -131,7 +133,16 @@ def adapter_from_schema(schema, transport):
             n
             for n in sf
             if normalized(n)
-            in {"credential", "sessioncredential", "token", "sessiontoken"}
+            in {
+                "credential",
+                "sessioncredential",
+                "token",
+                "sessiontoken",
+                "tokenhash",
+                "sessiontokenhash",
+                "credentialhash",
+                "sessionhash",
+            }
         ]
         if not credentials:
             # A session's sole text primary key may itself be the opaque cookie.
@@ -144,7 +155,20 @@ def adapter_from_schema(schema, transport):
         raise ValueError("Ambiguous actual session schema")
     table, sf, owner, credential = sessions[0]
     token = "33333333-3333-4333-8333-333333333333"
-    session_seed = {owner: account_id, credential: token}
+    stored_token = token
+    if normalized(credential).endswith("hash"):
+        cookies = transport.get("cookies", [])
+        sample = schema[table].get("sample") or {}
+        if (
+            len(cookies) != 1
+            or sample.get(credential)
+            != hashlib.sha256(cookies[0]["value"].encode()).hexdigest()
+        ):
+            raise ValueError(
+                "Session hash encoding not proved by actual cookie and stored registration"
+            )
+        stored_token = hashlib.sha256(token.encode()).hexdigest()
+    session_seed = {owner: account_id, credential: stored_token}
     for name, field in sf.items():
         if name in session_seed:
             continue
@@ -375,7 +399,9 @@ def evaluate(output, evidence, mode="fixed", adapter=None):
                         for key, value in json.loads(schema["stdout"]).items()
                     },
                 )
-                json_write(evidence / "transport.json", json.loads(observed["stdout"]))
+                observed_public = json.loads(observed["stdout"])
+                observed_public.pop("cookies", None)
+                json_write(evidence / "transport.json", observed_public)
             json_write(tests / "adapter.json", adapter)
             json_write(evidence / "adapter.json", adapter)
             config = {
