@@ -31,13 +31,24 @@ class Workspace:
         self.trace = trace
         self.frozen = False
 
-    def path(self, relative, *, input_file=False):
+    def path(self, relative, *, input_file=False, diagnostic=False):
         relative_path(relative)
         root = self.inputs if input_file else self.output
         check_path_case(root, relative)
+        parts = relative_path(relative).parts
+        browser_diagnostic = (
+            diagnostic
+            and not input_file
+            and len(parts) >= 5
+            and parts[:3] == (".arc", "agent", "artifacts")
+            and parts[3].startswith("browser-")
+            and parts[-1] in {"error-context.md", "test-failed-1.png"}
+        )
         current = root
-        for part in relative_path(relative).parts:
-            if part.startswith(".") or part in {
+        for index, part in enumerate(parts):
+            if (
+                part.startswith(".") and not (browser_diagnostic and index == 0)
+            ) or part in {
                 "node_modules",
                 "data",
                 "dist",
@@ -78,7 +89,7 @@ class Workspace:
         for supplied in paths[:12]:
             is_input = supplied.startswith("input/")
             relative = supplied[6:] if is_input else supplied
-            path = self.path(relative, input_file=is_input)
+            path = self.path(relative, input_file=is_input, diagnostic=True)
             if not path.is_file():
                 raise ValueError(f"No such file: {supplied}")
             mime = mimetypes.guess_type(path.name)[0] or ""

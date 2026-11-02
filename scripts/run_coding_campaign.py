@@ -34,6 +34,19 @@ def install_signal_handlers():
     signal.signal(signal.SIGTERM, signal.default_int_handler)
 
 
+def prepare_environment(credentials, node_bin):
+    """Use the registered Node runtime in both generator and in-process evaluation."""
+    if not credentials.is_dir():
+        raise ValueError("--credentials must be the directory containing .env")
+    env = environment(credentials, node_bin)
+    if not all(env.get(key) for key in ("OPENAI_BASE_URL", "OPENAI_API_KEY")):
+        raise ValueError("Missing model configuration; no campaign was started")
+    os.environ["PATH"] = env["PATH"]
+    if Path(shutil.which("node") or "").resolve() != (node_bin / "node").resolve():
+        raise ValueError("Evaluation Node differs from the registered runtime")
+    return env
+
+
 def usage(output, arm):
     if arm == "A":
         result = model_usage(output / "model_calls.jsonl")
@@ -174,7 +187,19 @@ def campaign(args):
     for source in (candidate, baseline):
         if git(source, "status", "--porcelain"):
             raise ValueError("Freeze clean sources before paid generation")
-    env = environment(args.credentials.resolve(), args.node_bin.resolve())
+    env = prepare_environment(args.credentials.resolve(), args.node_bin.resolve())
+    subprocess.run(
+        [
+            shutil.which("node"),
+            "-e",
+            "const Database=require(process.argv[1]);new Database(':memory:').close()",
+            str(args.dependencies.resolve() / "better-sqlite3"),
+        ],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     env.update(
         ARC_AGENT_MAX_TURNS="100",
         ARC_AGENT_MAX_TOKENS=str(args.token_cap),
@@ -203,6 +228,7 @@ def campaign(args):
         "node": subprocess.check_output(
             [str(args.node_bin.resolve() / "node"), "--version"], text=True
         ).strip(),
+        "evaluation_node": shutil.which("node"),
         "notes_oracle_sha256": sha(ROOT / "experiments/notes-oracle/fixed.spec.ts")
         if args.task == "notes"
         else None,

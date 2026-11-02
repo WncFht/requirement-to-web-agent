@@ -103,6 +103,21 @@ class CodingCoreTests(unittest.TestCase):
             )
         self.assertEqual(path.read_bytes(), before)
 
+    def test_saved_browser_context_is_readable_but_never_editable(self):
+        relative = ".arc/agent/artifacts/browser-fixture/failing-test/error-context.md"
+        path = self.output / relative
+        path.parent.mkdir(parents=True)
+        path.write_text('combobox "*Nationality:"')
+        self.assertIn("Nationality", self.workspace.read([relative])[0]["content"])
+        with self.assertRaises(ValueError):
+            self.workspace.apply([{"path": relative, "content": "changed"}])
+        with self.assertRaises(ValueError):
+            self.workspace.read([".arc/agent/artifacts/00001-request.json"])
+        path.unlink()
+        path.symlink_to(self.inputs / "requirements.yaml")
+        with self.assertRaisesRegex(ValueError, "Symlink"):
+            self.workspace.read([relative])
+
     def test_partial_second_write_restores_the_entire_batch(self):
         self.workspace.frozen = True
         self.workspace.apply(

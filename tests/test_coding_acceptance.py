@@ -2,10 +2,25 @@
 
 import unittest
 import hashlib
-from coding_agent.acceptance import adapter_from_schema
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from coding_agent.acceptance import adapter_from_schema, evaluation_directory
 
 
 class AcceptanceAdapterTests(unittest.TestCase):
+    def test_startup_failure_preserves_service_logs_before_temporary_cleanup(self):
+        with TemporaryDirectory() as tmp:
+            evidence = Path(tmp)
+            with self.assertRaisesRegex(ValueError, "startup failed"):
+                with evaluation_directory(evidence) as directory:
+                    (directory / "server-0.log").write_text("SQLite ABI mismatch")
+                    raise ValueError("startup failed")
+            self.assertFalse(directory.exists())
+            self.assertEqual(
+                (evidence / "server-0.log").read_text(), "SQLite ABI mismatch"
+            )
+
     def test_hashed_session_is_adapted_only_after_actual_cookie_storage_proof(self):
         schema = self.schema()
         fields = schema["sessions"]["fields"]

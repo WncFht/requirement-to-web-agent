@@ -301,6 +301,18 @@ def internal_green(output):
     )
 
 
+@contextmanager
+def evaluation_directory(evidence):
+    """Retain service logs even if readiness, transport probing or evaluation fails."""
+    with TemporaryDirectory(prefix="independent-acceptance-") as tmp:
+        owner = Path(tmp)
+        try:
+            yield owner
+        finally:
+            for log in owner.glob("server-*.log"):
+                shutil.copy2(log, evidence / log.name)
+
+
 def evaluate(output, evidence, mode="fixed", adapter=None):
     output, evidence = Path(output).resolve(), Path(evidence).resolve()
     evidence.mkdir(parents=True, exist_ok=False)
@@ -310,8 +322,7 @@ def evaluate(output, evidence, mode="fixed", adapter=None):
         raise ValueError(
             "Internal gates/evidence are incomplete; no fake legacy GREEN receipts"
         )
-    with TemporaryDirectory(prefix="teacher-acceptance-coding-") as tmp:
-        owner = Path(tmp)
+    with evaluation_directory(evidence) as owner:
         mirror = owner / "mirror"
         mirror.mkdir()
         (mirror / "package.json").write_text('{"type":"module"}\n')
@@ -443,8 +454,6 @@ def evaluate(output, evidence, mode="fixed", adapter=None):
             (evidence / "console.txt").write_text(tested["output"])
             raw = json.loads(tested["stdout"])
             stats = raw.get("stats", {})
-        for p in owner.glob("server-*.log"):
-            shutil.copy2(p, evidence / p.name)
     unchanged = before == file_manifest(output, logs=True)
     passed = (
         tested["returncode"] == 0
@@ -473,8 +482,7 @@ def evaluate_notes(output, evidence, mode="fixed"):
         raise ValueError("Internal gates incomplete")
     before = file_manifest(output, logs=True)
     oracle = ROOT / "experiments/notes-oracle/fixed.spec.ts"
-    with TemporaryDirectory(prefix="notes-independent-") as tmp:
-        owner = Path(tmp)
+    with evaluation_directory(evidence) as owner:
         mirror = owner / "mirror"
         mirror.mkdir()
         (mirror / "package.json").write_text('{"type":"module"}')
@@ -527,8 +535,6 @@ def evaluate_notes(output, evidence, mode="fixed"):
             (evidence / "console.txt").write_text(tested["output"])
             raw = json.loads(tested["stdout"])
             stats = raw.get("stats", {})
-        for p in owner.glob("server-*.log"):
-            shutil.copyfile(p, evidence / p.name)
     unchanged = before == file_manifest(output, logs=True)
     passed = (
         tested["returncode"] == 0

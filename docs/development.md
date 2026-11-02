@@ -81,7 +81,7 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
   --output ../work/my-package-check --dependencies /absolute/dependency-snapshot
 ```
 
-受控付费实验用 `scripts/run_coding_campaign.py`，要求干净且固定提交的受测 worktree，
+受控付费实验用 `scripts/run_coding_campaign.py`。`--credentials` 接受包含 `.env` 的目录；启动前检查必需模型配置与 SQLite 依赖 ABI，并将注册的 Node 路径同时用于生成和进程内验收。要求干净且固定提交的受测 worktree，
 新目录预登记顺序、源码、输入/断言/依赖哈希与预算。运行中不编辑受测源码。原始生成、
 开发验收和生产验收分开保存，失败不替换。完成后独立重算实际用例和 SDK 返回用量：
 

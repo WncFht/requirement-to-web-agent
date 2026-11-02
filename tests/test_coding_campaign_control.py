@@ -9,9 +9,31 @@ import sys
 from tempfile import TemporaryDirectory
 import time
 import unittest
+from unittest.mock import patch
+
+from scripts.run_coding_campaign import prepare_environment
 
 
 class CodingCampaignControlTests(unittest.TestCase):
+    def test_evaluation_uses_the_same_node_path_as_the_generation_environment(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            node_bin = root / "node-bin"
+            node_bin.mkdir()
+            node = node_bin / "node"
+            node.write_text("#!/bin/sh\nexit 0\n")
+            node.chmod(0o755)
+            (root / ".env").write_text(
+                "OPENAI_BASE_URL=http://unused.invalid/v1\nOPENAI_API_KEY=local-fixture\n"
+            )
+            with patch.dict(os.environ, {"PATH": "/usr/bin"}, clear=True):
+                env = prepare_environment(root, node_bin)
+                self.assertEqual(os.environ["PATH"], env["PATH"])
+                self.assertEqual(Path(env["PATH"].split(os.pathsep)[0]), node_bin)
+                self.assertNotIn("OPENAI_API_KEY", os.environ)
+                with self.assertRaisesRegex(ValueError, "directory containing"):
+                    prepare_environment(root / ".env", node_bin)
+
     @unittest.skipIf(os.name == "nt", "POSIX SIGTERM process ownership regression")
     def test_sigterm_produces_interrupted_result_and_waits_for_owned_child(self):
         driver_code = """import json,os,sys
