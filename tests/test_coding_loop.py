@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from coding_agent.config import Config
-from coding_agent.loop import run
+from coding_agent.loop import run, progress_key
 from coding_agent.protocol import BudgetExhausted
 
 
@@ -40,6 +40,39 @@ class Exhausted:
 
 
 class CodingLoopTests(unittest.TestCase):
+    def test_check_timing_noise_is_not_progress_but_new_result_or_edit_is(self):
+        with TemporaryDirectory() as tmp:
+            output = Path(tmp)
+            path = output / "source.ts"
+            path.write_text("before")
+            action = {"action": "check", "name": "backend"}
+            response = {
+                "status": "OK",
+                "summary": "Actual check results",
+                "checks": {
+                    "name": "backend",
+                    "status": "FAILED",
+                    "passed": 1,
+                    "failed": 2,
+                    "output": "duration 1",
+                    "seconds": 1.0,
+                },
+            }
+            before = progress_key(output, "IMPLEMENT", action, response)
+            response["checks"].update(output="duration 2", seconds=2.0)
+            self.assertEqual(
+                before, progress_key(output, "IMPLEMENT", action, response)
+            )
+            response["checks"]["passed"] = 2
+            self.assertNotEqual(
+                before, progress_key(output, "IMPLEMENT", action, response)
+            )
+            response["checks"]["passed"] = 1
+            path.write_text("after")
+            self.assertNotEqual(
+                before, progress_key(output, "IMPLEMENT", action, response)
+            )
+
     def test_repeated_unchanged_reads_stop_after_three_and_preserve_failure(self):
         self.check(RepeatRead, "NO_PROGRESS", 3)
 

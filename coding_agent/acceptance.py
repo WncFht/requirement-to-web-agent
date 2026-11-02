@@ -133,6 +133,11 @@ def adapter_from_schema(schema, transport):
             if normalized(n)
             in {"credential", "sessioncredential", "token", "sessiontoken"}
         ]
+        if not credentials:
+            # A session's sole text primary key may itself be the opaque cookie.
+            credentials = [
+                n for n, f in sf.items() if f["primary_key"] and f["type"] == "string"
+            ]
         if len(owners) == len(credentials) == 1:
             sessions.append((name, sf, owners[0], credentials[0]))
     if len(sessions) != 1:

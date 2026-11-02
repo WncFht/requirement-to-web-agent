@@ -68,6 +68,21 @@ class AcceptanceAdapterTests(unittest.TestCase):
                 schema, {"names": ["session"], "paths": ["/api/auth/me"]}
             )
 
+    def test_text_primary_key_can_be_the_session_credential(self):
+        schema = self.schema()
+        fields = schema["sessions"]["fields"]
+        fields.pop("token")
+        fields["id"]["type"] = "string"
+        result = adapter_from_schema(
+            schema, {"names": ["session_id"], "paths": ["/api/session"]}
+        )
+        self.assertEqual(result["session_seed"]["id"], result["session_token"])
+        fields["id"]["type"] = "integer"
+        with self.assertRaisesRegex(ValueError, "Ambiguous actual session schema"):
+            adapter_from_schema(
+                schema, {"names": ["session_id"], "paths": ["/api/session"]}
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

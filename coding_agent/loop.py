@@ -71,6 +71,25 @@ def requirements(inputs):
     return supplied, sorted(set(images))
 
 
+def progress_key(output, phase, action, response):
+    """Timing/log noise cannot make an unchanged repeated check count as progress."""
+    checks = response.get("checks", {})
+    if "name" in checks:
+        checks = {checks["name"]: checks}
+    outcomes = {
+        name: {k: row.get(k) for k in ("status", "passed", "failed", "returncode")}
+        for name, row in checks.items()
+    }
+    return (
+        fingerprint(file_manifest(output)),
+        phase,
+        json.dumps(action, sort_keys=True),
+        response["status"],
+        response["summary"],
+        json.dumps(outcomes, sort_keys=True),
+    )
+
+
 class Agent:
     def __init__(self, config, model_factory=Model, checks_factory=Checks):
         self.config = config
@@ -287,7 +306,9 @@ class Agent:
                 if response["status"] == "INTERNAL_GREEN":
                     status = "INTERNAL_GREEN"
                     break
-                signature = (fingerprint(file_manifest(self.config.output)), content)
+                signature = progress_key(
+                    self.config.output, self.phase, action, response
+                )
                 self.repeat = self.repeat + 1 if signature == self.last_progress else 1
                 self.last_progress = signature
                 if self.repeat >= 3:

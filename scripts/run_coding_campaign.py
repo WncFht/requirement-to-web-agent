@@ -195,6 +195,7 @@ def campaign(args):
             },
         },
         "runner_sha256": sha(__file__),
+        "input_path": str(args.inputs.resolve()),
         "input_sha256": file_manifest(args.inputs.resolve()),
         "frozen_assertions": {
             p.relative_to(ROOT).as_posix(): sha(p)
@@ -210,6 +211,7 @@ def campaign(args):
         "batch_token_cap": args.batch_cap,
         "schedule": schedule,
         "dependency_sha256": fingerprint_tree(args.dependencies.resolve())[0],
+        "dependency_path": str(args.dependencies.resolve()),
         "limitations": "Whole-architecture comparison. Generation randomness, provider routing and cache state not pinned. SDK usage is not invoice cost.",
     }
     json_write(root / "protocol.json", protocol)
@@ -244,6 +246,7 @@ def campaign(args):
             "fixed": None,
             "production": None,
             "success": False,
+            "protocol_sha256": sha(root / "protocol.json"),
         }
         json_write(runroot / "experiment.json", record)
         started = monotonic()
@@ -309,6 +312,11 @@ def campaign(args):
             "revision"
         ] and not git(source, "status", "--porcelain")
         record["sealed_application"] = file_manifest(output, logs=True)
+        record["sealed_evidence"] = {
+            mode: file_manifest(runroot / mode, logs=True)
+            for mode in ("fixed", "production")
+            if (runroot / mode).exists()
+        }
         if arm == "B" and (output / ".arc/agent/result.json").exists():
             record["agent_audit"] = audit(output)
         json_write(runroot / "result.json", record)
