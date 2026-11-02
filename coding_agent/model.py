@@ -3,6 +3,7 @@
 import time
 from uuid import uuid4
 
+import httpx
 from openai import (
     OpenAI,
     APIConnectionError,
@@ -17,8 +18,21 @@ from coding_agent.protocol import BudgetExhausted, parse_action
 class Model:
     def __init__(self, config, trace):
         self.config, self.trace = config, trace
+        self.active_call = None
+
+        def http_response(response):
+            trace.emit(
+                "http.response",
+                call_id=self.active_call,
+                status_code=response.status_code,
+                request_id=response.headers.get("x-request-id"),
+            )
+
         self.client = OpenAI(
-            api_key=config.api_key, base_url=config.base_url, max_retries=0
+            api_key=config.api_key,
+            base_url=config.base_url,
+            max_retries=0,
+            http_client=httpx.Client(event_hooks={"response": [http_response]}),
         )
 
     def generate(self, messages, remaining):
@@ -27,6 +41,7 @@ class Model:
             raise BudgetExhausted("No remaining model allowance")
         for attempt in range(config.transport_retries + 1):
             call_id = uuid4().hex
+            self.active_call = call_id
             arguments = {
                 "model": config.model,
                 "messages": messages,

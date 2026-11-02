@@ -37,9 +37,9 @@ def file_manifest(root, *, logs=False):
             continue
         if path.is_symlink():
             raise ValueError(f"Symlink in auditable application: {relative}")
-        if path.is_file() and path.name not in {
-            "artifact-manifest.json",
-            "result.json",
+        if path.is_file() and relative.as_posix() not in {
+            ".arc/agent/artifact-manifest.json",
+            ".arc/agent/result.json",
         }:
             result[relative.as_posix()] = sha(path)
     return result
