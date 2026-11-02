@@ -1,83 +1,44 @@
-# Requirement Compilation Tutorial
+# Lab 6 需求编译智能体
 
-Compile a requirement tree into a database, backend APIs, and an interactive frontend through 13 independently executable teaching steps.
+把 `requirements.yaml` 与参考图转换成 React、Express、SQLite Web 应用，产物包含 `package.json`、`deploy.sh`、`frontend/` 与 `backend/`。
 
-## 改良版维护入口
+源码同时保留两个引擎：`legacy` 执行 00–12 阶段流水线，当前仍为默认；`coding` 使用一个循环读取、搜索、修改前后端并运行固定检查。候选实现已完成，但同期对照中断，视觉还原仍有缺口，尚未证明稳定成本优势。[架构参考](docs/architecture.md)解释两个引擎的边界，[实验报告](docs/experiments/2026-11-02-单循环编码智能体对照验证.md)保留成功、失败和未知用量。
 
-源码历史见 [开发历史](docs/history.md)，运行前提与断点续跑见 [开发指南](docs/development.md)，实验数据与可比性限制见 [优化实验](docs/experiments/2026-11-01-baseline-optimization.md)。维护规则、提交检查和清理入口见 [维护指南](docs/maintenance.md)。以下保留教师教程的逐阶段入口。
+真实模型 API 调用已按用户要求停止。未经重新明确授权，不运行生成、重试或付费评测；下面的安装与离线检查不调用模型。
 
-## Environment setup
+## 安装与离线检查
 
-Requires Python 3.11+, Node.js 22.12+, and npm. Building `better-sqlite3` from source may also require Python, make, and a C++ compiler.
+使用 Python 3.12、Node 22.23.2、npm 和 uv。先安装 Python 及文档维护依赖：
 
-Recommended: use [uv](https://docs.astral.sh/uv/). From the repository root (the directory containing `pyproject.toml`):
-
-```bash
+```sh
 uv sync
-cp -n .env.example .env
-uv run playwright install chromium
+uv pip install --python .venv/bin/python -r requirements-dev.txt
+npm ci --ignore-scripts --no-audit --no-fund
+pre-commit install
+.venv/bin/python scripts/run_checks.py --config scripts/checks.json --mode ci
+npm run format:check
+npm run lint:md
 ```
 
-On Windows PowerShell:
+`npm ci` 与 Python 安装需要依赖下载；检查不读取模型 Key。默认单测跳过真实浏览器重集成；其依赖、Node ABI 与执行方式见[操作指南](docs/development.md#单循环候选的运行与审计)。Windows 可直接运行 `python scripts/run_checks.py --config scripts/checks.json --mode ci`，自动 Git hook 的 POSIX 入口需自行适配。
 
-```powershell
-uv sync
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-uv run playwright install chromium
-```
+## 代码与文档
 
-Configure `.env`:
+| 路径                                 | 职责                                                |
+| ------------------------------------ | --------------------------------------------------- |
+| `main.py`                            | 平台参数与引擎选择；生成命令需另外获得授权          |
+| `00_*.py`–`12_*.py`、`run_all.py`    | 保留的 legacy 教学流水线                            |
+| `coding_agent/`                      | 单循环候选、工具、检查与运行记录                    |
+| `infrastructure/`                    | 两个引擎使用的模板、阶段实现和基础工具              |
+| `input/`、`examples/`、`acceptance/` | 教师输入、扩展示例和固定验收；保持原字节            |
+| `tests/`、`scripts/tests/`           | 编译器与维护工具的离线回归                          |
+| `docs/`                              | 架构、操作、实验结果及协作说明                      |
+| `.agents/`                           | 从 agent-maintenance 采纳的维护规则、技能和决策记录 |
 
-```env
-OPENAI_API_KEY=fill-this-in
-MODEL=deepseek-flash
-OPENAI_BASE_URL=https://api.arc-bench.com/v1
-```
+教师原始教程保存在[历史教程](docs/history/teacher-tutorial.md)，其生成命令不是当前执行授权。所有权规则见 [AGENTS.md](AGENTS.md)，更多入口见[文档导航](docs/README.md)。
 
-## Start the lab
-```bash
-# Step 1: Explore Requirement (Syntax) Tree
-uv run 01_explore_requirement.py --pause --output output/demo
+## 共享与提交
 
-# Step 2: Building DB Schema
-uv run 02_build_db_schema.py --pause --output output/demo
+GitHub 共享这个独立源码仓库。`main` 同时包含两个引擎，默认保持 legacy；成员使用短期 `feat/*`、`fix/*` 分支提交改动，不维护长期平行的源码副本。版本、worktree、首次发布和不应上传的本地材料见[维护指南](docs/maintenance.md#仓库共享与分支)。
 
-# Step 3: Obligation Generation & Enforcement 
-uv run 03_infer_db_obligations.py --pause --output output/demo
-
-# Step 4: Result display
-uv run 04_check_db_obligations.py --pause --output output/demo
-
-# Step 5: Implement DB
-uv run 05_implement_db.py --pause --output output/demo
-
-# Step 6: Decompose Backend API
-uv run 06_decompose_backend_apis.py --pause --output output/demo
-
-# Step 7: Contract Inference
-uv run 07_infer_api_contracts.py --pause --output output/demo
-
-# Step 8: Implement Backend
-uv run 08_implement_backend_tdd.py --pause --output output/demo
-
-# Step 9: UI/Data Design
-uv run 09_design_ui.py --pause --output output/demo
-
-# Step 10: Implement UI
-uv run 10_implement_ui.py --pause --output output/demo
-
-# Step 11: Interaction Design
-uv run 11_design_ui_interactions.py --pause --output output/demo
-
-# Step 12: E2E TDD
-uv run 12_implement_frontend_tdd.py --pause --output output/demo
-```
-
-## Start the built website
-```bash
-cd output/demo
-npm install
-npm run db:init
-npm run build
-npm start
-```
+ARC-Bench 上传的是智能体 ZIP，不是 Git bundle 或生成的网站。已封存候选为 `65220fd`，源码与打包方式见[操作指南](docs/development.md#单循环候选的运行与审计)；格式整理后的新提交不冒充原受测版本。平台评测会调用模型，目前禁止执行。

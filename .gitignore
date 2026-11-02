@@ -6,3 +6,9 @@ output/
 slides/
 
 .ruff_cache/
+
+node_modules/
+dist/
+work/
+*.log
+*.bundle

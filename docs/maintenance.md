@@ -1,71 +1,66 @@
-# 优化开发与维护
+# 开发、共享与维护
 
-本指南管理编译器源码、实验、决策与提交。产品入口见 [development.md](development.md)，开发历史见 [history.md](history.md)。
+本页管理源码仓库、分支、格式化与本地证据。运行接口见[操作指南](development.md)，设计见[架构参考](architecture.md)，实际观测见[实验报告](experiments/2026-11-02-单循环编码智能体对照验证.md)。
 
-## 接入来源与边界
+## 维护规则来源
 
-维护规则来自 agent-maintenance；固定来源提交与脚本哈希保存在 `.agents/maintenance-source.json`。已采用三个维护技能、共享参考、模板、Notes 检查、文档检查、暂存快照检查与检查调度器。更新时对照记录的提交审阅差异，再同步项目适配；不直接覆盖项目配置。
+agent-maintenance 提供文档、文字和决策记录三个技能，规则与固定上游版本位于 `.agents/maintenance-source.json`。它是维护方法与检查工具，不是智能体运行框架。当前项目拥有 hook、CI、格式配置和文档分工；更新上游规则时审阅差异，不覆盖项目适配。
 
-源码使用独立 Git 仓库，外层 JI 忽略 `source/`。当前未配置远端，提交只保存在本机；GitHub Actions 配置须在源码仓库托管到 GitHub 后才会运行。外层仓库保存课程交付与源码导出，不能代替源码历史。模型凭据、虚拟环境和运行目录不入库。
+当前架构和配置写入 `architecture.md`、`development.md`，研究证据归 `experiments/`，长期理由归 `.agents/notes/`。完成的实施细节不在多个入口重复维护。历史审查材料移到 `docs/history/`；仍然影响权限、会话或兼容性的决策继续保留。
 
-## 本地准备与检查
+## 仓库共享与分支
 
-本机需有 `uv`、`ruff`、`pre-commit` 和 `gitleaks` 命令；Python 开发依赖的版本见 `requirements-dev.txt`。在源码根目录执行：
+GitHub 上建立独立的 `lab6-requirement-agent` 仓库，上传本仓库完整 Git 历史。名称只是建议，目前没有创建远端或发布。外层 `JI-course` 保存课程笔记与交付记录，忽略本机 `source/`，不能代替这个源码仓库；agent-maintenance 的上游仓库也不是本项目的提交位置。课程任务材料与同学协作放在队伍私有仓库更合适。
+
+| 身份                                | 维护方式                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `main`                              | 团队唯一集成分支，包含两个引擎，默认 legacy；常规离线检查必须通过 |
+| `feat/*`、`fix/*`                   | 从 main 建短期分支，审阅后合回并删除；不另设长期 develop          |
+| 历史提交与标签                      | 教师基线、已有验收检查点和受测源码保留，不因清理而移动旧标签      |
+| `coding-agent-candidate-2026-11-02` | 指向 `65220fd` 的候选身份；不是稳定性或平台成绩认证               |
+| `pre-sharing-2026-11-02`            | 整理前开发分支的备份，保护未发布历史                              |
+
+本机常驻工作区为课程侧 `source/`，检出 main；需要同时开发时才新建一个工作区，例如：
+
+```sh
+git worktree add -b feat/my-change ../work/feature-my-change main
+# 完成修改、离线检查与审阅后，在 main 工作区合入。
+git merge --ff-only feat/my-change
+git worktree remove ../work/feature-my-change
+git branch -d feat/my-change
+```
+
+上例的合入命令在 main 工作区执行；分支已经分叉时通过 PR 或常规 merge 处理，不能用强制覆盖消除别人的提交。关闭的实验 checkout 已从工作目录移走，原提交、输入清单和备份均保留。需要复核时按原协议路径与 SHA 重建 detached worktree，复核结束后移除；原实验目录不覆盖。`work/maintenance-2026-11-02/` 的本地清单记录旧 checkout、备份和释放的依赖空间。
+
+首次 GitHub 发布需用户另行授权。创建远端后，从本机 `source/` 设置地址并只推 main 与需要共享的标签，不执行 `git push --all`，避免发布已结束的临时分支。队友 clone 后按根 README 安装并运行离线检查，再用自己的功能分支改代码。当前禁止模型 API 的约定同样适用于后续代理，不因共享而撤销。
+
+## 格式化与本地检查
+
+Python 版本和依赖由 `pyproject.toml`、`requirements-dev.txt` 声明；文档格式工具版本唯一来源为 `package.json` 与 `package-lock.json`。Python 保留教师代码的 unittest 风格，仅检查语法、未定义名称等既有安全项，不批量引入新的业务 lint 规则。
 
 ```sh
 uv pip install --python .venv/bin/python -r requirements-dev.txt
+npm ci --ignore-scripts --no-audit --no-fund
 pre-commit install
+ruff format .
+npm run format
+npm run lint:md
 .venv/bin/python scripts/run_checks.py --config scripts/checks.json --mode ci
+npm run format:check
 ```
 
-提交 hook 检查暂存快照里的文档链接、技能与 Notes 格式及冻结记录；Python 改动执行编译器测试、Ruff 格式及语法/未定义名称检查；gitleaks 检查暂存源码的凭据模式。独立源码仓库保留教师的 unittest 风格，只新增能直接阻断运行错误的 lint 规则，避免继承外层 JI 的全规则并批量改写教师代码。提交前先运行 `ruff format <修改的文件>`，再审阅并暂存。hook 不自动改写文件。全量维护工具行为测试由 `--mode ci` 执行；模型端到端实验单独运行，不在提交时自动消耗模型调用。
+提交时先修 Markdown 结构，再由 git-format-staged 格式化暂存的 Python、Markdown、JSON 与 YAML；未暂存改动不被整文件覆盖。Markdown 结构修正若改变文件，重新暂存再提交。随后验证暂存快照中的文档、Notes、编译器测试和凭据模式。CI 使用同一锁定工具与检查入口，只有离线任务，不配置模型 Key。
 
-文档检查只接受仓库内可解析的本地链接。外层课程产物使用代码路径说明；原始运行证据在源码仓库外，通过实验报告记录路径与哈希。`scripts/doc-policy.json` 是篇幅预算来源，`scripts/checks.json` 是检查命令来源。检查通过不证明模型生成的应用满足需求，也不代表远端合并保护已经启用。
-
-## 优化与实验
-
-每次只推进一个可解释的修改，先保留成功基线和失败证据，再修改实现与对应测试。输入、源码提交、思考模式、依赖和运行目录影响比较口径；缓存实验同时报告全流程与目标阶段命中率，分母均为对应输入 token。模型生成的测试数会变化，测试全绿不能替代固定需求场景覆盖检查。
-
-长期取舍写入 `.agents/notes/`，观测与限制写入所属实验报告；[history.md](history.md) 只保留可定位提交的开发里程碑。提案验收未完成时保留 proposed，不把局部测试结果写成全流程成功。
+教师输入、扩展示例、固定验收、应用模板、vendor 和冻结归档不进入自动格式化，避免改变输入、断言或模板哈希。文档工具还排除上游维护技能和历史教师教程，保留原始来源字节。`scripts/doc-policy.json` 只约束文档篇幅，不证明内容正确；超软预算先核对归属，不能自动删字。
 
 ## 证据保留与清理
 
-`../work/<run>/` 是实验目录。保留 `.arc` 工件、原始模型调用日志、失败测试、输入与代码身份后，才清理可重建的 `node_modules`、构建输出、浏览器临时产物与重复副本。压缩日志前逐字节校验解压结果；失败运行与负结果不得因清理消失。凭据目录不参与自动清理。
+本机实验均位于课程侧 `work/`，不上传 GitHub。保留协议、生成源码、冻结测试、模型日志、检查报告、截图、结果和封存哈希，再删除可重建的 `node_modules` 与 Python 缓存。保留一份已登记哈希的依赖快照；每次实验的副本不必长期占用磁盘。清理不改失败结果，也不把缺失 usage 当免费调用。
 
-外层 `../upstream.patch` 使用以下命令从已提交源码导出，避免把运行产物与维护文件混入教师源码补丁：
+新候选原始应用清单含构建输出哈希，因此保留这些 dist 文件。删除依赖前对全部非依赖文件做前后哈希核对，清单写入本机维护目录。移除旧 worktree 前确认干净、创建提交引用和 Git bundle，保存输入清单；还原时依赖应由保留的快照重建。
 
-```sh
-git diff --binary teacher-baseline HEAD -- '*.py' pyproject.toml requirements.txt uv.lock ':(exclude)scripts/**' > ../upstream.patch
-```
+源码 bundle 用于离线恢复，平台 ZIP 用于上传智能体，两者职责不同。`scripts/export_source.py --output-dir <新归档目录>` 只导出已提交历史，恢复后核对 SHA、干净工作区及 `git fsck --full`。旧课程 `artifacts/`、报告和 Slides 是历史交付物，不随本次源码整理伪装成最新实验结论。
 
-更新外层课程记录时只暂存明确相关文件，不合并 JI 仓库里其他课程的未提交工作。
+## 分享边界
 
-## 可恢复的课程归档
-
-源码仓库未配置远端，外层 JI 只忽略工作副本，不应成为唯一备份缺口。源码工作区提交干净后运行：
-
-```sh
-.venv/bin/python scripts/export_source.py --output-dir ..
-```
-
-工具导出 `../artifacts/compiler-source.bundle`（完整已提交历史）、源码补丁和带提交号及 SHA-256 的 `compiler-export.json`。在不含 `source/` 的课程目录执行 `git clone artifacts/compiler-source.bundle source` 即可恢复；凭据、依赖和实验运行目录需单独准备。导出后对 bundle 做临时 clone，并核验提交号、文档和 `git fsck`，再提交外层归档。每次后续源码提交后重新导出，不能把旧 bundle 当成最新源码。
-
-清理清单见 `docs/experiments/cleanup.json`；已删除经过解压哈希校验的队友 baseline 重复原始日志，并在运行归档验证后移除四套可重建的 node_modules。原始日志、冻结测试、IR、源码与课程报告保留。运行归档的清单由课程侧 `artifacts/optimization-runs.json` 维护。
-
-已经确认运行进程退出后，可用归档工具保存证据并清理依赖：
-
-```sh
-.venv/bin/python scripts/archive_runs.py ../work/<run> --archive-dir ../artifacts/optimization-runs --manifest ../artifacts/optimization-runs.json
-```
-
-工具拒绝覆盖既有归档或清单，逐文件解压校验后才允许 `--prune-dependencies` 删除所选运行的 node_modules。它不会判断进程是否仍在运行，调用者必须先确认退出；凭据与数据库不进入归档。为保留已有汇总清单，后续批次使用独立的 `--manifest` 文件名，不能覆盖旧批次清单。运行归档包含编译输入对应的生成源码和工件；需求 YAML 与参考截图归源码 bundle，输入哈希归 experiment.json。
-
-## 报告、目录与可分享交接包
-
-课程侧根 README 是交接入口；旧上传脚本、截图、验收与阶段快照归 `archive/2026-10-29/`，松散日志压缩后归 `archive/logs/`，旧图解和私有本地数据只保留在忽略的 `archive/local-drafts/`。当前报告与 Slides 保留原 `report/`、`slides/` 入口。
-
-从 Lab6 根目录运行 `bash tools/build-materials.sh`：共享 JSON 生成数字与图，再编译两份 PDF。图表依赖固定在 `requirements-figures.txt`，fvstyle 调色板与审计实现按哈希封存在 `scripts/vendor/`；不依赖接手者安装全局 skill。Python 工具链跳过该第三方快照，产品代码验收不受影响。
-
-源码提交干净后运行 `bash tools/build-handoff.sh --date 2026-11-01`，导出当前历史，重建材料，并创建忽略的 `dist/` 分享包。默认 handoff 包包含源码 Git bundle、可编辑报告/Slides、构建工具与恢复入口；evidence 包只追加队友原始记录与优化运行快照。两包有独立 manifest，解压到同一根目录不会覆盖彼此清单。`artifacts/handoff-build.json` 保存体积、哈希与版本。
-
-打包器只选择明确的交付文件，拒绝凭据/环境/依赖/运行目录，逐文件校验归档内容；源 bundle、共享数字和当前源码提交不一致时拒绝打包。默认不分享 archive 的旧提交包、私有数据库或草稿。源码 snapshot 文件与 source.json 的历史指针由导出工具同步。
+源码仓库包含运行源码、模板、提示词、固定测试、依赖声明、CI、维护规则和精选实验摘要。`.env`、真实 Key、依赖、数据库、原始模型请求响应、大型运行目录、ZIP 和 Git bundle 留在本机；需要共享的交付包通过受控附件提供。源码仓库没有部署、自动生成或后台实验服务，用户没有重新授权前禁止任何真实模型 API 请求。

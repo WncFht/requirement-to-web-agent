@@ -1,0 +1,12 @@
+node_modules/
+.venv/
+input/
+examples/
+acceptance/
+infrastructure/
+scripts/vendor/
+docs/experiments/*.json
+.agents/notes/archived/
+.agents/skills/
+.agents/references/
+docs/history/teacher-tutorial.md

@@ -1,103 +1,77 @@
 {
-  "version": 1,
-  "checks": [
-    {
-      "id": "note-format",
-      "command": [
-        "python3",
-        "scripts/notes_guard.py",
-        "--root",
-        "."
-      ],
-      "modes": [
-        "docs",
-        "ci"
-      ],
-      "needs": [],
-      "timeout": 120,
-      "allow_failure": false
-    },
-    {
-      "id": "docs",
-      "command": [
-        "python3",
-        "scripts/check_docs.py"
-      ],
-      "modes": [
-        "docs",
-        "ci"
-      ],
-      "needs": [],
-      "timeout": 120,
-      "allow_failure": false
-    },
-    {
-      "id": "archive-history",
-      "command": [
-        "python3",
-        "scripts/check_archive.py"
-      ],
-      "modes": [
-        "docs",
-        "ci"
-      ],
-      "needs": [
-        "note-format"
-      ],
-      "timeout": 120,
-      "allow_failure": false
-    },
-    {
-      "id": "tests",
-      "command": [
-        "python3",
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        "tests",
-        "-q"
-      ],
-      "modes": [
-        "test",
-        "ci"
-      ],
-      "needs": [],
-      "timeout": 120,
-      "allow_failure": false
-    },
-    {
-      "id": "maintenance-tests",
-      "command": [
-        "python3",
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        "scripts/tests",
-        "-q"
-      ],
-      "modes": [
-        "test",
-        "ci"
-      ],
-      "needs": [],
-      "timeout": 120,
-      "allow_failure": false
-    },
-    {
-      "id": "python-safety",
-      "command": [
-        "ruff",
-        "check",
-        "."
-      ],
-      "modes": [
-        "ci"
-      ],
-      "needs": [],
-      "timeout": 60,
-      "allow_failure": false
-    }
-  ]
+    "version": 1,
+    "checks": [
+        {
+            "id": "note-format",
+            "command": ["python3", "scripts/notes_guard.py", "--root", "."],
+            "modes": ["docs", "ci"],
+            "needs": [],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "docs",
+            "command": ["python3", "scripts/check_docs.py"],
+            "modes": ["docs", "ci"],
+            "needs": [],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "archive-history",
+            "command": ["python3", "scripts/check_archive.py"],
+            "modes": ["docs", "ci"],
+            "needs": ["note-format"],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "tests",
+            "command": [
+                "python3",
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tests",
+                "-q"
+            ],
+            "modes": ["test", "ci"],
+            "needs": [],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "maintenance-tests",
+            "command": [
+                "python3",
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "scripts/tests",
+                "-q"
+            ],
+            "modes": ["test", "ci"],
+            "needs": [],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "python-safety",
+            "command": ["ruff", "check", "."],
+            "modes": ["ci"],
+            "needs": [],
+            "timeout": 60,
+            "allow_failure": false
+        },
+        {
+            "id": "python-format",
+            "command": ["ruff", "format", "--check", "."],
+            "modes": ["ci"],
+            "needs": [],
+            "timeout": 60,
+            "allow_failure": false
+        }
+    ]
 }

@@ -1,0 +1,16 @@
+{
+    "private": true,
+    "scripts": {
+        "format": "prettier --write README.md AGENTS.md \"docs/**/*.md\" \".agents/notes/**/*.md\" \".github/**/*.yml\" \"*.json\" \"*.jsonc\" \"*.yaml\"",
+        "format:check": "prettier --check README.md AGENTS.md \"docs/**/*.md\" \".agents/notes/**/*.md\" \".github/**/*.yml\" \"*.json\" \"*.jsonc\" \"*.yaml\"",
+        "lint:md": "markdownlint-cli2 README.md AGENTS.md \"docs/**/*.md\" \".agents/notes/**/*.md\""
+    },
+    "devDependencies": {
+        "git-format-staged": "4.0.2",
+        "markdownlint-cli2": "0.23.2",
+        "prettier": "3.9.6"
+    },
+    "overrides": {
+        "smol-toml": "1.8.0"
+    }
+}

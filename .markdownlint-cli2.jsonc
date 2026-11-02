@@ -1,0 +1,7 @@
+{
+    "gitignore": true,
+    "ignores": [
+        ".agents/notes/archived/**",
+        "docs/history/teacher-tutorial.md",
+    ],
+}

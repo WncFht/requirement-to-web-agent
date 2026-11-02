@@ -14,15 +14,17 @@
 4. **输出目录隔离**：编译产物只写 `--output-dir` 指定目录；不同实验使用不同目录，禁止覆盖。
 5. **模型 API 已停用**：用户于 2026-11-02 明确要求停止比较并禁止后续 API 调用，撤销此前付费实验授权。未经用户重新明确授权，不得调用真实模型 API、启动或续跑生成实验；仅可进行本地整理、静态检查和不调用模型的离线测试。
 
-## 常用入口
+## 工作区与检查
+
+团队在独立源码仓库的 main 集成两套引擎，默认 legacy；功能分支与 worktree 按需创建，完成后移除。外层 JI 仓库只保存课程材料。共享、清理与格式规则见 `docs/maintenance.md`，禁止未经授权启动文档中的模型生成命令。
 
 ```sh
-.venv/bin/python -m unittest discover -s tests -q        # 编译器单元测试
-.venv/bin/python main.py input -o ../work/<目录> --resume # 全流程（可断点续跑）
-.venv/bin/python -u <NN 脚本> --input input --output ../work/<目录>  # 单阶段
+.venv/bin/python scripts/run_checks.py --config scripts/checks.json --mode ci
+npm run format:check
+npm run lint:md
 ```
 
-运行前提与逐阶段行为见 `docs/development.md`；组件与数据流见 `docs/architecture.md`。
+Python 用 Ruff，文档与配置用锁定的 Prettier/Markdownlint；提交时通过 git-format-staged 格式化暂存内容。教师输入、固定验收、应用模板、vendor 和冻结归档排除，保留字节身份。
 
 ## 文档与决策
 
