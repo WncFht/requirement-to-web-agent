@@ -390,3 +390,87 @@ def evaluate(output, evidence, mode="fixed", adapter=None):
     }
     json_write(evidence / "summary.json", result)
     return result
+
+
+def evaluate_notes(output, evidence, mode="fixed"):
+    """Independent second-task oracle, frozen before paid notes generation."""
+    output, evidence = Path(output).resolve(), Path(evidence).resolve()
+    evidence.mkdir(parents=True, exist_ok=False)
+    if not internal_green(output):
+        raise ValueError("Internal gates incomplete")
+    before = file_manifest(output, logs=True)
+    oracle = ROOT / "experiments/notes-oracle/fixed.spec.ts"
+    with TemporaryDirectory(prefix="notes-independent-") as tmp:
+        owner = Path(tmp)
+        mirror = owner / "mirror"
+        mirror.mkdir()
+        (mirror / "package.json").write_text('{"type":"module"}')
+        (mirror / "node_modules").symlink_to(
+            output / "node_modules", target_is_directory=True
+        )
+        (mirror / "backend").mkdir()
+        (mirror / "backend/src").symlink_to(
+            output / "backend/src", target_is_directory=True
+        )
+        tests = mirror / "frontend/tests/fixed"
+        tests.mkdir(parents=True)
+        shutil.copyfile(oracle, tests / "fixed.spec.ts")
+        with servers(output, owner, mode) as (base_url, env):
+            config = {
+                "testDir": str(tests),
+                "outputDir": str(evidence / "test-results"),
+                "workers": 1,
+                "fullyParallel": False,
+                "retries": 0,
+                "forbidOnly": True,
+                "timeout": 30000,
+                "expect": {"timeout": 5000},
+                "reporter": "json",
+                "use": {"baseURL": base_url, "headless": True},
+            }
+            cfg = owner / "notes.config.mjs"
+            cfg.write_text(
+                "import {defineConfig} from "
+                + json.dumps(
+                    (output / "node_modules/@playwright/test/index.mjs").as_uri()
+                )
+                + ";\nexport default defineConfig("
+                + json.dumps(config)
+                + ");\n"
+            )
+            tested = execute(
+                mirror,
+                [
+                    shutil.which("node"),
+                    str(output / "node_modules/@playwright/test/cli.js"),
+                    "test",
+                    "--config",
+                    str(cfg),
+                ],
+                env=env,
+                timeout=900,
+            )
+            (evidence / "playwright.json").write_text(tested["stdout"])
+            (evidence / "console.txt").write_text(tested["output"])
+            raw = json.loads(tested["stdout"])
+            stats = raw.get("stats", {})
+        for p in owner.glob("server-*.log"):
+            shutil.copyfile(p, evidence / p.name)
+    unchanged = before == file_manifest(output, logs=True)
+    passed = (
+        tested["returncode"] == 0
+        and stats.get("expected") == 5
+        and not any(stats.get(k) for k in ("unexpected", "skipped", "flaky"))
+        and not raw.get("errors")
+        and unchanged
+    )
+    result = {
+        "status": "GREEN" if passed else "FAILED",
+        "stats": stats,
+        "oracle_sha256": sha(oracle),
+        "application_unchanged": unchanged,
+        "mode": mode,
+        "internal_gates_green": True,
+    }
+    json_write(evidence / "summary.json", result)
+    return result

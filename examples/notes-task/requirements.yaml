@@ -1,0 +1,36 @@
+id: ROOT
+name: Persistent notes
+description:
+  text: Build a small notes application with a homepage and real SQLite persistence.
+scenarios: []
+children:
+  - id: REQ-NOTES
+    name: Create and list notes
+    description:
+      text: |-
+        The homepage / displays the exact heading Notes, a textbox with accessible name Title,
+        a submit button named Save, and a list of saved note titles. A signed-in account is
+        not needed. There are no authentication, search, booking or deletion requirements.
+        Submitting a nonempty title creates exactly one note and shows its exact title in the
+        list. Preserve Unicode and leading/trailing spaces for nonblank titles. The title
+        remains present after a full page reload. Multiple notes, including duplicate titles,
+        are allowed. A blank or whitespace-only title shows a nonempty error with role=alert,
+        creates no note and changes no existing note. Reading and refreshing never creates
+        or changes records. Store actual notes in SQLite, not browser-only storage. Use a
+        simple readable layout; no reference screenshot is provided.
+    scenarios:
+      - id: SCN-NOTES-CREATE
+        name: Create and restore a note
+        steps:
+          - id: STEP-NOTES-CREATE
+            Given: The notes database is empty.
+            When: Open /, enter a nonempty Title, and click Save.
+            Then: Save exactly one note, display its exact title, and retain it after reload.
+      - id: SCN-NOTES-REJECT
+        name: Reject a blank title
+        steps:
+          - id: STEP-NOTES-REJECT
+            Given: Existing notes are present.
+            When: Submit an empty or whitespace-only Title.
+            Then: Show a nonempty alert and leave all database records unchanged.
+    children: []

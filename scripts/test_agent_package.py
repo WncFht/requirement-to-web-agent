@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 from coding_fixture import FixtureModel
 from coding_agent.trace import json_write, audit
 from coding_agent.checks import application_environment
+from coding_agent.acceptance import servers
 
 
 def verify(package, directory, dependencies):
@@ -99,6 +100,15 @@ def verify(package, directory, dependencies):
         server.server_close()
         thread.join()
     proof = audit(output)
+    port_evidence = directory / "port-verification"
+    port_evidence.mkdir()
+    production_health = False
+    if generated.returncode == 0:
+        with servers(output, port_evidence, "production") as (base_url, _):
+            from urllib.request import urlopen
+
+            with urlopen(base_url + "/api/health", timeout=5) as response:
+                production_health = response.status == 200
     result = {
         "returncode": generated.returncode,
         "audit_valid": proof["valid"],
@@ -108,6 +118,7 @@ def verify(package, directory, dependencies):
         "no_env_in_package": not (source / ".env").exists(),
         "default_engine": json.loads((source / "engine.json").read_text())["default"],
         "credentials": "local mock only, no paid requests",
+        "production_health_at_injected_port": production_health,
     }
     json_write(directory / "result.json", result)
     if (

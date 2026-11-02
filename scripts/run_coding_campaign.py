@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 from coding_agent.trace import json_write, sha, audit, file_manifest
-from coding_agent.acceptance import evaluate
+from coding_agent.acceptance import evaluate, evaluate_notes
 from infrastructure.utils.processes import start_process, stop_process
 from run_factorial_campaign import (
     environment,
@@ -257,10 +257,14 @@ def campaign(args):
                 try:
                     adapter = (
                         json.loads((runroot / "fixed/adapter.json").read_text())
-                        if mode == "production"
+                        if mode == "production" and args.task != "notes"
                         else None
                     )
-                    report = evaluate(output, runroot / mode, mode, adapter)
+                    report = (
+                        evaluate_notes(output, runroot / mode, mode)
+                        if args.task == "notes"
+                        else evaluate(output, runroot / mode, mode, adapter)
+                    )
                     record[mode] = report
                     record["phases"][mode] = {
                         "status": "finished",
@@ -331,6 +335,7 @@ if __name__ == "__main__":
     p.add_argument("--inputs", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--kind", choices=("p1", "p2", "p3"), required=True)
+    p.add_argument("--task", choices=("login", "notes"), default="login")
     p.add_argument("--blocks", type=int, default=4)
     p.add_argument("--seed", type=int, default=4810)
     p.add_argument("--seconds", type=int, default=1200)
