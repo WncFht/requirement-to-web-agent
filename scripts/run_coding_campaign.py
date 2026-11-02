@@ -195,7 +195,7 @@ def campaign(args):
             "const Database=require(process.argv[1]);new Database(':memory:').close()",
             str(args.dependencies.resolve() / "better-sqlite3"),
         ],
-        env=env,
+        env=env | {"NODE_PATH": str(args.dependencies.resolve())},
         check=True,
         capture_output=True,
         text=True,
