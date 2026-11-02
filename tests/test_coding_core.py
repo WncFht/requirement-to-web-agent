@@ -149,6 +149,25 @@ class CodingCoreTests(unittest.TestCase):
         self.assertEqual(len(changes), 1)
         self.assertEqual(changes[0]["before_sha256"], version)
 
+    def test_business_styles_are_editable_without_removing_framework_setup(self):
+        self.assertFalse(self.workspace.writable("frontend/src/style.css"))
+        self.workspace.frozen = True
+        name = "frontend/src/style.css"
+        self.assertTrue(self.workspace.writable(name))
+        self.workspace.apply([{"path": name, "content": '@import "tailwindcss";\n'}])
+        path = self.output / name
+        edit = {
+            "path": name,
+            "expected_sha256": sha(path),
+            "old_text": '@import "tailwindcss";',
+            "new_text": "body {color:red}",
+        }
+        with self.assertRaisesRegex(ValueError, "Preserve the Tailwind"):
+            self.workspace.apply([edit])
+        edit["new_text"] = '@import "tailwindcss";\nbody {color:red}'
+        self.workspace.apply([edit])
+        self.assertIn("color:red", path.read_text())
+
     def test_empty_skipped_todo_flaky_expected_failure_never_green(self):
         self.assertTrue(green({"returncode": 0, "passed": 2}))
         for row in (

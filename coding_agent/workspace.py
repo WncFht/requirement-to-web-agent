@@ -4,6 +4,7 @@ import base64
 import difflib
 import hashlib
 import mimetypes
+import re
 from pathlib import Path
 
 from infrastructure.utils.paths import relative_path, check_path_case
@@ -16,7 +17,6 @@ PROTECTED = {
     "backend/src/db/setup.ts",
     "backend/src/api/types.ts",
     "frontend/src/main.tsx",
-    "frontend/src/style.css",
 }
 TEST_FILES = {
     "backend/tests/contract.test.ts",
@@ -153,12 +153,7 @@ class Workspace:
             relative = edit["path"]
             path = self.path(relative)
             if not self.writable(relative):
-                hint = (
-                    "; create a NEW CSS file and import it from your component"
-                    if relative == "frontend/src/style.css"
-                    else ""
-                )
-                raise ValueError(f"Protected edit in current phase: {relative}{hint}")
+                raise ValueError(f"Protected edit in current phase: {relative}")
             before = path.read_bytes() if path.exists() else None
             if "content" in edit:
                 if (
@@ -187,6 +182,12 @@ class Workspace:
                 after = text.replace(old, new, 1)
             if len(after.encode()) > 300_000:
                 raise ValueError("Split source files larger than 300KB")
+            if relative == "frontend/src/style.css" and not re.search(
+                r"@import\s+['\"]tailwindcss['\"]\s*;", after
+            ):
+                raise ValueError(
+                    "Preserve the Tailwind import in frontend/src/style.css"
+                )
             originals[relative] = before
             staged[relative] = after
         written = []
