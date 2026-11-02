@@ -81,7 +81,9 @@ def prepare_project(output, port=3000):
     package = json.loads((output / "package.json").read_text())
     package.setdefault("devDependencies", {})["@playwright/test"] = PLAYWRIGHT_VERSION
     json_write(output / "package.json", package)
-    config = CONFIG_SOURCE.replace('testDir: "./tests/e2e"', 'testDir: "./tests"')
+    config = CONFIG_SOURCE.replace(
+        'testDir: "./tests/e2e"', 'testDir: "./tests"'
+    ).replace("use: { baseURL:", "use: { actionTimeout: 5000, baseURL:")
     (output / "frontend/playwright.agent.config.ts").write_text(config)
     (output / "frontend/scripts/test-agent.mjs").write_text(
         RUNNER_SOURCE.replace(
@@ -410,7 +412,14 @@ class Checks(FrontendChecks):
                 )
             if not valid_red:
                 raise ValueError(
-                    f"{name}: need assertion RED, not setup/runtime failure: {diagnostic}"
+                    f"{name}: need assertion RED, not setup/runtime failure. BEFORE each click/fill/check/selectOption await expect(THE_SAME_LOCATOR).toBeVisible() and toBeEnabled() as needed. Missing stub UI must fail at the assertion, never by action timeout. Preserve business assertions. "
+                    + json.dumps(
+                        {
+                            "failures": failures[:4],
+                            "output": diagnostic[:2000] if name == "backend" else None,
+                        },
+                        ensure_ascii=False,
+                    )
                 )
         self.frozen = self.test_hashes()
         if self.trace:

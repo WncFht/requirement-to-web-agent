@@ -1,6 +1,7 @@
 """One observable JSON/multimodal client with a single bounded retry policy."""
 
 import time
+import json
 from uuid import uuid4
 
 import httpx
@@ -100,5 +101,18 @@ class Model:
             content = choice.message.content
             if not content:
                 raise ValueError("Empty model content")
-            return parse_action(content), content
+            try:
+                action = parse_action(content)
+            except json.JSONDecodeError as error:
+                excerpt = error.doc[max(0, error.pos - 180) : error.pos + 300]
+                raise ValueError(
+                    f"Invalid complete JSON at line {error.lineno}, column {error.colno}: {error.msg}. Response excerpt={excerpt!r}. Return one complete object with escaped source strings; no commentary or suffix."
+                ) from error
+            if content.strip().endswith("</result>"):
+                trace.emit(
+                    "model.normalization",
+                    call_id=call_id,
+                    rule="exact-result-wrapper-only",
+                )
+            return action, json.dumps(action, ensure_ascii=False)
         raise RuntimeError("Unreachable retry state")

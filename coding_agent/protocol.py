@@ -12,6 +12,13 @@ class InvalidTest(ValueError):
 
 
 def parse_action(content):
+    content = content.strip()
+    # Some compatible providers add a fixed presentation wrapper despite JSON mode.
+    # Remove only that exact wrapper; parse the ENTIRE remaining object, never a prefix.
+    if content.endswith("</result>"):
+        content = content[: -len("</result>")].strip()
+        if content.startswith("<result>"):
+            content = content[len("<result>") :].strip()
     value = json.loads(content)
     if not isinstance(value, dict) or value.get("action") not in {
         "read",

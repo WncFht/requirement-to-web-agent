@@ -46,6 +46,11 @@ class CodingCoreTests(unittest.TestCase):
             parse_action('{"action":"read","paths":["x"]},"discarded":1}')
         with self.assertRaises(ValueError):
             parse_action('{"action":"edit","edits":[]}')
+        self.assertEqual(
+            parse_action('{"action":"finish"}\n</result>'), {"action": "finish"}
+        )
+        with self.assertRaises(json.JSONDecodeError):
+            parse_action('{"action":"finish"},"discarded":1}</result>')
 
     def test_case_traversal_symlink_and_test_permissions(self):
         for name in (

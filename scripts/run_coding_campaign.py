@@ -44,6 +44,7 @@ def usage(output, arm):
     }
     unknown = []
     calls = 0
+    requests, responses = set(), set()
     if events.exists():
         for line in events.read_text().splitlines():
             try:
@@ -51,7 +52,10 @@ def usage(output, arm):
             except ValueError:
                 unknown.append("partial-event")
                 continue
+            if r.get("kind") == "model.request":
+                requests.add(r["call_id"])
             if r.get("kind") == "model.response":
+                responses.add(r["call_id"])
                 calls += 1
                 if not r.get("usage"):
                     unknown.append(r.get("call_id"))
@@ -67,7 +71,7 @@ def usage(output, arm):
     return {
         "totals": totals,
         "response_count": calls,
-        "calls_with_unknown_usage": unknown,
+        "calls_with_unknown_usage": sorted(set(unknown) | (requests - responses)),
     }
 
 
@@ -95,6 +99,9 @@ def command_phase(
                     stop_process(child)
                     break
                 sleep(1)
+        except KeyboardInterrupt:
+            status = "interrupted"
+            stop_process(child)
         except BaseException:
             stop_process(child)
             raise
@@ -318,6 +325,15 @@ def campaign(args):
             ),
             flush=True,
         )
+        if generation["status"] == "interrupted":
+            json_write(
+                root / "interrupted.json",
+                {
+                    "completed_attempt": item["name"],
+                    "remaining_schedule_preserved": True,
+                },
+            )
+            return
         leftovers = owned_output_processes(output)
         if leftovers:
             raise ValueError(

@@ -22,11 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = r"""import Database from 'better-sqlite3';
 import {pathToFileURL} from 'node:url';
 const {initializeDatabase}=await import(pathToFileURL(process.cwd()+'/backend/src/db/initialize.ts').href);
-const db=new Database(':memory:');initializeDatabase(db);
+const db=new Database(process.argv[1]??':memory:');initializeDatabase(db);
 const quote=n=>'"'+n.replaceAll('"','""')+'"',out={};
 for(const row of db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all()){
  const fks=db.prepare('PRAGMA foreign_key_list('+quote(row.name)+')').all();
- out[row.name]={fields:Object.fromEntries(db.prepare('PRAGMA table_info('+quote(row.name)+')').all().map(c=>[c.name,{type:/INT/i.test(c.type)?'integer':'string',primary_key:!!c.pk,nullable:!c.notnull&&!c.pk,default:c.dflt_value,references:fks.some(f=>f.from===c.name)?(()=>{const f=fks.find(f=>f.from===c.name);return f.table+'.'+f.to})():null}]))};
+ out[row.name]={sample:db.prepare('SELECT * FROM '+quote(row.name)+' LIMIT 1').get()??null,fields:Object.fromEntries(db.prepare('PRAGMA table_info('+quote(row.name)+')').all().map(c=>[c.name,{type:/INT/i.test(c.type)?'integer':'string',primary_key:!!c.pk,nullable:!c.notnull&&!c.pk,default:c.dflt_value,references:fks.some(f=>f.from===c.name)?(()=>{const f=fks.find(f=>f.from===c.name);return f.table+'.'+f.to})():null}]))};
 }db.close();console.log(JSON.stringify(out));"""
 
 PROBE = r"""import {chromium} from '@playwright/test';
@@ -67,11 +67,18 @@ def execute(output, args, *, timeout=300, env=None):
 
 def adapter_from_schema(schema, transport):
     """Map storage locations only; immutable fixtures retain all expected business values."""
+    aliases_by_role = {role: set(aliases) for role, aliases in ALIASES.items()}
+    aliases_by_role["agreement_consent"].update(
+        {"agreement", "agreed", "termsaccepted"}
+    )
+    aliases_by_role["passport_expiration_date"].update(
+        {"passportexpiry", "passportexpirydate"}
+    )
     candidates = []
     for table, entity in schema.items():
         fields = entity["fields"]
         roles = {}
-        for role, aliases in ALIASES.items():
+        for role, aliases in aliases_by_role.items():
             matches = [name for name in fields if normalized(name) in aliases]
             if len(matches) == 1:
                 roles[role] = matches[0]
@@ -105,6 +112,13 @@ def adapter_from_schema(schema, transport):
         if name not in account_seed:
             if field["nullable"]:
                 account_seed[name] = None
+            elif normalized(name) in {
+                "createdat",
+                "updatedat",
+                "createdon",
+                "updatedon",
+            } and schema[account_table].get("sample", {}):
+                account_seed[name] = schema[account_table]["sample"][name]
             elif field.get("default") is None:
                 raise ValueError("Unknown required account field: " + name)
     sessions = []
@@ -137,6 +151,14 @@ def adapter_from_schema(schema, transport):
             )
         elif field["nullable"]:
             session_seed[name] = None
+        elif normalized(name) in {
+            "createdat",
+            "updatedat",
+            "expiresat",
+            "createdon",
+            "expireson",
+        } and schema[table].get("sample", {}):
+            session_seed[name] = schema[table]["sample"][name]
         elif field.get("default") is None:
             raise ValueError("Unknown required session field: " + name)
     if len(transport["names"]) != 1 or len(transport["paths"]) != 1:
@@ -324,10 +346,30 @@ def evaluate(output, evidence, mode="fixed", adapter=None):
                     raise ValueError(
                         "Browser transport probe failed: " + observed["output"]
                     )
+                schema = execute(
+                    output,
+                    [
+                        shutil.which("node"),
+                        "--import",
+                        "tsx",
+                        "--input-type=module",
+                        "-e",
+                        SCHEMA,
+                        str(owner / "app.db"),
+                    ],
+                )
+                if schema["returncode"]:
+                    raise ValueError(schema["output"])
                 adapter = adapter_from_schema(
                     json.loads(schema["stdout"]), json.loads(observed["stdout"])
                 )
-                json_write(evidence / "schema.json", json.loads(schema["stdout"]))
+                json_write(
+                    evidence / "schema.json",
+                    {
+                        key: {"fields": value["fields"]}
+                        for key, value in json.loads(schema["stdout"]).items()
+                    },
+                )
                 json_write(evidence / "transport.json", json.loads(observed["stdout"]))
             json_write(tests / "adapter.json", adapter)
             json_write(evidence / "adapter.json", adapter)
