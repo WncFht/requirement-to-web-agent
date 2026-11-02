@@ -14,6 +14,7 @@ class AcceptanceAdapterTests(unittest.TestCase):
             evidence = Path(tmp)
             with self.assertRaisesRegex(ValueError, "startup failed"):
                 with evaluation_directory(evidence) as directory:
+                    self.assertIn("teacher-acceptance-", str(directory))
                     (directory / "server-0.log").write_text("SQLite ABI mismatch")
                     raise ValueError("startup failed")
             self.assertFalse(directory.exists())

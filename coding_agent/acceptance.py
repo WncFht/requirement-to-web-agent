@@ -304,7 +304,7 @@ def internal_green(output):
 @contextmanager
 def evaluation_directory(evidence):
     """Retain service logs even if readiness, transport probing or evaluation fails."""
-    with TemporaryDirectory(prefix="independent-acceptance-") as tmp:
+    with TemporaryDirectory(prefix="teacher-acceptance-coding-") as tmp:
         owner = Path(tmp)
         try:
             yield owner
