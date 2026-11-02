@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from coding_agent.config import Config
-from coding_agent.loop import run, progress_key
+from coding_agent.loop import run, progress_key, Agent
 from coding_agent.protocol import BudgetExhausted
 
 
@@ -40,6 +40,33 @@ class Exhausted:
 
 
 class CodingLoopTests(unittest.TestCase):
+    def test_reference_images_survive_every_turn_and_history_compaction(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inputs = root / "input"
+            inputs.mkdir()
+            paths = []
+            for i in range(13):
+                name = f"image-{i}.png"
+                (inputs / name).write_bytes(b"fixture-image-bytes")
+                paths.append("input/" + name)
+            agent = Agent(
+                Config(inputs, root / "output"),
+                model_factory=RepeatRead,
+                checks_factory=NoChecks,
+            )
+            agent.turn = 1
+            first = agent.context({}, paths)[1]
+            self.assertEqual(len(first["content"]), 14)
+            agent.turn = 2
+            self.assertEqual(agent.context({}, paths)[1], first)
+            agent.history = [
+                {"role": "user", "content": "x" * 10000} for _ in range(20)
+            ]
+            agent.turn = 30
+            self.assertEqual(agent.context({}, paths)[1], first)
+            self.assertEqual(len(agent.history), 10)
+
     def test_check_timing_noise_is_not_progress_but_new_result_or_edit_is(self):
         with TemporaryDirectory() as tmp:
             output = Path(tmp)

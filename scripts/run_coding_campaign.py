@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import random
 import shutil
+import signal
 import subprocess
 import sys
 from time import monotonic, sleep
@@ -26,6 +27,11 @@ from run_factorial_campaign import (
     owned_output_processes,
 )
 from summarize_factorial_campaign import wilson
+
+
+def install_signal_handlers():
+    """Terminate the owned generator and record interruption on ordinary SIGTERM."""
+    signal.signal(signal.SIGTERM, signal.default_int_handler)
 
 
 def usage(output, arm):
@@ -384,6 +390,7 @@ def campaign(args):
 
 
 if __name__ == "__main__":
+    install_signal_handlers()
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--candidate", type=Path, required=True)
     p.add_argument("--baseline", type=Path, required=True)

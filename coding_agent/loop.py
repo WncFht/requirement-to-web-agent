@@ -102,6 +102,7 @@ class Agent:
         self.repeat = 0
         self.last_progress = None
         self.turn = 0
+        self.reference_message = None
 
     def remaining(self):
         return self.config.max_seconds - (monotonic() - self.trace.started)
@@ -120,7 +121,7 @@ class Agent:
         }
         seed = {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
         history = self.history
-        if len(json.dumps(history, ensure_ascii=False)) > 100000:
+        if len(history) > 10 and len(json.dumps(history, ensure_ascii=False)) > 100000:
             removed = len(history) - 10
             history = self.history[-10:]
             self.history = history
@@ -137,18 +138,24 @@ class Agent:
                 .joinpath("system.txt")
                 .read_text(),
             },
-            seed,
-            *history,
         ]
-        if self.turn == 1 and images:
-            parts = [
-                {
-                    "type": "text",
-                    "text": "Reference images in order: " + ", ".join(images),
-                }
-            ]
-            parts.extend(item["image"] for item in self.workspace.read(images))
-            messages.append({"role": "user", "content": parts})
+        if images:
+            if self.reference_message is None:
+                parts = [
+                    {
+                        "type": "text",
+                        "text": "Immutable reference images in order: "
+                        + ", ".join(images),
+                    }
+                ]
+                for start in range(0, len(images), 12):
+                    parts.extend(
+                        item["image"]
+                        for item in self.workspace.read(images[start : start + 12])
+                    )
+                self.reference_message = {"role": "user", "content": parts}
+            messages.append(self.reference_message)
+        messages.extend([seed, *history])
         return messages
 
     def execute(self, action):
