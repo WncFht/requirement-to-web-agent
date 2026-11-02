@@ -36,7 +36,9 @@
 | ----------------------------- | ------------------ | ---------------------------------------------------------------- |
 | `ARC_DISABLE_TIMING` | 0 | =1 停用新增 timings.jsonl，不影响 gate 或原模型审计 |
 | `ARC_LEGACY_PIPELINE_RESUME` | 0 | =1 显式回退旧哨兵恢复；不接入可信记录，保留部分产物误判风险 |
-| `ARC_EVENT_CONTEXT` | 0 | =1 试验非终验单事件上下文收窄；终验保持全量，FULL_CONTEXT=1 优先回退 |
+| `ARC_EVENT_CONTEXT` | 1 | 非终验单事件上下文收窄；=0 回退基础瘦身，终验保持全量，FULL_CONTEXT=1 优先回退 |
+| `ARC_CACHE_PREFIX` | 1 | 共享字段与文件稳定部分前置；=0 回退后期可开关排序，仍不等于教师原始代码 |
+| `ARC_CACHE_PREFIX_V2` | 0 | =1 显式启用更强共享字段排序，须同时启用CACHE_PREFIX；两次完整候选均未通过，保持默认关闭 |
 | `ARC_LEGACY_LABEL_LOCATORS` | 0 | =1 回退新增精确标签定位检查和提示；原 accessible-name/类型检查保留 |
 | `ARC_LEGACY_READ_FAILURES` | 0 | =1 回退只读 mount 处理器故障探针和提示；原浏览器错误上报保留 |
 | `ARC_LEGACY_E2E_COOKIE_NAMES` | 0 | =1 回退有效会话场景的字面量 Cookie 名称准入；测试仍可读取后端源码证据 |

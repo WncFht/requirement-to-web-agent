@@ -45,7 +45,8 @@
 | 优化 | 位置 | 触发/回退 |
 | --- | --- | --- |
 | Stage 12 创建调用上下文瘦身 | `interactions/implementation.py` | `ARC_FULL_CONTEXT=1` 回退 |
-| 进一步单事件上下文试验 | `interactions/creation_context.py` | `ARC_EVENT_CONTEXT=1` 显式启用，默认 0；完整候选未通过外部验收 |
+| 进一步单事件上下文收窄 | `interactions/creation_context.py` | `ARC_EVENT_CONTEXT` 默认 1，=0 回退；固定次数复测未建立稳定成功率/提速收益 |
+| 共享前缀排序与 V2 | `shared/models/context_order.py` | `ARC_CACHE_PREFIX` 默认 1；V2 默认 0，局部复用改善但完整验证未通过 |
 | agent 反馈去噪（ANSI/截断） | `shared/agent/loop.py` | 常开 |
 | 瞬态传输退避重试 | `shared/models/text.py` | `ARC_MODEL_TRANSPORT_RETRIES` |
 | Stage 09 逐需求设计 checkpoint | `frontend/ui/synthesis.py` | `ARC_UI_DESIGN_FRESH=1` 全新 |
@@ -60,4 +61,4 @@
 - `tests/`：编译器单元测试（含文件编辑、流程与反馈回归）
 - `main.py`：平台入口（run_all → db:init → build → deploy.sh）
 
-当前成本分布、恢复边界和优化顺序见 [整体优化审阅](2026-11-01-整体优化审阅.md)。JSON 形状/义务校验、行为测试与固定外部验收分别承担不同职责，不把任一 IR 检查称为完整业务证明。
+历史成本剖析与候选方向见 [整体优化审阅](2026-11-01-整体优化审阅.md)，最新固定次数结果见[串行消融与缓存验证](experiments/2026-11-02-串行消融与缓存验证.md)。JSON 形状/义务校验、行为测试与固定外部验收分别承担不同职责，不把任一 IR 检查称为完整业务证明。
