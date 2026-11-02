@@ -23,6 +23,7 @@ TEST_FILES = {
     "frontend/tests/ui/presence.spec.ts",
     "frontend/tests/e2e/workflows.spec.ts",
 }
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
 
 class Workspace:
@@ -69,6 +70,7 @@ class Workspace:
             "frontend/src",
             "backend/tests",
             "frontend/tests",
+            "frontend/public/assets",
         ):
             for path in sorted((self.output / directory).rglob("*")):
                 if path.is_file() and not path.is_symlink():
@@ -131,6 +133,8 @@ class Workspace:
             raise ValueError("Search query must have 1..300 characters")
         matches = []
         for relative in self.inventory():
+            if Path(relative).suffix.lower() in IMAGE_SUFFIXES:
+                continue
             path = self.path(relative)
             for line, content in enumerate(
                 path.read_text(encoding="utf-8-sig").splitlines(), 1
@@ -142,6 +146,8 @@ class Workspace:
         return {"matches": matches[:50], "omitted_matches": max(0, len(matches) - 50)}
 
     def writable(self, relative):
+        if relative.startswith("frontend/public/assets/"):
+            return self.frozen and Path(relative).suffix.lower() in IMAGE_SUFFIXES
         if relative in TEST_FILES:
             return not self.frozen
         if relative == "APP_CONTRACT.md":
@@ -157,7 +163,7 @@ class Workspace:
         return relative.endswith((".ts", ".tsx", ".css", ".sql"))
 
     def apply(self, edits):
-        staged, originals = {}, {}
+        staged, originals, image_sources = {}, {}, {}
         for edit in edits:
             if not isinstance(edit, dict) or not isinstance(edit.get("path"), str):
                 raise ValueError("Each edit needs path")
@@ -166,7 +172,28 @@ class Workspace:
             if not self.writable(relative):
                 raise ValueError(f"Protected edit in current phase: {relative}")
             before = path.read_bytes() if path.exists() else None
-            if "content" in edit:
+            image_asset = relative.startswith("frontend/public/assets/")
+            if image_asset:
+                source = edit.get("copy_from")
+                if not isinstance(source, str) or not source.startswith("input/"):
+                    raise ValueError("Image assets need copy_from=input/<image>")
+                if before is not None or relative in staged:
+                    raise ValueError(
+                        "Copy images to a new asset path; existing assets are immutable"
+                    )
+                source_path = self.path(source[6:], input_file=True)
+                if (
+                    source_path.suffix.lower() not in IMAGE_SUFFIXES
+                    or source_path.suffix.lower() != path.suffix.lower()
+                    or not source_path.is_file()
+                    or source_path.stat().st_size > 12_000_000
+                ):
+                    raise ValueError(
+                        "Copy an input raster image of the same format, at most 12MB"
+                    )
+                after = source_path.read_bytes()
+                image_sources[relative] = source
+            elif "content" in edit:
                 if (
                     relative in staged
                     or before is not None
@@ -191,7 +218,7 @@ class Workspace:
                 ):
                     raise ValueError(f"Old text must match exactly once: {relative}")
                 after = text.replace(old, new, 1)
-            if len(after.encode()) > 300_000:
+            if isinstance(after, str) and len(after.encode()) > 300_000:
                 raise ValueError("Split source files larger than 300KB")
             if relative == "frontend/src/style.css" and not re.search(
                 r"@import\s+['\"]tailwindcss['\"]\s*;", after
@@ -207,7 +234,10 @@ class Workspace:
                 path = self.path(relative)
                 path.parent.mkdir(parents=True, exist_ok=True)
                 written.append(relative)
-                path.write_text(content)
+                if isinstance(content, bytes):
+                    path.write_bytes(content)
+                else:
+                    path.write_text(content)
         except (OSError, ValueError):
             for relative in reversed(written):
                 path = self.path(relative)
@@ -218,19 +248,27 @@ class Workspace:
             raise
         result = []
         for relative in staged:
-            before = (originals[relative] or b"").decode("utf-8-sig")
+            before = (
+                (originals[relative] or b"").decode("utf-8-sig")
+                if relative not in image_sources
+                else ""
+            )
             record = {
                 "path": relative,
                 "before_sha256": hashlib.sha256(originals[relative]).hexdigest()
                 if originals[relative] is not None
                 else None,
                 "after_sha256": sha(self.path(relative)),
-                "diff": "".join(
-                    difflib.unified_diff(
-                        before.splitlines(True),
-                        staged[relative].splitlines(True),
-                        fromfile=relative,
-                        tofile=relative,
+                "diff": (
+                    "Copied immutable input image: " + image_sources[relative]
+                    if relative in image_sources
+                    else "".join(
+                        difflib.unified_diff(
+                            before.splitlines(True),
+                            staged[relative].splitlines(True),
+                            fromfile=relative,
+                            tofile=relative,
+                        )
                     )
                 ),
             }

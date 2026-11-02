@@ -118,6 +118,39 @@ class CodingCoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Symlink"):
             self.workspace.read([relative])
 
+    def test_reference_images_copy_atomically_into_served_assets_after_freezing(self):
+        source = self.inputs / "reference.png"
+        source.write_bytes(b"\x89PNG\r\n\x1a\nfixture-image")
+        asset = "frontend/public/assets/reference.png"
+        edit = {"path": asset, "copy_from": "input/reference.png"}
+        with self.assertRaisesRegex(ValueError, "Protected edit"):
+            self.workspace.apply([edit])
+        self.workspace.frozen = True
+        with self.assertRaises(ValueError):
+            self.workspace.apply([edit, {"path": "../escape.png", "content": "x"}])
+        self.assertFalse((self.output / asset).exists())
+        self.workspace.apply([edit])
+        self.assertEqual((self.output / asset).read_bytes(), source.read_bytes())
+        self.assertIn(asset, self.workspace.inventory())
+        self.assertEqual(self.workspace.search("fixture-image")["matches"], [])
+        with self.assertRaisesRegex(ValueError, "immutable"):
+            self.workspace.apply([edit])
+        with self.assertRaisesRegex(ValueError, "copy_from"):
+            self.workspace.apply(
+                [{"path": "frontend/public/assets/other.png", "content": "x"}]
+            )
+        source.unlink()
+        source.symlink_to(self.inputs / "requirements.yaml")
+        with self.assertRaisesRegex(ValueError, "Symlink"):
+            self.workspace.apply(
+                [
+                    {
+                        "path": "frontend/public/assets/other.png",
+                        "copy_from": "input/reference.png",
+                    }
+                ]
+            )
+
     def test_partial_second_write_restores_the_entire_batch(self):
         self.workspace.frozen = True
         self.workspace.apply(

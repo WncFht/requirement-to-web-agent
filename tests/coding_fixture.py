@@ -1,9 +1,13 @@
 """A deliberately small non-authentication application for zero-fee loop verification."""
 
 import json
+import base64
 
 from coding_agent.trace import sha
 
+REFERENCE_IMAGE = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
+)
 SETUP = {
     "APP_CONTRACT.md": "# Notes\nREQ-1: GET /api/items is read-only; POST {title} saves one note, blank title rejects without writes. Homepage lists notes and survives reload.\n",
     "backend/src/db/tables/Item.sql": "CREATE TABLE IF NOT EXISTS Item(id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL);\n",
@@ -114,7 +118,17 @@ class FixtureModel:
                         "frontend/src/App.tsx",
                         FRONTEND.replace("<h1>Notes</h1>", "<h1>Wrong title</h1>"),
                     ),
-                ],
+                ]
+                + (
+                    [
+                        {
+                            "path": "frontend/public/assets/reference.png",
+                            "copy_from": "input/reference.png",
+                        }
+                    ]
+                    if (self.output.parent / "input/reference.png").is_file()
+                    else []
+                ),
             }
         if self.index == 4:
             return {"action": "check", "name": "all"}

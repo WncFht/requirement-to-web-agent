@@ -6,6 +6,7 @@ import shutil
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
+from urllib.request import urlopen
 
 from coding_agent.checks import (
     application_environment,
@@ -17,7 +18,8 @@ from coding_agent.config import Config
 from coding_agent.loop import run
 from coding_agent.protocol import InvalidTest
 from coding_agent.trace import audit
-from coding_fixture import FixtureModel, SETUP
+from coding_agent.acceptance import servers
+from coding_fixture import FixtureModel, SETUP, REFERENCE_IMAGE
 
 
 class CodingChecksTests(unittest.TestCase):
@@ -89,6 +91,7 @@ class CodingChecksTests(unittest.TestCase):
             (inputs / "requirements.yaml").write_text(
                 "id: REQ-1\nname: Notes\nchildren: []\n"
             )
+            (inputs / "reference.png").write_bytes(REFERENCE_IMAGE)
             output = root / "output"
             output.mkdir()
             shutil.copytree(snapshot, output / "node_modules", symlinks=True)
@@ -105,6 +108,9 @@ class CodingChecksTests(unittest.TestCase):
             self.assertEqual(result["turns"], 6)
             self.assertTrue(audit(output)["valid"])
             self.assertTrue(result["frozen_tests"])
+            with servers(output, root, "production") as (base, _):
+                with urlopen(base + "/assets/reference.png", timeout=5) as response:
+                    self.assertEqual(response.read(), REFERENCE_IMAGE)
             saved = list((output / ".arc/agent/artifacts").glob("browser-*"))
             images = [p for folder in saved for p in folder.rglob("*.png")]
             self.assertGreaterEqual(len(saved), 3)

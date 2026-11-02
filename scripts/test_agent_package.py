@@ -14,7 +14,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
-from coding_fixture import FixtureModel
+from coding_fixture import FixtureModel, REFERENCE_IMAGE
 from coding_agent.trace import json_write, audit
 from coding_agent.checks import application_environment
 from coding_agent.acceptance import servers
@@ -29,6 +29,7 @@ def verify(package, directory, dependencies):
     inputs = directory / "input"
     inputs.mkdir()
     (inputs / "requirements.yaml").write_text("id: REQ-1\nname: Notes\nchildren: []\n")
+    (inputs / "reference.png").write_bytes(REFERENCE_IMAGE)
     output = directory / "output"
     output.mkdir()
     shutil.copytree(dependencies, output / "node_modules", symlinks=True)
@@ -103,12 +104,15 @@ def verify(package, directory, dependencies):
     port_evidence = directory / "port-verification"
     port_evidence.mkdir()
     production_health = False
+    production_reference_asset = False
     if generated.returncode == 0:
         with servers(output, port_evidence, "production") as (base_url, _):
             from urllib.request import urlopen
 
             with urlopen(base_url + "/api/health", timeout=5) as response:
                 production_health = response.status == 200
+            with urlopen(base_url + "/assets/reference.png", timeout=5) as response:
+                production_reference_asset = response.read() == REFERENCE_IMAGE
     result = {
         "returncode": generated.returncode,
         "audit_valid": proof["valid"],
@@ -119,12 +123,14 @@ def verify(package, directory, dependencies):
         "default_engine": json.loads((source / "engine.json").read_text())["default"],
         "credentials": "local mock only, no paid requests",
         "production_health_at_injected_port": production_health,
+        "production_reference_asset": production_reference_asset,
     }
     json_write(directory / "result.json", result)
     if (
         generated.returncode
         or not proof["valid"]
         or result["status"] != "INTERNAL_GREEN"
+        or not production_reference_asset
     ):
         raise ValueError(json.dumps(result))
     return result

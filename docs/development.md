@@ -41,6 +41,8 @@ ARC_AGENT_ENGINE=coding .venv/bin/python main.py input --output-dir ../work/my-c
 `INVALID_TEST` 表示冻结边界内的测试问题；`NO_PROGRESS` 和预算耗尽是失败终态。
 `INTERNAL_GREEN` 只证明内部测试与构建通过。
 
+需要复用参考照片时，模型可发出 `{"action":"edit","edits":[{"path":"frontend/public/assets/photo.png","copy_from":"input/reference/image.png"}]}`。该动作只在实现阶段可用，图片以 `/assets/photo.png` 发布；已有素材不可覆盖。浏览器检查列出的错误快照与失败截图可以通过 `read` 只读查看。
+
 | 候选环境变量                  | 默认值                       | 作用                                                  |
 | ----------------------------- | ---------------------------- | ----------------------------------------------------- |
 | `ARC_AGENT_ENGINE`            | 源码 legacy；候选 ZIP coding | 选择引擎；legacy 的其他开关不控制新循环               |
