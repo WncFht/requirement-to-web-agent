@@ -31,6 +31,8 @@ def file_manifest(root, *, logs=False):
             continue
         if relative.parts[:2] == ("backend", "data"):
             continue
+        if not logs and "dist" in relative.parts:
+            continue
         if relative.parts[0] == ".arc" and not logs:
             continue
         if path.is_symlink():
@@ -148,9 +150,12 @@ def audit(output):
     if manifest["files"] != actual:
         issues.append("Application, tests, configuration or original evidence changed")
     requests, responses, pending_checks = set(), set(), set()
+    check_reports = {}
+    last_kind = None
     tokens = 0
     for number, line in enumerate((root / "events.jsonl").read_text().splitlines(), 1):
         row = json.loads(line)
+        last_kind = row["kind"]
         if row["seq"] != number or row["run_id"] != result["run_id"]:
             issues.append("Event sequence or run identity changed")
         if row["kind"] == "model.request":
@@ -173,10 +178,32 @@ def audit(output):
             pending_checks.add(row["check_id"])
         if row["kind"] == "check.end":
             pending_checks.discard(row["check_id"])
+            raw = json.loads((Path(output) / row["artifact"]["path"]).read_text())
+            from coding_agent.protocol import green
+
+            if row["status"] != ("GREEN" if green(raw) else "FAILED"):
+                issues.append("Check verdict differs from raw check result")
+            check_reports[row["name"]] = raw
     if requests != responses:
         issues.append("Unpaired model request/response")
     if pending_checks:
         issues.append("Unfinished checks")
     if tokens != result["total_tokens"] or len(responses) != result["model_calls"]:
         issues.append("Derived usage totals differ")
+    if last_kind != "run.end":
+        issues.append("Missing final run event")
+    if result["status"] == "INTERNAL_GREEN":
+        from coding_agent.protocol import green
+
+        if set(check_reports) != {
+            "typecheck",
+            "backend",
+            "ui",
+            "e2e",
+            "build",
+        } or not all(green(v) for v in check_reports.values()):
+            issues.append("Internal success lacks raw gate evidence")
+        version = fingerprint(file_manifest(Path(output)))
+        if any(v.get("application_sha256") != version for v in check_reports.values()):
+            issues.append("Final gates do not cover the current application")
     return {"valid": not issues, "issues": issues, "result": result}
