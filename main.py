@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from infrastructure.utils.output import application_output
 from infrastructure.utils.processes import child_environment
 from infrastructure.utils.timing import timed
 
@@ -30,6 +31,8 @@ def main():
         inputs = inputs.parent
     if not (inputs / "requirements.yaml").is_file():
         parser.error("requirements.yaml was not found in the input directory")
+    if args.output_dir.expanduser().is_symlink():
+        parser.error("Output directory cannot be a symlink")
     output = args.output_dir.expanduser().resolve()
     if output == inputs or output.is_relative_to(inputs):
         parser.error("Output directory must not equal or be inside the input directory")
@@ -38,11 +41,25 @@ def main():
     engine = os.getenv("ARC_AGENT_ENGINE", "legacy")
     if engine not in {"legacy", "coding"}:
         parser.error("ARC_AGENT_ENGINE must be legacy or coding")
+    if args.resume and engine == "coding":
+        parser.error("coding does not support --resume")
+    try:
+        with application_output(
+            output, inputs=inputs, source=source, resume=args.resume
+        ) as workspace:
+            generate_application(
+                source, inputs, workspace, args.port, engine, args.resume
+            )
+    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
+        parser.exit(1, f"Generation failed: {error}\n")
+
+
+def generate_application(source, inputs, output, port, engine, resume=False):
     if engine == "coding":
         from coding_agent.config import Config
         from coding_agent.loop import run
 
-        result = run(Config.environment(inputs, output, args.port))
+        result = run(Config.environment(inputs, output, port))
         print(
             json.dumps(
                 {
@@ -55,9 +72,8 @@ def main():
             flush=True,
         )
         if result["status"] != "INTERNAL_GREEN":
-            parser.exit(
-                1,
-                f"Coding agent stopped: {result['status']}; inspect .arc/agent/result.json\n",
+            raise RuntimeError(
+                f"Coding agent stopped: {result['status']}; inspect .arc/agent/result.json"
             )
         return
     if os.getenv("MODEL", "").lower().startswith("deepseek"):
@@ -70,10 +86,10 @@ def main():
         "--output",
         str(output),
     ]
-    if args.resume:
+    if resume:
         pipeline_command.append("--resume")
     with timed("entrypoint", output=output):
-        build_application(pipeline_command, source, output, args.port)
+        build_application(pipeline_command, source, output, port)
 
 
 def build_application(pipeline_command, source, output, port):

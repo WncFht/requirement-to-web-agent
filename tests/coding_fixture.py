@@ -93,6 +93,7 @@ class FixtureModel:
 
     def __init__(self, config, trace):
         self.output, self.trace, self.index = config.output, trace, 0
+        self.inputs = getattr(config, "inputs", self.output.parent / "input")
 
     def next_action(self):
         self.index += 1
@@ -126,7 +127,7 @@ class FixtureModel:
                             "copy_from": "input/reference.png",
                         }
                     ]
-                    if (self.output.parent / "input/reference.png").is_file()
+                    if (self.inputs / "reference.png").is_file()
                     else []
                 ),
             }

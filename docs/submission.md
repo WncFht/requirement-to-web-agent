@@ -33,7 +33,7 @@ make package-check REF=optimized-verified-2026-11-01 ENGINE=legacy
 
 包内源码、模板与排除规则见[打包范围](packaging.md)。旧标签保持当时布局，当前源码不再保留旧入口或行为的兼容分支。
 
-`package-check` 校验清单、原源码哈希、入口布局和所有 Python 文件语法。它不安装依赖、不执行生成，也不证明完整平台运行通过。单循环包另有本地模拟服务集成，运行方式见[操作指南](development.md#诊断与独立验收)。
+`package-check` 校验清单、原源码哈希、入口布局和所有 Python 文件语法。平台预置输出目录的实际启动检查见[打包范围](packaging.md)。它不安装依赖、不执行生成，也不证明完整平台运行通过。单循环包另有本地模拟服务集成，运行方式见[操作指南](development.md#诊断与独立验收)。
 
 ## 在 ARC-Bench 选择并上传
 

@@ -1,6 +1,6 @@
 # 开发指南
 
-在源码仓库修改生成器，生成结果写到仓库外的独立目录。当前真实模型 API 已停用，下面的生成命令仅作接口参考；离线检查可正常执行。
+在源码仓库修改生成器，生成结果写到指定应用目录。`make run` 仍要求新目录；平台 `main.py` 首次收到预置模板时使用独立工作区生成，成功后在原输出根层交付，原模板移至日志给出的备份。当前真实模型 API 已停用，下面的生成命令仅作接口参考；离线检查可正常执行。
 
 ## 团队开发
 
@@ -60,7 +60,7 @@ ARC_AGENT_ENGINE=coding .venv/bin/python main.py input --output-dir ../work/new-
 | `ARC_FULL_CONTEXT`、`ARC_FULL_FEEDBACK`     | legacy 完整上下文/原始反馈诊断，默认 0                                  |
 | `ARC_UI_DESIGN_FRESH`                       | legacy 忽略本阶段 UI checkpoint 重做，默认 0                            |
 
-`ARC_LEGACY_*`、旧哨兵恢复和未晋升的 `ARC_CACHE_PREFIX_V2` 已移除；需要旧行为时运行固定标签中的源码。当前版本不可使用旧输出目录续跑。
+`ARC_LEGACY_*`、旧哨兵恢复和未晋升的 `ARC_CACHE_PREFIX_V2` 已移除；需要旧行为时运行固定标签中的源码。当前版本不可使用旧输出目录续跑。平台初始模板不是旧 checkpoint；入口适配不会放松这条规则。
 
 ## 可信续跑
 
@@ -88,7 +88,9 @@ legacy 查看阶段 `.arc/*.json`、`compiler.log` 和 `model_calls.jsonl`。cod
 ```sh
 make package ENGINE=coding ZIP=../work/new-coding-package.zip
 .venv/bin/python scripts/test_agent_package.py ../work/new-coding-package.zip \
-  --output ../work/new-package-check --dependencies /absolute/dependency-snapshot
+  --output ../work/new-package-check --dependencies /absolute/dependency-snapshot --initial-template
 ```
+
+该模拟场景预先填入平台模板，核对全检查、交付后审计、生产端口及图片。仅需要验证实际 ZIP 初始化时，用 `scripts/test_platform_startup.py <ZIP> --output <新证据目录>`；它禁止网络连接并在模型客户端创建前停止，legacy 要求 Stage 00 已通过。
 
 legacy 的 `timings.jsonl` 用单调时钟记录父子 span，父子耗时有包含关系，不能相加；中断缺失 end 保持未知。`scripts/summarize_calls.py` 汇总已返回 SDK 用量，`scripts/summarize_timings.py` 汇总计时。它们不证明供应商账单、缓存路由或模型速度因果关系。

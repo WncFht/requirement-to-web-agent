@@ -16,3 +16,13 @@
 不打包：`.env` 与 Key、`.git`、`.venv`、`node_modules`、生成网站、数据库、日志、输入示例、固定验收、测试、文档、维护技能及开发脚本。JSON 清单位于 ZIP 外，记录完整提交 SHA、引擎、ZIP 和逐文件哈希；网站只上传 ZIP。
 
 平台从包根目录执行 `python main.py <需求目录> --output-dir <应用目录>`。连接地址和 Key 读取 `OPENAI_BASE_URL`、`OPENAI_API_KEY`，默认模型为 `deepseek-flash`；包装器不覆盖连接配置。`make package-check` 只验证结构、源码哈希与 Python 语法，完整生成仍需另行验证。
+
+平台指定的输出目录可以预先包含模板。当前 `main.py` 在干净临时工作区生成，通过后把原目录内容移到独立备份，再交付到原输出目录根层；不会要求平台另选目录。失败保留原模板和独立失败工件，已有编译记录仍按续跑规则保护。该修复属于当前运行源码，重新打包旧标签不会自动得到它。
+
+无真实 Key 的实际 ZIP 启动检查：
+
+```sh
+.venv/bin/python scripts/test_platform_startup.py dist/<当前版本>.zip --output ../work/new-startup-check
+```
+
+检查预置模板场景，并在模型客户端创建前强制阻断；通过仅证明初始化入口可用，不代表应用已完整生成。

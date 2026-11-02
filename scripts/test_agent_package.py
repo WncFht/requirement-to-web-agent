@@ -3,6 +3,7 @@
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -15,12 +16,13 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 from coding_fixture import FixtureModel, REFERENCE_IMAGE
 from coding_agent.trace import json_write, audit
+from infrastructure.shared.project.initialize import initialize_project
 from coding_agent.checks import application_environment
 from scripts.evaluation import servers
 from package_agent import inspect_package
 
 
-def verify(package, directory, dependencies):
+def verify(package, directory, dependencies, initial_template=False):
     directory = Path(directory).resolve()
     directory.mkdir(parents=True, exist_ok=False)
     source = directory / "source"
@@ -32,8 +34,18 @@ def verify(package, directory, dependencies):
     (inputs / "reference.png").write_bytes(REFERENCE_IMAGE)
     output = directory / "output"
     output.mkdir()
+    if initial_template:
+        initialize_project(output)
+        (output / "frontend/src/App.tsx").write_text(
+            "// platform starter, must not leak into generated app\n"
+        )
+        (output / "platform-trace.json").write_text(
+            '{"requirements":3,"scenarios":2}\n'
+        )
     shutil.copytree(dependencies, output / "node_modules", symlinks=True)
-    fixture = FixtureModel(type("Config", (), {"output": output})(), None)
+    fixture = FixtureModel(
+        type("Config", (), {"output": output, "inputs": inputs})(), None
+    )
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -41,6 +53,14 @@ def verify(package, directory, dependencies):
 
         def do_POST(self):
             json.loads(self.rfile.read(int(self.headers["content-length"])))
+            if initial_template and fixture.index == 0:
+                log = (directory / "generation.log").read_text()
+                match = re.search(
+                    r"Initial platform output detected; generating in (.+)", log
+                )
+                if not match:
+                    raise RuntimeError("Expected a separate generation workspace")
+                fixture.output = Path(match.group(1))
             action = fixture.next_action()
             body = {
                 "id": f"local-{fixture.index}",
@@ -114,6 +134,10 @@ def verify(package, directory, dependencies):
             with urlopen(base_url + "/assets/reference.png", timeout=5) as response:
                 production_reference_asset = response.read() == REFERENCE_IMAGE
     result = {
+        "initial_platform_template": initial_template,
+        "initial_trace_removed_from_application": not (
+            output / "platform-trace.json"
+        ).exists(),
         "returncode": generated.returncode,
         "audit_valid": proof["valid"],
         "issues": proof["issues"],
@@ -141,5 +165,10 @@ if __name__ == "__main__":
     p.add_argument("package", type=Path)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--dependencies", type=Path, required=True)
+    p.add_argument("--initial-template", action="store_true")
     a = p.parse_args()
-    print(json.dumps(verify(a.package, a.output, a.dependencies), indent=2))
+    print(
+        json.dumps(
+            verify(a.package, a.output, a.dependencies, a.initial_template), indent=2
+        )
+    )
