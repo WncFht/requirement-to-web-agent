@@ -60,10 +60,28 @@ def summarize(path: Path) -> dict:
             stage = stages[record["stage"]]
             stage["calls"] += 1
             for key in FIELDS:
-                stage[key] += usage.get(key, 0) or 0
-            stage["reasoning_tokens"] += (
-                usage.get("completion_tokens_details") or {}
-            ).get("reasoning_tokens", 0) or 0
+                value = usage.get(key)
+                if key == "prompt_cache_hit_tokens" and value is None:
+                    value = (usage.get("prompt_tokens_details") or {}).get(
+                        "cached_tokens"
+                    )
+                if key == "prompt_cache_miss_tokens" and value is None:
+                    cached = usage.get("prompt_cache_hit_tokens")
+                    if cached is None:
+                        cached = (usage.get("prompt_tokens_details") or {}).get(
+                            "cached_tokens"
+                        )
+                    if cached is not None and usage.get("prompt_tokens") is not None:
+                        value = usage["prompt_tokens"] - cached
+                if value is not None:
+                    stage[key] += value
+                    stage[key + "_reports"] += 1
+            reasoning = (usage.get("completion_tokens_details") or {}).get(
+                "reasoning_tokens"
+            )
+            if reasoning is not None:
+                stage["reasoning_tokens"] += reasoning
+                stage["reasoning_tokens_reports"] += 1
             stage["model_seconds"] += record.get("elapsed_seconds", 0) or 0
     totals = Counter()
     for stage in stages.values():
@@ -74,6 +92,7 @@ def summarize(path: Path) -> dict:
             "input_cache_hit_ratio": (
                 values["prompt_cache_hit_tokens"] / values["prompt_tokens"]
                 if values["prompt_tokens"]
+                and values["prompt_cache_hit_tokens_reports"] == values["calls"]
                 else None
             )
         }

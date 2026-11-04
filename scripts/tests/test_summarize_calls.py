@@ -12,6 +12,29 @@ from summarize_calls import successful_stage_times, summarize
 
 
 class CallSummaryTests(unittest.TestCase):
+    def test_sdk_cache_details_are_counted_and_missing_is_not_zero(self):
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "calls.jsonl"
+            usage = {
+                "prompt_tokens": 100,
+                "completion_tokens": 20,
+                "total_tokens": 120,
+                "prompt_tokens_details": {"cached_tokens": 30},
+            }
+            record = {
+                "event": "response",
+                "stage": "Stage 01",
+                "response": {"usage": usage},
+            }
+            path.write_text(json.dumps(record))
+            result = summarize(path)["totals"]
+            self.assertEqual(result["prompt_cache_hit_tokens"], 30)
+            self.assertEqual(result["prompt_cache_miss_tokens"], 70)
+            self.assertEqual(result["input_cache_hit_ratio"], 0.3)
+            usage.pop("prompt_tokens_details")
+            path.write_text(json.dumps(record))
+            self.assertIsNone(summarize(path)["totals"]["input_cache_hit_ratio"])
+
     def test_stage_time_uses_last_success_and_excludes_failed_attempts(self):
         with TemporaryDirectory() as folder:
             path = Path(folder) / "compiler.log"

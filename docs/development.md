@@ -1,6 +1,6 @@
 # 开发与维护
 
-默认 compiler 贴近固定教师源码，coding 独立维护。真实模型 API 与网站评测仍停用；生成命令仅作接口参考。安装步骤见[根 README](../README.md)，版本、包内容及上传见[交付指南](submission.md)。
+默认 compiler 贴近固定教师源码，coding 独立维护。真实模型调用与网站评测仅按明确授权执行；当前第一轮的一次生成已获授权，其余命令是接口参考。安装步骤见[根 README](../README.md)，版本、包内容及上传见[交付指南](submission.md)。
 
 ## 修改范围
 
@@ -50,11 +50,21 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
 | ARC_AGENT_OUTPUT_TOKENS/TRANSPORT_RETRIES | coding 默认 8192、1                          |
 
 ```sh
-# 真实模型生成目前禁止执行，仅作接口参考。
+# 以下为接口示例，执行前确认当前授权范围。
 make run ENGINE=compiler INPUT=input OUT=work/manual-compiler-001
 make run ENGINE=coding INPUT=input OUT=work/manual-coding-001
 make serve OUT=work/manual-compiler-001 PORT=3000
 ```
+
+仅在明确授权范围内运行。当前默认引擎为 compiler（旧的 `ARC_AGENT_ENGINE=upstream` 改为 `compiler`）；历史提交打包仍按其布局使用 upstream。输出可放仓库 gitignored 的 work/，已有目录或身份清单拒绝覆盖。
+
+```sh
+.venv/bin/python scripts/run_submission.py --ref HEAD --engine compiler \
+  --input input --output work/compiler-iterations/round-01 \
+  --model-log --max-seconds 2400
+```
+
+需先将 Node 22 加入 PATH，并通过 `.env` 或环境提供模型配置；环境变量优先。审计包含请求正文与返回，保留在忽略目录，不进入提交。墙钟到期停止所属进程树并记录退出 124；token 仅按返回 usage 汇总，未返回调用的用量保持未知。没有自动追加完整生成。
 
 要求新的 OUT，并在相邻 run.json 记录身份。平台预置模板由适配层隔离生成并备份发布；失败工件保留，已有编译输出不当作新模板。目录和进程语义见[架构](architecture.md#平台与评估边界)。
 
@@ -103,15 +113,3 @@ git branch -d feat/parallel-change
 新 run、审阅快照、diff、报告和绘图检查优先放仓库内 gitignored 的 `work/`，按版本、引擎和输入隔离，索引为 `work/README.md`；不进入 Git、源码导出或平台 ZIP。历史绝对路径保留在原始记录，兼容软链不视为新 run。
 
 清理前保存协议、源码、冻结测试、调用、报告、截图、数据库和哈希；可删除可重建依赖，不改失败或未知用量。`scripts/archive_runs.py` 不替代数据库/图片备份。`scripts/export_source.py --output-dir <新目录>` 与 Git bundle 用于源码恢复，旧分享包不随 main 自动更新。凭据仅来自环境或 gitignored `.env`，不写入文档、日志、清单或 ZIP。
-
-## 记录一次真实生成
-
-仅在明确授权范围内运行。当前默认引擎为 compiler（旧的 `ARC_AGENT_ENGINE=upstream` 改为 `compiler`）；历史提交打包仍按其布局使用 upstream。输出可放仓库 gitignored 的 work/，已有目录或身份清单拒绝覆盖。
-
-```sh
-.venv/bin/python scripts/run_submission.py --ref HEAD --engine compiler \
-  --input input --output work/compiler-iterations/round-01 \
-  --model-log --max-seconds 2400
-```
-
-需先将 Node 22 加入 PATH，并通过 `.env` 或环境提供模型配置；环境变量优先。审计包含请求正文与返回，保留在忽略目录，不进入提交。墙钟到期停止所属进程树并记录退出 124；token 仅按返回 usage 汇总，未返回调用的用量保持未知。没有自动追加完整生成。
