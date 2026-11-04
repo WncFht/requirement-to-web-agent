@@ -19,7 +19,7 @@ dependencies = [
 package = false
 
 [tool.ruff]
-extend-exclude = ["compiler"]
+extend-exclude = ["compiler", "benchmarks/arc-bench", "work"]
 
 [tool.ruff.lint]
 # This independent teacher-code repository keeps its unittest conventions.

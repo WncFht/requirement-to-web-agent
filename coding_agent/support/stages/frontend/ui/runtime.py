@@ -4,12 +4,12 @@ Compiler-owned TypeScript/configuration strings define a stable host for model-s
 are designed in step 11 and installed by the interaction runtime in step 12."""
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 
 from coding_agent.support.shared.project.entrypoints import (
-    import_path,
     implementation_entrypoint,
+    import_path,
 )
 from coding_agent.support.shared.project.initialize import enable_import_case_checks
 from coding_agent.support.utils.files import save_text

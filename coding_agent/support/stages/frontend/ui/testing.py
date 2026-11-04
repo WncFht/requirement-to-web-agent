@@ -2,15 +2,15 @@
 
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import socket
 import subprocess
 import tempfile
+from pathlib import Path
 
-from coding_agent.support.stages.frontend.ui.design import page_elements, visible
 from coding_agent.support.shared.agent.loop import CheckFailure
+from coding_agent.support.stages.frontend.ui.design import page_elements, visible
 from runtime.processes import capture_process, npm_command
 
 KEY_TYPES = {

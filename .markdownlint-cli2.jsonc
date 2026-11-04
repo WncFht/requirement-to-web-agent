@@ -1,4 +1,8 @@
 {
     "gitignore": true,
-    "ignores": [".agents/notes/archived/**", "compiler/**"],
+    "ignores": [
+        ".agents/notes/archived/**",
+        "compiler/**",
+        "benchmarks/arc-bench/**",
+    ],
 }

@@ -4,7 +4,6 @@ from copy import deepcopy
 
 from coding_agent.support.shared.models.structure import object_fields, string_list
 
-
 INSTRUCTIONS = """Design UI/data for the current leaf requirement; implementation happens later.
 Return exactly {pages:{}, elements:{}, bindings:{}, requirement_ui:[], step_ui:{}}.
 Return new or changed records only, with each record COMPLETE. Records replace by ID;

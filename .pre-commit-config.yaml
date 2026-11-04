@@ -1,4 +1,4 @@
-exclude: ^(input/|examples/|acceptance/|coding_agent/support/shared/project/templates/|compiler/|\.agents/notes/archived/)
+exclude: ^(benchmarks/arc-bench/|input/|examples/|acceptance/|coding_agent/support/shared/project/templates/|compiler/|\.agents/notes/archived/)
 repos:
   - repo: local
     hooks:

@@ -65,7 +65,10 @@ def check(root: Path) -> list[str]:
     anchors = {}
     for path in sorted(root.rglob("*.md")):
         relative = path.relative_to(root)
-        if relative.parts[0] in {"compiler", "work"}:
+        if relative.parts[0] in {"compiler", "work"} or relative.parts[:2] == (
+            "benchmarks",
+            "arc-bench",
+        ):
             continue
         if relative.parts[:2] == ("assets", ".crossnote"):
             continue
