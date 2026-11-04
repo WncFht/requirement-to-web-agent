@@ -576,7 +576,7 @@
         },
         "infrastructure/utils/presentation/model_io.py": {
             "original_sha256": "ec7485b10705390999496d812edde746ac853b6ac6b191fa76a0bd0d4abfa209",
-            "sha256": "373cd9ca0b1872c2fb985ebd42796cbdaff01b6d1b3ab1ab834c325a8f911cf9",
+            "sha256": "205da97ed07bf25035044d339f6cafab6f4e2fca7d59bf6192a6fc3056981f07",
             "reason": "Preserve numeric httpx-compatible timeout and audit; reserve/settle calls using an explicitly enabled experiment budget."
         },
         ".gitattributes": {
@@ -637,12 +637,12 @@
         "infrastructure/compiler.py": {
             "reason": "Verify frozen tests after every pass and optionally capture explicit stage inputs outside the application before passes.",
             "original_sha256": "5c2b81bc1175c15081a655765e6f506299c14fe8dfe4b16852a1bff4169eb516",
-            "sha256": "06acd14447719f5fe72aa46f8312c7dc9a16f3841eef9fa73356cc684331b54b"
+            "sha256": "2a3d7152355200557e416c7825f2ba4d5bfafa846bf4e8322b8da1655d89367d"
         },
         "infrastructure/stages/frontend/ui/contracts.py": {
             "reason": "Extract narrow source-backed control names/options; normalize explicit radio aliases, reject unknown types and validate required controls independently of generated IDs.",
             "original_sha256": null,
-            "sha256": "3d4d629f6b2fce82c3fdf76cf6f67bfa189a550055239adb1df6a7f8219a1ddf"
+            "sha256": "04b75d7322be4492115180bf95012abc6a25715c838326bce062d01c79344cb5"
         },
         "infrastructure/stages/frontend/context.py": {
             "reason": "Validate saved UI designs and attach source-backed contracts before page implementation.",
@@ -657,12 +657,12 @@
         "infrastructure/shared/agent/checkpoints.py": {
             "reason": "Capture stage source/artifact snapshots with full hashes; restore only into fresh directories and remove stale success receipts.",
             "original_sha256": null,
-            "sha256": "b809cf12d2b1d18e158d3530d64bea2f8219da451edfbad5dc3a4457b207f931"
+            "sha256": "d8f80761f62d327ec0066111cf42fbab99bca896f3e78c6a59c3e5731590686b"
         },
         "infrastructure/shared/agent/experiment_budget.py": {
             "reason": "Reserve serial experimental SDK calls before network requests, enforce call/time/known-token stops and block unknown usage.",
             "original_sha256": null,
-            "sha256": "8865b7dd64224694719294b13f59bd2119ff6fac743d9363677da7155e505685"
+            "sha256": "736f001e13964da0ef2e8cbfc4a33cfc0a14bd4c9fbfa65504a1c88ca9fc8846"
         },
         "infrastructure/shared/models/text.py": {
             "reason": "Use 120-second timeout and no SDK retries when an explicit experiment ledger is active; preserve ordinary-run defaults.",
@@ -683,6 +683,11 @@
             "reason": "Optionally combine direct handler tests with HTTP transport regression for final verification.",
             "original_sha256": "8d40182106b75a0674e633f834660e84ade4e9fe22a4d98547e4803b84212e8b",
             "sha256": "66c2facb5a1b6428302e0d2ac9372437f8a6456f24f6ab254ae30b1c686bbd6e"
+        },
+        "infrastructure/shared/agent/context_candidate.py": {
+            "reason": "Provide an offline task-owned source/import-closure context candidate without enabling it or expanding permissions; validate retention before stage experiments.",
+            "original_sha256": null,
+            "sha256": "147738f7d4d73337b61e47ebb87d20c95ce3f6e46ff231a7574a3c12cc613c44"
         }
     }
 }

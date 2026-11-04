@@ -1,6 +1,6 @@
 # 开发与维护
 
-默认 compiler 贴近固定教师源码，coding 独立维护。真实模型调用与网站评测仅按明确授权执行；当前第一轮的一次生成已获授权，其余命令是接口参考。安装步骤见[根 README](../README.md)，版本、包内容及上传见[交付指南](submission.md)。
+默认 compiler 贴近固定教师源码，coding 独立维护。真实模型调用与网站评测仅按明确授权执行；执行范围以当前授权与预算为准，其余命令是接口参考。安装步骤见[根 README](../README.md)，版本、包内容及上传见[交付指南](submission.md)。
 
 ## 修改范围
 
@@ -127,4 +127,8 @@ git branch -d feat/parallel-change
 
 以上 task 是一次真实模型调用，只重放一个 UI 设计任务，不自动修复。`original` 与 `contract` 两组采用同一历史请求、模型与输出上限，后者只增加源于需求的 control_contract。先取得授权，再执行；账本为同一组串行实验共享，禁止重建账本重置失败成本。缺失 usage 停止，内部传输重试关闭。
 
-以后完整运行可在外部新目录设置 `ARC_STAGE_CHECKPOINTS=work/<新快照组>`，将每个阶段输入保存为显式快照。使用 `scripts/stage_replay.py window <快照目录> --from-stage 9 --to-stage 12 --output work/<新回放> --budget work/study/budget.json --dependencies <node_modules目录>` 执行阶段窗口。Node 22、Chromium 与依赖需预先准备；窗口拒绝覆盖，旧成功记录不会迁入。手工 snapshot 只能视为选定时点的诊断副本，不能倒推历史阶段边界或完整成功。阶段结果和完整生成分别记账。
+以后完整运行可在外部新目录设置 `ARC_STAGE_CHECKPOINTS="$PWD/work/<新快照组>"`，将每个阶段输入保存为显式快照。使用 `scripts/stage_replay.py window <快照目录> --from-stage 9 --to-stage 12 --output work/<新回放> --budget work/study/budget.json --dependencies <node_modules目录>` 执行阶段窗口。Node 22、Chromium 与依赖需预先准备；窗口拒绝覆盖，旧成功记录不会迁入。手工 snapshot 只能视为选定时点的诊断副本，不能倒推历史阶段边界或完整成功。阶段结果和完整生成分别记账。
+
+失败设计可用 `task ... --repair-from work/<失败试验>` 显式重放一次纠正；此前请求和响应保持原样，新增试验单独记账，不属于原始配对比较。通过的设计可用 `page work/<通过的设计> --page <页面ID> --output work/<新页面实现> --budget work/study/budget.json --dependencies <node_modules目录>` 只实现一个页面，最多两轮，运行真实 UI/类型/构建检查。它没有完整后端业务链，不记为完整成功。
+
+账本关闭、usage 未知、截止时间到达或额度不足时拒绝后续请求；已知的上次输入加本次输出预算用于保守余量检查。原生 SDK 审计保留截断响应，输出全部消耗在 reasoning 时仍计入成本。不会在同一实验中提高额度或关闭 reasoning 替换失败。

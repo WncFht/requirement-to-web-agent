@@ -10,7 +10,7 @@ from contextvars import ContextVar
 
 import httpx
 
-from infrastructure.shared.agent.experiment_budget import reserve, finish
+from infrastructure.shared.agent.experiment_budget import reserve, finish, limit_arguments
 
 from infrastructure.utils.presentation.console import current_activity, preview, show_panel, WaitingStatus
 from infrastructure.utils.presentation.logging import session_info, full_detail
@@ -264,6 +264,7 @@ def show_call_totals():
 
 def invoke(client, arguments: dict):
     """Audit one SDK call and show a static waiting message until it returns."""
+    arguments = limit_arguments(arguments)
     call_id = uuid4().hex
     activity = current_activity()
     session = session_info()
@@ -281,7 +282,7 @@ def invoke(client, arguments: dict):
     try:
         _record("request", arguments=arguments)
         started = monotonic()
-        reservation = reserve()
+        reservation = reserve(arguments)
         try:
             response = client.chat.completions.create(**arguments)
         except BaseException:

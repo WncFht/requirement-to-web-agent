@@ -52,12 +52,14 @@
  
  
  class Compiler:
-@@ -26,10 +30,14 @@
+@@ -26,10 +30,16 @@
      def _run(self, module: str, function: str, *arguments, **options):
          """Call a pass directly, preserving its stage identity and error traceback."""
          self.current_stage = module + ".py"
 +        checkpoint_root = os.getenv("ARC_STAGE_CHECKPOINTS")
 +        if checkpoint_root:
++            if not Path(checkpoint_root).is_absolute():
++                raise ValueError("ARC_STAGE_CHECKPOINTS must be an absolute directory outside the application")
 +            capture(self.output_dir, Path(checkpoint_root) / module, stage=module)
          with console_log(self.output_dir, stage=self.current_stage,
                  model_log=self.model_log, debug_model_io=self.model_log):
@@ -143,7 +145,7 @@
 +        raise ValueError("E2E cannot assign __ARC_UI_FIXTURE__; establish Given state and drive real browser actions before freezing")
 --- /dev/null
 +++ b/infrastructure/shared/agent/checkpoints.py
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,69 @@
 +"""Explicit immutable stage inputs, independent of successful-run receipts."""
 +
 +from hashlib import sha256
@@ -164,6 +166,8 @@
 +    sources = []
 +    for directory, names, files in os.walk(application, followlinks=False):
 +        names[:] = sorted(name for name in names if name not in EXCLUDED)
++        if any((Path(directory) / name).is_symlink() for name in names):
++            raise ValueError("Checkpoint source contains a symlink directory")
 +        sources.extend(Path(directory) / name for name in sorted(files))
 +    for source in sources:
 +        relative = source.relative_to(application)
@@ -190,6 +194,8 @@
 +def restore(checkpoint, destination):
 +    """Verify the complete checkpoint file set before restoring to a fresh workspace."""
 +    checkpoint, destination = Path(checkpoint).resolve(), Path(destination).resolve()
++    if (checkpoint / "application").is_symlink() or (checkpoint / "checkpoint.json").is_symlink():
++        raise ValueError("Checkpoint root/manifest cannot be symlinked")
 +    manifest = json.loads((checkpoint / "checkpoint.json").read_text())
 +    actual = {}
 +    for source in (checkpoint / "application").rglob("*"):
@@ -210,8 +216,51 @@
 +        (destination / ".arc" / name).unlink(missing_ok=True)
 +    return manifest
 --- /dev/null
++++ b/infrastructure/shared/agent/context_candidate.py
+@@ -0,0 +1,40 @@
++"""Offline context candidate; does not change production repair permissions or gates."""
++
++from copy import deepcopy
++import posixpath
++import re
++
++
++def select_related(payload, owned_paths):
++    """Retain task-owned sources, test/interfaces and local import closure.
++
++    The caller must establish semantic ownership. Kept permissions are unchanged;
++    omitted paths are an audit inventory, not a new read tool or repair capability.
++    This candidate is not enabled in the compiler until stage replay validates it.
++    """
++    result = deepcopy(payload)
++    files = result.get("files", {})
++    selected = {name for name in files if not name.startswith(("frontend/src/", "backend/src/"))}
++    selected.update(name for name in owned_paths if name in files)
++    selected.update(name for name in files if name.endswith(("/ui-runtime.ts", "/api/types.ts", "/style.css")))
++    pending = list(selected)
++    seen = set()
++    while pending:
++        name = pending.pop()
++        if name in seen or name not in files:
++            continue
++        seen.add(name)
++        source = files[name].get("content") or ""
++        for imported in re.findall(r'''(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\(\s*)["'](\.[^"']+)["']''', source):
++            base = posixpath.normpath(posixpath.join(posixpath.dirname(name), imported))
++            stem = base[:-3] if base.endswith(".js") else base[:-4] if base.endswith(".jsx") else base
++            candidates = [base, *(stem + ext for ext in (".ts", ".tsx", ".js", ".jsx", ".json", ".css")),
++                *(base + "/index" + ext for ext in (".ts", ".tsx", ".js", ".jsx"))]
++            target = next((path for path in candidates if path in files), None)
++            if target and target not in selected:
++                selected.add(target)
++                pending.append(target)
++    omitted = sorted(set(files) - selected)
++    result["files"] = {name: item for name, item in files.items() if name in selected}
++    return result, {"omitted": omitted, "kept": sorted(result["files"]),
++        "status": "OFFLINE_CANDIDATE_NOT_ENABLED", "ownership_paths": sorted(owned_paths)}
+--- /dev/null
 +++ b/infrastructure/shared/agent/experiment_budget.py
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,65 @@
 +"""Shared, fail-closed budget for serial stage experiments, including failed calls."""
 +
 +from datetime import datetime, timezone
@@ -224,7 +273,17 @@
 +    """No additional model request is allowed in this experiment."""
 +
 +
-+def reserve():
++def limit_arguments(arguments):
++    setting = os.getenv("ARC_EXPERIMENT_BUDGET")
++    if not setting:
++        return arguments
++    record = json.loads(Path(setting).read_text())
++    maximum = int(record.get("max_output_tokens", 12000))
++    key = "max_tokens" if "max_tokens" in arguments else "max_completion_tokens"
++    return {**arguments, key: min(int(arguments.get(key, maximum)), maximum)}
++
++
++def reserve(arguments=None):
 +    """Reserve one SDK call before sending; pending/unknown usage blocks another call.
 +
 +    The ledger is for one serial experiment process tree, not concurrent workers.
@@ -236,12 +295,18 @@
 +    path = Path(setting)
 +    record = json.loads(path.read_text())
 +    now = datetime.now(timezone.utc)
++    if record.get("closed"):
++        raise ExperimentBudgetExceeded("Experiment is closed; keep its original results")
 +    if record.get("pending") or record.get("unknown_usage"):
 +        raise ExperimentBudgetExceeded("Pending or unknown model usage; stop this experiment")
 +    if now >= datetime.fromisoformat(record["deadline_utc"]):
 +        raise ExperimentBudgetExceeded("Experiment wall-clock budget exhausted")
 +    if record["calls"] >= record["max_calls"] or record["total_tokens"] >= record["max_tokens"]:
 +        raise ExperimentBudgetExceeded("Experiment call/token budget exhausted")
++    if arguments:
++        output = arguments.get("max_completion_tokens", arguments.get("max_tokens", 0))
++        if record["total_tokens"] + record.get("last_prompt_tokens", 0) + output > record["max_tokens"]:
++            raise ExperimentBudgetExceeded("Insufficient token headroom for prior prompt size plus requested output")
 +    record["calls"] += 1
 +    record["pending"] = True
 +    path.write_text(json.dumps(record, indent=2) + "\n")
@@ -258,6 +323,8 @@
 +        record["unknown_usage"] = True
 +    else:
 +        record["total_tokens"] += total
++        if isinstance((usage or {}).get("prompt_tokens"), int):
++            record["last_prompt_tokens"] = usage["prompt_tokens"]
 +    path.write_text(json.dumps(record, indent=2) + "\n")
 --- a/infrastructure/shared/agent/files.py
 +++ b/infrastructure/shared/agent/files.py
@@ -596,7 +663,7 @@
      verification = final_checks(console,
 --- /dev/null
 +++ b/infrastructure/stages/frontend/ui/contracts.py
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,97 @@
 +"""Narrow, source-backed control contracts; never read frozen acceptance suites."""
 +
 +import re
@@ -634,7 +701,7 @@
 +            else:
 +                control.update(kind="select", options=values)
 +        if "password" in control["name"].lower() and re.search(r"[Pp]assword.*conceal", text):
-+            control.update(input_type="password")
++            control.update(kind="input", input_type="password")
 +    patterns = (
 +        ("checkbox", r'checkbox is labeled "([^"]+)"'),
 +        ("button", r'button is labeled "([^"]+)"'),
@@ -674,6 +741,7 @@
 +    if len(pages) != 1:
 +        raise ValueError(f"{contract['requirement']}: expected one page at {contract['route']}")
 +    elements = page_elements(design, pages[0])
++    failures = []
 +    for required in contract["controls"]:
 +        matches = []
 +        for uid, element in elements.items():
@@ -689,8 +757,10 @@
 +            if valid:
 +                matches.append(uid)
 +        if len(matches) != 1:
-+            raise ValueError(f"{contract['requirement']}: require exactly one {required['kind']} named {required['name']!r}; "
-+                f"found {len(matches)}. Preserve the source name; put visual required markers outside the accessible name. Source: {required['evidence']}")
++            failures.append(f"require exactly one {required['kind']} named {required['name']!r}; found {len(matches)}. Source: {required['evidence']}")
++    if failures:
++        raise ValueError(f"{contract['requirement']}: " + "\n".join(failures) +
++            "\nPreserve each source name in prop.label (button/link text in prop.text); put visual required markers outside the accessible name.")
 --- a/infrastructure/stages/frontend/ui/design.py
 +++ b/infrastructure/stages/frontend/ui/design.py
 @@ -1,6 +1,9 @@
@@ -835,7 +905,7 @@
  
  import httpx
 +
-+from infrastructure.shared.agent.experiment_budget import reserve, finish
++from infrastructure.shared.agent.experiment_budget import reserve, finish, limit_arguments
  
  from infrastructure.utils.presentation.console import current_activity, preview, show_panel, WaitingStatus
  from infrastructure.utils.presentation.logging import session_info, full_detail
@@ -848,12 +918,20 @@
          event_hooks={"request": [_http_request], "response": [_http_response]})
  
  
-@@ -279,7 +281,13 @@
+@@ -262,6 +264,7 @@
+ 
+ def invoke(client, arguments: dict):
+     """Audit one SDK call and show a static waiting message until it returns."""
++    arguments = limit_arguments(arguments)
+     call_id = uuid4().hex
+     activity = current_activity()
+     session = session_info()
+@@ -279,7 +282,13 @@
      try:
          _record("request", arguments=arguments)
          started = monotonic()
 -        response = client.chat.completions.create(**arguments)
-+        reservation = reserve()
++        reservation = reserve(arguments)
 +        try:
 +            response = client.chat.completions.create(**arguments)
 +        except BaseException:

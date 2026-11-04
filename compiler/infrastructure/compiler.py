@@ -32,6 +32,8 @@ class Compiler:
         self.current_stage = module + ".py"
         checkpoint_root = os.getenv("ARC_STAGE_CHECKPOINTS")
         if checkpoint_root:
+            if not Path(checkpoint_root).is_absolute():
+                raise ValueError("ARC_STAGE_CHECKPOINTS must be an absolute directory outside the application")
             capture(self.output_dir, Path(checkpoint_root) / module, stage=module)
         with console_log(self.output_dir, stage=self.current_stage,
                 model_log=self.model_log, debug_model_io=self.model_log):

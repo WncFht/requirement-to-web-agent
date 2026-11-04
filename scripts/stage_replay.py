@@ -30,7 +30,7 @@ def fresh(path):
 def fingerprint():
     return {
         p.relative_to(ROOT).as_posix(): sha256(p.read_bytes()).hexdigest()
-        for folder in (ROOT / "compiler", ROOT / "input")
+        for folder in (ROOT / "compiler", ROOT / "input", ROOT / "scripts")
         for p in sorted(folder.rglob("*"))
         if p.is_file() and "__pycache__" not in p.parts and p.name != ".env"
     }
@@ -42,6 +42,7 @@ def budget(path, calls=6, tokens=120000, seconds=900):
     record = {
         "max_calls": calls,
         "max_tokens": tokens,
+        "max_output_tokens": 12000,
         "calls": 0,
         "total_tokens": 0,
         "pending": False,
@@ -58,7 +59,7 @@ def budget(path, calls=6, tokens=120000, seconds=900):
     return record
 
 
-def replay(log, call_id, variant, output, ledger):
+def replay(log, call_id, variant, output, ledger, repair_from=None):
     """Replay one UI design proposal from its exact audited request; no auto repair."""
     log = Path(log).resolve()
     records = list(request_records(log))
@@ -109,6 +110,34 @@ def replay(log, call_id, variant, output, ledger):
                 design, proposal, earlier["requirement"]["id"], tree
             )
             pending = None
+    if repair_from:
+        from infrastructure.shared.agent.proposals import REPAIR_INSTRUCTIONS
+
+        previous_root = Path(repair_from).resolve()
+        previous_identity = json.loads((previous_root / "identity.json").read_text())
+        if (
+            previous_identity["historical_call_id"] != call_id
+            or previous_identity["source_log_sha256"] != metadata["source_log_sha256"]
+        ):
+            raise ValueError("Repair input must belong to this exact historical task")
+        previous = json.loads((previous_root / "response.json").read_text())
+        rejected = json.loads(previous["choices"][0]["message"]["content"])
+        try:
+            apply_proposal(design, rejected, payload["requirement"]["id"], tree)
+        except ValueError as error:
+            payload["correction"] = {"error": str(error), "previous_response": rejected}
+        else:
+            raise ValueError(
+                "Previous proposal already passes; no repair request is needed"
+            )
+        request["messages"][0]["content"] += "\n\n" + REPAIR_INSTRUCTIONS
+        request["messages"][-1]["content"] = json.dumps(payload, ensure_ascii=False)
+        metadata["repair_from"] = str(previous_root)
+        (output / "request.json").write_text(json.dumps(request, indent=2) + "\n")
+        metadata["request_sha256"] = sha256(
+            (output / "request.json").read_bytes()
+        ).hexdigest()
+        (output / "identity.json").write_text(json.dumps(metadata, indent=2) + "\n")
     os.environ["ARC_EXPERIMENT_BUDGET"] = str(Path(ledger).resolve())
     from dotenv import load_dotenv
 
@@ -145,6 +174,77 @@ def replay(log, call_id, variant, output, ledger):
     return status
 
 
+def page_replay(trial, page_id, output, ledger, dependencies):
+    """Implement one accepted design page in a fresh scaffold, with actual browser gates."""
+    from copy import deepcopy
+    import shutil
+    from infrastructure.shared.project.initialize import initialize_project
+    from infrastructure.shared.models.text import TextModel
+    from infrastructure.stages.frontend.ui.design import page_elements
+    from infrastructure.stages.frontend.ui.implementation import implement_ui
+    from infrastructure.utils.presentation.console import DemoConsole
+    from dotenv import load_dotenv
+
+    trial = Path(trial).resolve()
+    if json.loads((trial / "result.json").read_text())["status"] != "GREEN":
+        raise ValueError("Page replay requires an accepted design trial")
+    design = deepcopy(json.loads((trial / "ui_design.json").read_text()))
+    elements = page_elements(design, page_id)
+    design["pages"] = {page_id: design["pages"][page_id]}
+    design["elements"] = elements
+    for key in ("requirements", "steps"):
+        design[key] = {
+            identity: [uid for uid in ids if uid in elements]
+            for identity, ids in design[key].items()
+        }
+    route = design["pages"][page_id]["route"]
+    design["control_contracts"] = {
+        rid: contract
+        for rid, contract in design.get("control_contracts", {}).items()
+        if contract["route"] == route
+    }
+    request = json.loads((trial / "request.json").read_text())
+    requirement = json.loads(request["messages"][-1]["content"])["requirement"]
+    output = fresh(output)
+    initialize_project(output)
+    shutil.copytree(
+        Path(dependencies).resolve(), output / "node_modules", symlinks=True
+    )
+    os.environ["ARC_EXPERIMENT_BUDGET"] = str(Path(ledger).resolve())
+    os.environ["MAX_OUTPUT_TOKENS"] = "12000"
+    load_dotenv(ROOT / ".env")
+    os.environ.setdefault("MODEL", request["model"])
+    identity = {
+        "kind": "single page implementation",
+        "complete_generation": False,
+        "design_trial": str(trial),
+        "design_sha256": sha256((trial / "ui_design.json").read_bytes()).hexdigest(),
+        "page": page_id,
+        "source_files": fingerprint(),
+    }
+    (output / "identity.json").write_text(json.dumps(identity, indent=2) + "\n")
+    report = {"status": "RUNNING", "pages": {}}
+    with console_log(output, stage="Single page implementation replay", model_log=True):
+        try:
+            implement_ui(
+                output / ".arc",
+                design,
+                TextModel(),
+                DemoConsole(False),
+                report,
+                max_turns=2,
+                images=requirement.get("images", {}),
+                requirement_contexts={requirement["id"]: requirement},
+            )
+        except Exception as error:
+            report.update(
+                status="FAILED", error_type=type(error).__name__, error=str(error)
+            )
+    report["complete_generation"] = False
+    (output / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+    return report
+
+
 def window(checkpoint, output, inputs, start, end, ledger, dependencies=None):
     """Execute 09–12 (or a subwindow) from explicit artifacts, earning new stage results."""
     if not 9 <= start <= end <= 12:
@@ -154,6 +254,11 @@ def window(checkpoint, output, inputs, start, end, ledger, dependencies=None):
         raise ValueError("Choose a new output under work/")
     if not Path(ledger).is_file():
         raise ValueError("Initialize a shared experiment budget first")
+    checkpoint_record = json.loads((Path(checkpoint) / "checkpoint.json").read_text())
+    if not str(checkpoint_record.get("stage", "")).startswith(f"{start:02d}_"):
+        raise ValueError(
+            "Stage window requires a checkpoint captured before its named starting stage; manual/final snapshots are diagnostic only"
+        )
     restore(checkpoint, output)
     if dependencies:
         (output / "node_modules").symlink_to(
@@ -215,8 +320,15 @@ def main():
     p.add_argument("log", type=Path)
     p.add_argument("--call-id", required=True)
     p.add_argument("--variant", choices=("original", "contract"), required=True)
+    p.add_argument("--repair-from", type=Path)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--budget", type=Path, required=True)
+    p = sub.add_parser("page")
+    p.add_argument("trial", type=Path)
+    p.add_argument("--page", required=True)
+    p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--budget", type=Path, required=True)
+    p.add_argument("--dependencies", type=Path, required=True)
     p = sub.add_parser("window")
     p.add_argument("checkpoint", type=Path)
     p.add_argument("--output", type=Path, required=True)
@@ -234,7 +346,18 @@ def main():
             parser.error("Checkpoint output must be under work/")
         result = capture(args.application, destination)
     elif args.command == "task":
-        result = replay(args.log, args.call_id, args.variant, args.output, args.budget)
+        result = replay(
+            args.log,
+            args.call_id,
+            args.variant,
+            args.output,
+            args.budget,
+            args.repair_from,
+        )
+    elif args.command == "page":
+        result = page_replay(
+            args.trial, args.page, args.output, args.budget, args.dependencies
+        )
     else:
         result = window(
             args.checkpoint,

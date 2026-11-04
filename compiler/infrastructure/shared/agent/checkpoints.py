@@ -18,6 +18,8 @@ def capture(application, destination, *, stage=None):
     sources = []
     for directory, names, files in os.walk(application, followlinks=False):
         names[:] = sorted(name for name in names if name not in EXCLUDED)
+        if any((Path(directory) / name).is_symlink() for name in names):
+            raise ValueError("Checkpoint source contains a symlink directory")
         sources.extend(Path(directory) / name for name in sorted(files))
     for source in sources:
         relative = source.relative_to(application)
@@ -44,6 +46,8 @@ def capture(application, destination, *, stage=None):
 def restore(checkpoint, destination):
     """Verify the complete checkpoint file set before restoring to a fresh workspace."""
     checkpoint, destination = Path(checkpoint).resolve(), Path(destination).resolve()
+    if (checkpoint / "application").is_symlink() or (checkpoint / "checkpoint.json").is_symlink():
+        raise ValueError("Checkpoint root/manifest cannot be symlinked")
     manifest = json.loads((checkpoint / "checkpoint.json").read_text())
     actual = {}
     for source in (checkpoint / "application").rglob("*"):

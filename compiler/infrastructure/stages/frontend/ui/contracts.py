@@ -35,7 +35,7 @@ def control_contract(requirement):
             else:
                 control.update(kind="select", options=values)
         if "password" in control["name"].lower() and re.search(r"[Pp]assword.*conceal", text):
-            control.update(input_type="password")
+            control.update(kind="input", input_type="password")
     patterns = (
         ("checkbox", r'checkbox is labeled "([^"]+)"'),
         ("button", r'button is labeled "([^"]+)"'),
@@ -75,6 +75,7 @@ def validate_control_contract(design, contract):
     if len(pages) != 1:
         raise ValueError(f"{contract['requirement']}: expected one page at {contract['route']}")
     elements = page_elements(design, pages[0])
+    failures = []
     for required in contract["controls"]:
         matches = []
         for uid, element in elements.items():
@@ -90,5 +91,7 @@ def validate_control_contract(design, contract):
             if valid:
                 matches.append(uid)
         if len(matches) != 1:
-            raise ValueError(f"{contract['requirement']}: require exactly one {required['kind']} named {required['name']!r}; "
-                f"found {len(matches)}. Preserve the source name; put visual required markers outside the accessible name. Source: {required['evidence']}")
+            failures.append(f"require exactly one {required['kind']} named {required['name']!r}; found {len(matches)}. Source: {required['evidence']}")
+    if failures:
+        raise ValueError(f"{contract['requirement']}: " + "\n".join(failures) +
+            "\nPreserve each source name in prop.label (button/link text in prop.text); put visual required markers outside the accessible name.")
