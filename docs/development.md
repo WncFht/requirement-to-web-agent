@@ -119,7 +119,7 @@ git branch -d feat/parallel-change
 先离线运行 `scripts/context_audit.py <model_calls.jsonl> --output work/<新报告>.json`，按实际路径、哈希、字符数审阅 context。体积不能证明文件无关，也不是 tokenizer 测量。
 
 ```sh
-.venv/bin/python scripts/stage_replay.py budget work/study/budget.json --calls 6 --tokens 120000 --seconds 900
+.venv/bin/python scripts/stage_replay.py budget work/study/budget.json --calls 1 --tokens 100000 --output-tokens 64000 --request-seconds 600 --seconds 1200
 .venv/bin/python scripts/stage_replay.py task work/compiler-iterations/round-01/model_calls.jsonl \
   --call-id dfc48f02f1f94472b984c55f23cd5941 --variant contract \
   --output work/study/contract --budget work/study/budget.json
@@ -129,6 +129,8 @@ git branch -d feat/parallel-change
 
 以后完整运行可在外部新目录设置 `ARC_STAGE_CHECKPOINTS="$PWD/work/<新快照组>"`，将每个阶段输入保存为显式快照。使用 `scripts/stage_replay.py window <快照目录> --from-stage 9 --to-stage 12 --output work/<新回放> --budget work/study/budget.json --dependencies <node_modules目录>` 执行阶段窗口。Node 22、Chromium 与依赖需预先准备；窗口拒绝覆盖，旧成功记录不会迁入。手工 snapshot 只能视为选定时点的诊断副本，不能倒推历史阶段边界或完整成功。阶段结果和完整生成分别记账。
 
-失败设计可用 `task ... --repair-from work/<失败试验>` 显式重放一次纠正；此前请求和响应保持原样，新增试验单独记账，不属于原始配对比较。通过的设计可用 `page work/<通过的设计> --page <页面ID> --output work/<新页面实现> --budget work/study/budget.json --dependencies <node_modules目录>` 只实现一个页面，最多两轮，运行真实 UI/类型/构建检查。它没有完整后端业务链，不记为完整成功。
+失败设计可用 `task ... --repair-from work/<失败试验>` 显式重放一次纠正；此前请求和响应保持原样，新增试验单独记账，不属于原始配对比较。通过的设计可用 `page work/<通过的设计> --page <页面ID> --output work/<新页面实现> --budget work/study/budget.json --dependencies <node_modules目录>` 只实现一个页面，默认一轮，可用 `--max-turns` 显式设置，运行真实 UI/类型/构建检查。它没有完整后端业务链，不记为完整成功。
 
 账本关闭、usage 未知、截止时间到达或额度不足时拒绝后续请求；已知的上次输入加本次输出预算用于保守余量检查。原生 SDK 审计保留截断响应，输出全部消耗在 reasoning 时仍计入成本。不会在同一实验中提高额度或关闭 reasoning 替换失败。
+
+单次输出空间与整组总 token 分开配置：输出同时包含 reasoning 和最终代码，不再统一压到 12,000。默认允许 64,000 输出，并优先限制调用次数；额度上限不等于实际消耗。正常结束前不会自动续写截断响应。需要调整额度时建立新账本、新输出，保留旧失败；同一任务截断后不按原条件无效重试。

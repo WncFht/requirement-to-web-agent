@@ -15,7 +15,7 @@ def limit_arguments(arguments):
     if not setting:
         return arguments
     record = json.loads(Path(setting).read_text())
-    maximum = int(record.get("max_output_tokens", 12000))
+    maximum = int(record.get("max_output_tokens", 64000))
     key = "max_tokens" if "max_tokens" in arguments else "max_completion_tokens"
     return {**arguments, key: min(int(arguments.get(key, maximum)), maximum)}
 
@@ -63,3 +63,13 @@ def finish(path, usage):
         if isinstance((usage or {}).get("prompt_tokens"), int):
             record["last_prompt_tokens"] = usage["prompt_tokens"]
     path.write_text(json.dumps(record, indent=2) + "\n")
+
+
+def request_timeout():
+    setting = os.getenv("ARC_EXPERIMENT_BUDGET")
+    if not setting:
+        return 600
+    timeout = int(json.loads(Path(setting).read_text()).get("request_timeout_seconds", 600))
+    if timeout < 1:
+        raise ValueError("Request timeout must be positive")
+    return timeout

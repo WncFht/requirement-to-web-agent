@@ -662,17 +662,17 @@
         "infrastructure/shared/agent/experiment_budget.py": {
             "reason": "Reserve serial experimental SDK calls before network requests, enforce call/time/known-token stops and block unknown usage.",
             "original_sha256": null,
-            "sha256": "736f001e13964da0ef2e8cbfc4a33cfc0a14bd4c9fbfa65504a1c88ca9fc8846"
+            "sha256": "a3dfde1a24b59f956667f1f9c86e8b22b971055af6a6cafdd7d4d7ed4300e758"
         },
         "infrastructure/shared/models/text.py": {
             "reason": "Use 120-second timeout and no SDK retries when an explicit experiment ledger is active; preserve ordinary-run defaults.",
             "original_sha256": "6418fd13b387550a6ec8391f4d981e7e42e78ef69ff330fc1a51eb752aa1b4b4",
-            "sha256": "b397a2b0453cbb578019310ae9c08ebf561f4d06e5dc5ff0e382d4e668ba9c33"
+            "sha256": "8284d7471008e02a274ab4f017a3430c83b8d5917f5632157c5c940ecb3506d8"
         },
         "infrastructure/shared/models/vision.py": {
             "reason": "Apply the same explicit experiment timeout and zero transport retry boundary to visual calls.",
             "original_sha256": "3be7892b7195c51e3147ff535398fb4825fd1ccae324a054b1f64bec19c51b13",
-            "sha256": "25e43a1ed85534ffbd0a97c64d7a1a4dc8086173c0ddc267bc08b096f2f1258b"
+            "sha256": "a6544897026791f1857a7b7608c7a3cf9d38e6d12dcf8da2522a9c63f21c8bc6"
         },
         "infrastructure/stages/backend/http_testing.py": {
             "reason": "Run unchanged generated backend assertions through actual Express HTTP routes in a disposable mirror.",

@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI, OpenAIError
 from infrastructure.utils.presentation.model_io import http_client, invoke
+from infrastructure.shared.agent.experiment_budget import request_timeout
 
 
 JSON_OUTPUT_RULE = "Return exactly one JSON object without Markdown."
@@ -57,7 +58,7 @@ class TextModel:
         self.client = OpenAI(
             api_key=api_key,
             base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
-            timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2,
+            timeout=request_timeout(), max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2,
             http_client=http_client(),
         )
 

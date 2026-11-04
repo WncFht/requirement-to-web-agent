@@ -142,7 +142,7 @@ class StageWindowTests(unittest.TestCase):
             checkpoint = directory / "checkpoint"
             capture(app, checkpoint, stage="10_implement_ui")
             ledger = directory / "budget.json"
-            ledger.write_text('{"calls":0}')
+            ledger.write_text('{"calls":0,"max_output_tokens":64000}')
             with (
                 patch.dict(os.environ, {}, clear=False),
                 patch("stage_replay.ROOT", directory),
@@ -193,3 +193,35 @@ class BudgetHeadroomTests(unittest.TestCase):
                 path.write_text(json.dumps(record))
                 with self.assertRaisesRegex(ExperimentBudgetExceeded, "closed"):
                     reserve()
+
+
+class OutputAllowanceTests(unittest.TestCase):
+    def test_default_allowance_and_timeout_do_not_repeat_old_experiment_cap(self):
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+        from stage_replay import budget
+        from infrastructure.shared.agent.experiment_budget import (
+            limit_arguments,
+            request_timeout,
+        )
+
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "budget.json"
+            record = budget(path, calls=1, tokens=100000)
+            self.assertEqual(record["max_output_tokens"], 64000)
+            with patch.dict(os.environ, {"ARC_EXPERIMENT_BUDGET": str(path)}):
+                self.assertEqual(
+                    limit_arguments({"max_completion_tokens": 64000})[
+                        "max_completion_tokens"
+                    ],
+                    64000,
+                )
+                self.assertEqual(request_timeout(), 600)
+                finish(
+                    reserve({"max_completion_tokens": 64000}), {"total_tokens": 25000}
+                )
+                with self.assertRaises(ExperimentBudgetExceeded):
+                    reserve()
+            with self.assertRaises(ValueError):
+                budget(Path(temporary) / "bad.json", tokens=10000, output_tokens=64000)

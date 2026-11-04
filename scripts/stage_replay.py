@@ -36,13 +36,16 @@ def fingerprint():
     }
 
 
-def budget(path, calls=6, tokens=120000, seconds=900):
-    if min(calls, tokens, seconds) < 1:
+def budget(
+    path, calls=6, tokens=120000, seconds=900, output_tokens=64000, request_seconds=600
+):
+    if min(calls, tokens, seconds, output_tokens, request_seconds) < 1:
         raise ValueError("Budget limits must be positive")
     record = {
         "max_calls": calls,
         "max_tokens": tokens,
-        "max_output_tokens": 12000,
+        "max_output_tokens": output_tokens,
+        "request_timeout_seconds": request_seconds,
         "calls": 0,
         "total_tokens": 0,
         "pending": False,
@@ -52,6 +55,8 @@ def budget(path, calls=6, tokens=120000, seconds=900):
         ).isoformat(),
         "scope": "Serial experiment; check known usage before calls; not a billing cap",
     }
+    if output_tokens > tokens:
+        raise ValueError("Output allowance cannot exceed total token budget")
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x") as stream:
         json.dump(record, stream, indent=2)
@@ -74,7 +79,9 @@ def replay(log, call_id, variant, output, ledger, repair_from=None):
         request["messages"][-1]["content"] = json.dumps(payload, ensure_ascii=False)
     request.pop("max_tokens", None)
     request.pop("max_completion_tokens", None)
-    request["max_completion_tokens"] = 12000
+    request["max_completion_tokens"] = json.loads(Path(ledger).read_text())[
+        "max_output_tokens"
+    ]
     (output / "request.json").write_text(json.dumps(request, indent=2) + "\n")
     metadata = {
         "kind": "single UI design task replay",
@@ -174,7 +181,7 @@ def replay(log, call_id, variant, output, ledger, repair_from=None):
     return status
 
 
-def page_replay(trial, page_id, output, ledger, dependencies):
+def page_replay(trial, page_id, output, ledger, dependencies, max_turns=1):
     """Implement one accepted design page in a fresh scaffold, with actual browser gates."""
     from copy import deepcopy
     import shutil
@@ -211,7 +218,9 @@ def page_replay(trial, page_id, output, ledger, dependencies):
         Path(dependencies).resolve(), output / "node_modules", symlinks=True
     )
     os.environ["ARC_EXPERIMENT_BUDGET"] = str(Path(ledger).resolve())
-    os.environ["MAX_OUTPUT_TOKENS"] = "12000"
+    os.environ["MAX_OUTPUT_TOKENS"] = str(
+        json.loads(Path(ledger).read_text())["max_output_tokens"]
+    )
     load_dotenv(ROOT / ".env")
     os.environ.setdefault("MODEL", request["model"])
     identity = {
@@ -220,6 +229,8 @@ def page_replay(trial, page_id, output, ledger, dependencies):
         "design_trial": str(trial),
         "design_sha256": sha256((trial / "ui_design.json").read_bytes()).hexdigest(),
         "page": page_id,
+        "max_turns": max_turns,
+        "budget": str(Path(ledger).resolve()),
         "source_files": fingerprint(),
     }
     (output / "identity.json").write_text(json.dumps(identity, indent=2) + "\n")
@@ -232,7 +243,7 @@ def page_replay(trial, page_id, output, ledger, dependencies):
                 TextModel(),
                 DemoConsole(False),
                 report,
-                max_turns=2,
+                max_turns=max_turns,
                 images=requirement.get("images", {}),
                 requirement_contexts={requirement["id"]: requirement},
             )
@@ -265,7 +276,9 @@ def window(checkpoint, output, inputs, start, end, ledger, dependencies=None):
             Path(dependencies).resolve(), target_is_directory=True
         )
     os.environ["ARC_EXPERIMENT_BUDGET"] = str(Path(ledger).resolve())
-    os.environ["MAX_OUTPUT_TOKENS"] = "12000"
+    os.environ["MAX_OUTPUT_TOKENS"] = str(
+        json.loads(Path(ledger).read_text())["max_output_tokens"]
+    )
     from dotenv import load_dotenv
 
     load_dotenv(ROOT / ".env")
@@ -313,6 +326,8 @@ def main():
     p.add_argument("--calls", type=int, default=6)
     p.add_argument("--tokens", type=int, default=120000)
     p.add_argument("--seconds", type=int, default=900)
+    p.add_argument("--output-tokens", type=int, default=64000)
+    p.add_argument("--request-seconds", type=int, default=600)
     p = sub.add_parser("snapshot")
     p.add_argument("application", type=Path)
     p.add_argument("--output", type=Path, required=True)
@@ -326,6 +341,7 @@ def main():
     p = sub.add_parser("page")
     p.add_argument("trial", type=Path)
     p.add_argument("--page", required=True)
+    p.add_argument("--max-turns", type=int, default=1)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--budget", type=Path, required=True)
     p.add_argument("--dependencies", type=Path, required=True)
@@ -339,7 +355,14 @@ def main():
     p.add_argument("--dependencies", type=Path)
     args = parser.parse_args()
     if args.command == "budget":
-        result = budget(args.output, args.calls, args.tokens, args.seconds)
+        result = budget(
+            args.output,
+            args.calls,
+            args.tokens,
+            args.seconds,
+            args.output_tokens,
+            args.request_seconds,
+        )
     elif args.command == "snapshot":
         destination = args.output.resolve()
         if not destination.is_relative_to(ROOT / "work"):
@@ -356,7 +379,12 @@ def main():
         )
     elif args.command == "page":
         result = page_replay(
-            args.trial, args.page, args.output, args.budget, args.dependencies
+            args.trial,
+            args.page,
+            args.output,
+            args.budget,
+            args.dependencies,
+            args.max_turns,
         )
     else:
         result = window(

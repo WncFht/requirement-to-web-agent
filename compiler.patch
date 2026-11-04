@@ -260,7 +260,7 @@
 +        "status": "OFFLINE_CANDIDATE_NOT_ENABLED", "ownership_paths": sorted(owned_paths)}
 --- /dev/null
 +++ b/infrastructure/shared/agent/experiment_budget.py
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,75 @@
 +"""Shared, fail-closed budget for serial stage experiments, including failed calls."""
 +
 +from datetime import datetime, timezone
@@ -278,7 +278,7 @@
 +    if not setting:
 +        return arguments
 +    record = json.loads(Path(setting).read_text())
-+    maximum = int(record.get("max_output_tokens", 12000))
++    maximum = int(record.get("max_output_tokens", 64000))
 +    key = "max_tokens" if "max_tokens" in arguments else "max_completion_tokens"
 +    return {**arguments, key: min(int(arguments.get(key, maximum)), maximum)}
 +
@@ -326,6 +326,16 @@
 +        if isinstance((usage or {}).get("prompt_tokens"), int):
 +            record["last_prompt_tokens"] = usage["prompt_tokens"]
 +    path.write_text(json.dumps(record, indent=2) + "\n")
++
++
++def request_timeout():
++    setting = os.getenv("ARC_EXPERIMENT_BUDGET")
++    if not setting:
++        return 600
++    timeout = int(json.loads(Path(setting).read_text()).get("request_timeout_seconds", 600))
++    if timeout < 1:
++        raise ValueError("Request timeout must be positive")
++    return timeout
 --- a/infrastructure/shared/agent/files.py
 +++ b/infrastructure/shared/agent/files.py
 @@ -1,6 +1,8 @@
@@ -485,23 +495,39 @@
                  save_bytes(output / path, before[path])
 --- a/infrastructure/shared/models/text.py
 +++ b/infrastructure/shared/models/text.py
-@@ -57,7 +57,7 @@
+@@ -7,6 +7,7 @@
+ from dotenv import load_dotenv
+ from openai import OpenAI, OpenAIError
+ from infrastructure.utils.presentation.model_io import http_client, invoke
++from infrastructure.shared.agent.experiment_budget import request_timeout
+ 
+ 
+ JSON_OUTPUT_RULE = "Return exactly one JSON object without Markdown."
+@@ -57,7 +58,7 @@
          self.client = OpenAI(
              api_key=api_key,
              base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
 -            timeout=600, max_retries=2,
-+            timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2,
++            timeout=request_timeout(), max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2,
              http_client=http_client(),
          )
  
 --- a/infrastructure/shared/models/vision.py
 +++ b/infrastructure/shared/models/vision.py
-@@ -61,7 +61,7 @@
+@@ -11,6 +11,7 @@
+ from openai import OpenAI, OpenAIError
+ from PIL import Image, ImageOps
+ from infrastructure.utils.presentation.model_io import http_client, invoke
++from infrastructure.shared.agent.experiment_budget import request_timeout
+ from infrastructure.utils.presentation.console import DemoConsole
+ from infrastructure.shared.agent.proposals import propose_json
+ from infrastructure.shared.models.text import JSON_OUTPUT_RULE, reasoning_arguments, reasoning_rejected
+@@ -61,7 +62,7 @@
          if self.reasoning not in {"auto", "provider", "none", "low", "high", "max"}:
              raise ValueError("VISUAL_REASONING must be auto, provider, none, low, high or max")
          self._reasoning_supported = True
 -        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=600, max_retries=2, http_client=http_client())
-+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2, http_client=http_client())
++        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=request_timeout(), max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2, http_client=http_client())
  
      def analyze(self, image: Path, max_attempts: int = 10) -> dict:
          """Send one supported reference image and parse the returned layout, elements, and style evidence."""
