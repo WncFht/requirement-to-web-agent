@@ -39,6 +39,8 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
 
 ## 模型配置与运行
 
+完整生成前的配置清单、预算协议和历史 setting 位置由[运行配置与记录](runs.md)统一维护；每轮保存实际配置，不用当前默认值补写历史条件。
+
 两条路线读取 OPENAI_BASE_URL、OPENAI_API_KEY。`make run` 读取 gitignored 的根 `.env`，环境变量优先；ZIP 不携带 `.env`，包装入口缺省 MODEL=deepseek-flash。
 
 | 配置                                      | 行为                                         |
