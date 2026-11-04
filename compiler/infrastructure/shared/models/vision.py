@@ -61,7 +61,7 @@ class VisualModel:
         if self.reasoning not in {"auto", "provider", "none", "low", "high", "max"}:
             raise ValueError("VISUAL_REASONING must be auto, provider, none, low, high or max")
         self._reasoning_supported = True
-        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=600, max_retries=2, http_client=http_client())
+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2, http_client=http_client())
 
     def analyze(self, image: Path, max_attempts: int = 10) -> dict:
         """Send one supported reference image and parse the returned layout, elements, and style evidence."""

@@ -113,3 +113,18 @@ git branch -d feat/parallel-change
 新 run、审阅快照、diff、报告和绘图检查优先放仓库内 gitignored 的 `work/`，按版本、引擎和输入隔离，索引为 `work/README.md`；不进入 Git、源码导出或平台 ZIP。历史绝对路径保留在原始记录，兼容软链不视为新 run。
 
 清理前保存协议、源码、冻结测试、调用、报告、截图、数据库和哈希；可删除可重建依赖，不改失败或未知用量。`scripts/archive_runs.py` 不替代数据库/图片备份。`scripts/export_source.py --output-dir <新目录>` 与 Git bundle 用于源码恢复，旧分享包不随 main 自动更新。凭据仅来自环境或 gitignored `.env`，不写入文档、日志、清单或 ZIP。
+
+## 少量调用的阶段实验
+
+先离线运行 `scripts/context_audit.py <model_calls.jsonl> --output work/<新报告>.json`，按实际路径、哈希、字符数审阅 context。体积不能证明文件无关，也不是 tokenizer 测量。
+
+```sh
+.venv/bin/python scripts/stage_replay.py budget work/study/budget.json --calls 6 --tokens 120000 --seconds 900
+.venv/bin/python scripts/stage_replay.py task work/compiler-iterations/round-01/model_calls.jsonl \
+  --call-id dfc48f02f1f94472b984c55f23cd5941 --variant contract \
+  --output work/study/contract --budget work/study/budget.json
+```
+
+以上 task 是一次真实模型调用，只重放一个 UI 设计任务，不自动修复。`original` 与 `contract` 两组采用同一历史请求、模型与输出上限，后者只增加源于需求的 control_contract。先取得授权，再执行；账本为同一组串行实验共享，禁止重建账本重置失败成本。缺失 usage 停止，内部传输重试关闭。
+
+以后完整运行可在外部新目录设置 `ARC_STAGE_CHECKPOINTS=work/<新快照组>`，将每个阶段输入保存为显式快照。使用 `scripts/stage_replay.py window <快照目录> --from-stage 9 --to-stage 12 --output work/<新回放> --budget work/study/budget.json --dependencies <node_modules目录>` 执行阶段窗口。Node 22、Chromium 与依赖需预先准备；窗口拒绝覆盖，旧成功记录不会迁入。手工 snapshot 只能视为选定时点的诊断副本，不能倒推历史阶段边界或完整成功。阶段结果和完整生成分别记账。

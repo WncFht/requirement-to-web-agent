@@ -10,6 +10,8 @@ from contextvars import ContextVar
 
 import httpx
 
+from infrastructure.shared.agent.experiment_budget import reserve, finish
+
 from infrastructure.utils.presentation.console import current_activity, preview, show_panel, WaitingStatus
 from infrastructure.utils.presentation.logging import session_info, full_detail
 from rich.console import Group
@@ -279,7 +281,13 @@ def invoke(client, arguments: dict):
     try:
         _record("request", arguments=arguments)
         started = monotonic()
-        response = client.chat.completions.create(**arguments)
+        reservation = reserve()
+        try:
+            response = client.chat.completions.create(**arguments)
+        except BaseException:
+            finish(reservation, None)
+            raise
+        finish(reservation, response.model_dump(mode="json").get("usage"))
         elapsed = monotonic() - started
         # Preserve the SDK envelope and untouched message content before any JSON repair.
         raw = response.model_dump(mode="json")

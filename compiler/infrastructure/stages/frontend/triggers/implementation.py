@@ -311,6 +311,7 @@ def run_trigger_tdd(arc_dir, tree, schema, backend, ui, design, images, contexts
     ui_checks = FrontendChecks(output)
     ui_files = [ui_test_path(pid) for pid in ui["pages"] if (output / ui_test_path(pid)).is_file()]
     api_checks = BackendChecks(output)
+    api_checks.http_apis = backend["apis"]
     api_files = [path for aid in backend["apis"]
         if (path := selected_path(output, "backend_test", aid)) and (output / path).is_file()]
     verification = final_checks(console,

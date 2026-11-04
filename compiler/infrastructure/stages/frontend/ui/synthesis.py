@@ -9,6 +9,7 @@ import json
 from infrastructure.stages.frontend.ui.design import INSTRUCTIONS, apply_proposal, empty_design, page_elements, normalize_design, page_context, UIResponseError
 from infrastructure.stages.frontend.ui.proposals import INSTRUCTIONS as EXAMPLE_INSTRUCTIONS
 from infrastructure.shared.rag.pages import PageRetriever
+from infrastructure.stages.frontend.ui.contracts import control_contract
 from infrastructure.utils.files import save_json
 from infrastructure.shared.agent.proposals import propose_json
 
@@ -62,6 +63,7 @@ def synthesize_ui(arc_dir, tree, images, contexts, model, console, top_k=3, max_
         retrieved = retriever.retrieve(requirement, design, top_k)
         console.show(label + " | 3. Retrieved page subtrees (RAG)", json.dumps(retrieved, ensure_ascii=False, indent=2))
         request = {
+            "control_contract": control_contract(requirement),
             "requirement": requirement, "retrieved_pages": retrieved["pages"],
             "all_pages": {pid: {key: page[key] for key in ("name", "route", "root", "images")}
                 for pid, page in design["pages"].items()},

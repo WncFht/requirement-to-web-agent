@@ -3,6 +3,7 @@
 from copy import deepcopy
 
 from infrastructure.shared.agent.admission import validate_ui_controls
+from infrastructure.stages.frontend.ui.contracts import control_contract, validate_control_contract
 
 
 
@@ -38,6 +39,10 @@ data is an array of VARIABLE NAMES, not variable objects. prop contains static t
 label, placeholder, input_type, options, style, href, alt or heading level. Optional
 prop.visible is a boolean or {var:VARIABLE_NAME, equals:VALUE}. Express business
 behavior through triggers later, not expression strings embedded in props.
+
+When a requirement specifies a control name, preserve its exact accessible name.
+Visual required markers and trailing decorative punctuation must not change that name.
+control_contract contains source-backed obligations, not additional business requirements.
 
 For radio controls, prop.value is the explicit string option value, independent of
 the bound selection. Bind the group to one string variable; an empty selection means
@@ -151,4 +156,9 @@ def apply_proposal(design, proposal, rid, tree):
     updated["steps"].update(deepcopy(proposal["step_ui"]))
     normalize_design(updated, tree)
     validate_ui_controls(updated)
+    contract = control_contract(tree.requirements[rid])
+    if contract["controls"] and contract["route"]:
+        updated.setdefault("control_contracts", {})[rid] = contract
+    for required in updated.get("control_contracts", {}).values():
+        validate_control_contract(updated, required)
     return updated

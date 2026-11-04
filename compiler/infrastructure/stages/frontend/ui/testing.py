@@ -53,6 +53,23 @@ def existence_suite(design: dict, pid: str) -> str:
             '  if (runtimeErrors.length) throw new Error("UI_RUNTIME_ERROR: " + runtimeErrors.join("\\n"));',
             '  try {',
         ])
+        for contract in design.get("control_contracts", {}).values():
+            if contract["route"] != page["route"]:
+                continue
+            for required in contract["controls"]:
+                name = json.dumps(required["name"])
+                kind = required["kind"]
+                if kind in {"field", "input"}:
+                    target = f'page.getByLabel({name}, {{ exact: true }})'
+                else:
+                    role = "combobox" if kind == "select" else kind
+                    target = f'page.getByRole({json.dumps(role)}, {{ name: {name}, exact: true }})'
+                lines.append(f'  await expect({target}).toHaveCount(1);')
+                lines.append(f'  await expect({target}).toBeVisible();')
+                for key in ("placeholder", "input_type", "href", "value"):
+                    if key in required:
+                        attr = "type" if key == "input_type" else key
+                        lines.append(f'  await expect({target}).toHaveAttribute({json.dumps(attr)}, {json.dumps(required[key])});')
         for uid, node in elements.items():
             kind = node.get("type", "page" if uid == page["root"] else "container")
             if kind not in KEY_TYPES:

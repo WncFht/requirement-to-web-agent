@@ -576,8 +576,8 @@
         },
         "infrastructure/utils/presentation/model_io.py": {
             "original_sha256": "ec7485b10705390999496d812edde746ac853b6ac6b191fa76a0bd0d4abfa209",
-            "sha256": "d93b50bcf85f3ff93213a973165dadcc7f4f5a575c9b2b60c7b5810508c21244",
-            "reason": "Pass a numeric timeout across both httpx and current OpenAI SDK httpx2 transports."
+            "sha256": "373cd9ca0b1872c2fb985ebd42796cbdaff01b6d1b3ab1ab834c325a8f911cf9",
+            "reason": "Preserve numeric httpx-compatible timeout and audit; reserve/settle calls using an explicitly enabled experiment budget."
         },
         ".gitattributes": {
             "original_sha256": "8579b65b1243e3cf5b629ab5583191c299bb54e2171ec182e3c98ee4c71fff61",
@@ -591,8 +591,8 @@
         },
         "infrastructure/shared/agent/admission.py": {
             "original_sha256": null,
-            "sha256": "72d7bb333b663e24abca8ea124cc5124c629b2cb2ec4e0650581d58d66ca4330",
-            "reason": "Reject run-observed missing initial bindings, invalid radio contracts, contradictory JSON-string assertions and E2E presentation-fixture writes before test freeze."
+            "sha256": "daa259ebb4f0c68a101d095b1fcd2caf0245a091a520e3ab6026fcbef0a47076",
+            "reason": "Validate binding initial values, normalize radio alias, reject unsupported or cyclic/missing-parent UI kinds; retain narrow backend/E2E test admission."
         },
         "infrastructure/shared/agent/files.py": {
             "original_sha256": "408c3cea87d677778403c4586fa7dcd7af6fb8aea3f0f35631ed3a7a638a69a2",
@@ -616,13 +616,13 @@
         },
         "infrastructure/stages/frontend/triggers/implementation.py": {
             "original_sha256": "51a0d90691946646585cdebaff518328c4b06e39c1a8e7fcb2f285808182a78e",
-            "sha256": "25e87232047a80c8f75357f7298011235850d1a782582e4f81a9663cb9fbe01f",
-            "reason": "Reject E2E presentation fixture assignment and seal accepted E2E suites before trigger implementation."
+            "sha256": "c0e17d6f2b0afab18193fce495a2430cbc2cfaffbb65f50af9f8eafdde6efbcf",
+            "reason": "Admit E2E without presentation fixture writes, freeze accepted suites and enable actual HTTP backend regression in final verification."
         },
         "infrastructure/stages/frontend/ui/design.py": {
             "original_sha256": "c846ecac273f8631508be85a0d43fc7d2e926c925cb80e5eaa507d906286f6c7",
-            "sha256": "77ea192bee666a77481f22619947a620d1ef04b3f93f4825c04e53f8cc19a98e",
-            "reason": "Require defined initial bindings and explicit radio option values before generating deterministic tests."
+            "sha256": "1bf836dfc2bc53af25c5fbe3526c75d43df7555e12f6af4728e5c8808ea9128b",
+            "reason": "Validate incremental UI design against supported types and narrow original-requirement control contracts; preserve exact accessible names in prompts."
         },
         "infrastructure/stages/frontend/ui/implementation.py": {
             "original_sha256": "1f973fc0f514d0c57b3dcae56ca4ae9842de023687818cbf56e426ce5c782c9c",
@@ -631,13 +631,58 @@
         },
         "infrastructure/stages/frontend/ui/testing.py": {
             "original_sha256": "e06b9719c72be8da6ab4cd6570ec4169d9671560074edd125f0fbfb46d2fcb32",
-            "sha256": "8015aa1262324bdd27ac6e9deffbaac0b6f0b0541b1c4eb23efef4b947e77da3",
-            "reason": "Check native radio fixed option value separately from fixture-selected checked state, resolving baseline contradictory value assertions."
+            "sha256": "97f48dc625b103dcf572df86444f74719cbfda688c925a805cb22f73ba3cde56",
+            "reason": "Check radio option value and checked state independently, and emit exact role/name assertions from source-backed contracts."
         },
         "infrastructure/compiler.py": {
-            "reason": "Verify all frozen suites after every compiler pass, including final regression and build.",
+            "reason": "Verify frozen tests after every pass and optionally capture explicit stage inputs outside the application before passes.",
             "original_sha256": "5c2b81bc1175c15081a655765e6f506299c14fe8dfe4b16852a1bff4169eb516",
-            "sha256": "0bebebb938467bd924849942296134b744796198e2ffab9a72f6af78606972ac"
+            "sha256": "06acd14447719f5fe72aa46f8312c7dc9a16f3841eef9fa73356cc684331b54b"
+        },
+        "infrastructure/stages/frontend/ui/contracts.py": {
+            "reason": "Extract narrow source-backed control names/options; normalize explicit radio aliases, reject unknown types and validate required controls independently of generated IDs.",
+            "original_sha256": null,
+            "sha256": "3d4d629f6b2fce82c3fdf76cf6f67bfa189a550055239adb1df6a7f8219a1ddf"
+        },
+        "infrastructure/stages/frontend/context.py": {
+            "reason": "Validate saved UI designs and attach source-backed contracts before page implementation.",
+            "original_sha256": "6f3681372e7fb79d781d4cf8e72f7cc094abc1241577706527816b7d9f1d46a0",
+            "sha256": "4c2bdb1afdca7aa509745f34a6a4bd6de7b76a38ee504b94bd4d103f4e68d332"
+        },
+        "infrastructure/stages/frontend/ui/synthesis.py": {
+            "reason": "Expose source-backed control contract explicitly in each UI design task context.",
+            "original_sha256": "d937785ef32c4a3fe8838c075137cec9fbae26cfab231185166ee29cc1d9fee7",
+            "sha256": "29ec50f5ebcb862cadc2735954f45a1e23fbe1d5849db1081d132b09eac39e34"
+        },
+        "infrastructure/shared/agent/checkpoints.py": {
+            "reason": "Capture stage source/artifact snapshots with full hashes; restore only into fresh directories and remove stale success receipts.",
+            "original_sha256": null,
+            "sha256": "b809cf12d2b1d18e158d3530d64bea2f8219da451edfbad5dc3a4457b207f931"
+        },
+        "infrastructure/shared/agent/experiment_budget.py": {
+            "reason": "Reserve serial experimental SDK calls before network requests, enforce call/time/known-token stops and block unknown usage.",
+            "original_sha256": null,
+            "sha256": "8865b7dd64224694719294b13f59bd2119ff6fac743d9363677da7155e505685"
+        },
+        "infrastructure/shared/models/text.py": {
+            "reason": "Use 120-second timeout and no SDK retries when an explicit experiment ledger is active; preserve ordinary-run defaults.",
+            "original_sha256": "6418fd13b387550a6ec8391f4d981e7e42e78ef69ff330fc1a51eb752aa1b4b4",
+            "sha256": "b397a2b0453cbb578019310ae9c08ebf561f4d06e5dc5ff0e382d4e668ba9c33"
+        },
+        "infrastructure/shared/models/vision.py": {
+            "reason": "Apply the same explicit experiment timeout and zero transport retry boundary to visual calls.",
+            "original_sha256": "3be7892b7195c51e3147ff535398fb4825fd1ccae324a054b1f64bec19c51b13",
+            "sha256": "25e43a1ed85534ffbd0a97c64d7a1a4dc8086173c0ddc267bc08b096f2f1258b"
+        },
+        "infrastructure/stages/backend/http_testing.py": {
+            "reason": "Run unchanged generated backend assertions through actual Express HTTP routes in a disposable mirror.",
+            "original_sha256": null,
+            "sha256": "01771ff11903ce1fad9f97776e4a63ddd66d0cd0135736902c4487d478af60a0"
+        },
+        "infrastructure/stages/backend/testing.py": {
+            "reason": "Optionally combine direct handler tests with HTTP transport regression for final verification.",
+            "original_sha256": "8d40182106b75a0674e633f834660e84ade4e9fe22a4d98547e4803b84212e8b",
+            "sha256": "66c2facb5a1b6428302e0d2ac9372437f8a6456f24f6ab254ae30b1c686bbd6e"
         }
     }
 }

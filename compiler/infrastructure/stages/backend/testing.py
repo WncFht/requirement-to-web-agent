@@ -12,9 +12,10 @@ from infrastructure.utils.processes import capture_process, npm_command
 
 class BackendChecks:
     """Compiler-owned TypeScript and Node test commands; generated code cannot choose shell commands."""
-    def __init__(self, output: Path, timeout: int = 600) -> None:
+    def __init__(self, output: Path, timeout: int = 600, http_apis=None) -> None:
         """Bind fixed backend check commands to the generated workspace and require an available Node.js executable."""
         self.output = output.resolve()
+        self.http_apis = http_apis
         self.timeout = timeout
         self.node = shutil.which("node")
         if self.node:
@@ -63,6 +64,12 @@ class BackendChecks:
         for kind in ("tests", "pass", "fail", "skipped", "todo"):
             found = re.search(rf"^# {kind} (\d+)\s*$", result["output"], re.MULTILINE)
             result[kind] = int(found.group(1)) if found else 0
+        if self.http_apis is not None:
+            from infrastructure.stages.backend.http_testing import check_http
+            result["http"] = check_http(self.output, files, self.http_apis)
+            if result["http"]["returncode"] or not result["http"].get("tests") or any(result["http"].get(key) for key in ("fail", "skipped", "todo")):
+                result["returncode"] = result["http"]["returncode"] or 1
+                result["output"] += "\nHTTP regression failed:\n" + result["http"]["output"]
         return result
 
 

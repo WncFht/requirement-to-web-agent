@@ -37,7 +37,14 @@
                      console.show(f"{aid} | Implementation context", (
 --- a/infrastructure/compiler.py
 +++ b/infrastructure/compiler.py
-@@ -6,6 +6,7 @@
+@@ -2,10 +2,14 @@
+ 
+ from importlib import import_module
+ from pathlib import Path
++import os
++
++from infrastructure.shared.agent.checkpoints import capture
+ 
  from infrastructure.utils.presentation.console import show_panel
  from infrastructure.utils.presentation.logging import console_log
  from infrastructure.utils.files import save_json
@@ -45,7 +52,14 @@
  
  
  class Compiler:
-@@ -30,6 +31,7 @@
+@@ -26,10 +30,14 @@
+     def _run(self, module: str, function: str, *arguments, **options):
+         """Call a pass directly, preserving its stage identity and error traceback."""
+         self.current_stage = module + ".py"
++        checkpoint_root = os.getenv("ARC_STAGE_CHECKPOINTS")
++        if checkpoint_root:
++            capture(self.output_dir, Path(checkpoint_root) / module, stage=module)
+         with console_log(self.output_dir, stage=self.current_stage,
                  model_log=self.model_log, debug_model_io=self.model_log):
              try:
                  result = getattr(import_module(module), function)(*arguments, **options)
@@ -55,7 +69,7 @@
                  self.report["stages"][module] = {"status": self.report["status"], "error": str(error)}
 --- /dev/null
 +++ b/infrastructure/shared/agent/admission.py
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,71 @@
 +"""Reject specific contradictions observed in runs before tests are frozen."""
 +
 +import ast
@@ -65,6 +79,19 @@
 +
 +def validate_ui_controls(design):
 +    """Require resolvable display values and explicit native radio option values."""
++    from infrastructure.stages.frontend.ui.contracts import normalize_controls
++    normalize_controls(design)
++    roots = {page["root"] for page in design["pages"].values()}
++    for uid, element in design["elements"].items():
++        current, seen = uid, set()
++        while current is not None:
++            if current in seen or current not in design["elements"]:
++                raise ValueError(f"{uid}: cyclic or missing UI parent {current!r}")
++            seen.add(current)
++            parent = design["elements"][current].get("parent")
++            if parent is None and current not in roots:
++                raise ValueError(f"{uid}: UI subtree has no page root")
++            current = parent
 +    bindings = design["bindings"]
 +    for uid, element in design["elements"].items():
 +        variables = list(element.get("data", []))
@@ -114,6 +141,124 @@
 +    """Presentation fixtures cannot establish business state in browser E2E."""
 +    if re.search(r'''__ARC_UI_FIXTURE__(?:["']\])?\s*=''', source):
 +        raise ValueError("E2E cannot assign __ARC_UI_FIXTURE__; establish Given state and drive real browser actions before freezing")
+--- /dev/null
++++ b/infrastructure/shared/agent/checkpoints.py
+@@ -0,0 +1,65 @@
++"""Explicit immutable stage inputs, independent of successful-run receipts."""
++
++from hashlib import sha256
++import json
++import os
++from pathlib import Path
++
++EXCLUDED = {"node_modules", ".git", ".env", "dist", "build", "coverage", "test-results", "__pycache__"}
++
++
++def capture(application, destination, *, stage=None):
++    """Copy source/config and .arc JSON only; dependencies and databases are not checkpoints."""
++    application, destination = Path(application).resolve(), Path(destination).resolve()
++    if destination == application or destination.is_relative_to(application):
++        raise ValueError("Checkpoint must be outside the application")
++    destination.mkdir(parents=True, exist_ok=False)
++    records = {}
++    sources = []
++    for directory, names, files in os.walk(application, followlinks=False):
++        names[:] = sorted(name for name in names if name not in EXCLUDED)
++        sources.extend(Path(directory) / name for name in sorted(files))
++    for source in sources:
++        relative = source.relative_to(application)
++        if set(relative.parts) & EXCLUDED or not source.is_file():
++            continue
++        if source.is_symlink():
++            raise ValueError("Checkpoint source cannot contain symlinks: " + str(relative))
++        if relative.parts[0] == ".arc":
++            if len(relative.parts) != 2 or source.suffix != ".json":
++                continue
++        elif source.suffix not in {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".css", ".html", ".json", ".sql", ".sh"}:
++            continue
++        data = source.read_bytes()
++        target = destination / "application" / relative
++        target.parent.mkdir(parents=True, exist_ok=True)
++        target.write_bytes(data)
++        records[relative.as_posix()] = sha256(data).hexdigest()
++    manifest = {"version": 1, "stage": stage, "files": records,
++        "scope": "Source/config and .arc JSON; no dependencies, database, credentials or trusted success"}
++    (destination / "checkpoint.json").write_text(json.dumps(manifest, indent=2) + "\n")
++    return manifest
++
++
++def restore(checkpoint, destination):
++    """Verify the complete checkpoint file set before restoring to a fresh workspace."""
++    checkpoint, destination = Path(checkpoint).resolve(), Path(destination).resolve()
++    manifest = json.loads((checkpoint / "checkpoint.json").read_text())
++    actual = {}
++    for source in (checkpoint / "application").rglob("*"):
++        if source.is_symlink():
++            raise ValueError("Checkpoint contains a symlink")
++        if source.is_file():
++            relative = source.relative_to(checkpoint / "application").as_posix()
++            actual[relative] = sha256(source.read_bytes()).hexdigest()
++    if actual != manifest["files"]:
++        raise ValueError("Checkpoint hash/file-set mismatch")
++    destination.mkdir(parents=True, exist_ok=False)
++    for relative in actual:
++        target = destination / relative
++        target.parent.mkdir(parents=True, exist_ok=True)
++        target.write_bytes((checkpoint / "application" / relative).read_bytes())
++    # A replay must earn its own stage results; old GREEN reports are not reusable.
++    for name in ("compilation.json", "ui_checks.json", "frontend_e2e.json"):
++        (destination / ".arc" / name).unlink(missing_ok=True)
++    return manifest
+--- /dev/null
++++ b/infrastructure/shared/agent/experiment_budget.py
+@@ -0,0 +1,47 @@
++"""Shared, fail-closed budget for serial stage experiments, including failed calls."""
++
++from datetime import datetime, timezone
++import json
++import os
++from pathlib import Path
++
++
++class ExperimentBudgetExceeded(RuntimeError):
++    """No additional model request is allowed in this experiment."""
++
++
++def reserve():
++    """Reserve one SDK call before sending; pending/unknown usage blocks another call.
++
++    The ledger is for one serial experiment process tree, not concurrent workers.
++    Output limits and known returned usage do not constitute a billing cap.
++    """
++    setting = os.getenv("ARC_EXPERIMENT_BUDGET")
++    if not setting:
++        return None
++    path = Path(setting)
++    record = json.loads(path.read_text())
++    now = datetime.now(timezone.utc)
++    if record.get("pending") or record.get("unknown_usage"):
++        raise ExperimentBudgetExceeded("Pending or unknown model usage; stop this experiment")
++    if now >= datetime.fromisoformat(record["deadline_utc"]):
++        raise ExperimentBudgetExceeded("Experiment wall-clock budget exhausted")
++    if record["calls"] >= record["max_calls"] or record["total_tokens"] >= record["max_tokens"]:
++        raise ExperimentBudgetExceeded("Experiment call/token budget exhausted")
++    record["calls"] += 1
++    record["pending"] = True
++    path.write_text(json.dumps(record, indent=2) + "\n")
++    return path
++
++
++def finish(path, usage):
++    if path is None:
++        return
++    record = json.loads(path.read_text())
++    record["pending"] = False
++    total = (usage or {}).get("total_tokens")
++    if not isinstance(total, int):
++        record["unknown_usage"] = True
++    else:
++        record["total_tokens"] += total
++    path.write_text(json.dumps(record, indent=2) + "\n")
 --- a/infrastructure/shared/agent/files.py
 +++ b/infrastructure/shared/agent/files.py
 @@ -1,6 +1,8 @@
@@ -271,6 +416,148 @@
          for path in sorted(changed):
              if path in before:
                  save_bytes(output / path, before[path])
+--- a/infrastructure/shared/models/text.py
++++ b/infrastructure/shared/models/text.py
+@@ -57,7 +57,7 @@
+         self.client = OpenAI(
+             api_key=api_key,
+             base_url=os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1",
+-            timeout=600, max_retries=2,
++            timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2,
+             http_client=http_client(),
+         )
+ 
+--- a/infrastructure/shared/models/vision.py
++++ b/infrastructure/shared/models/vision.py
+@@ -61,7 +61,7 @@
+         if self.reasoning not in {"auto", "provider", "none", "low", "high", "max"}:
+             raise ValueError("VISUAL_REASONING must be auto, provider, none, low, high or max")
+         self._reasoning_supported = True
+-        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=600, max_retries=2, http_client=http_client())
++        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=120 if os.getenv("ARC_EXPERIMENT_BUDGET") else 600, max_retries=0 if os.getenv("ARC_EXPERIMENT_BUDGET") else 2, http_client=http_client())
+ 
+     def analyze(self, image: Path, max_attempts: int = 10) -> dict:
+         """Send one supported reference image and parse the returned layout, elements, and style evidence."""
+--- /dev/null
++++ b/infrastructure/stages/backend/http_testing.py
+@@ -0,0 +1,70 @@
++"""Run unchanged generated API assertions through actual Express HTTP wiring."""
++
++import json
++from pathlib import Path
++import shutil
++from tempfile import TemporaryDirectory
++
++
++def http_bindings(apis):
++    """Adapt the existing test import seam; actual routes and assertions stay unchanged."""
++    lines = ['import type Database from "better-sqlite3";',
++        'import type { ApiRequest, ApiResponse } from "../../src/api/types.js";',
++        'import { createApp } from "../../src/app.js";',
++        'import { once } from "node:events";',
++        '''async function transport(method: string, route: string, request: ApiRequest, connection: Database.Database): Promise<ApiResponse> {
++  let path = route.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, (_, key: string) => encodeURIComponent(request.params[key] ?? ""));
++  const query = new URLSearchParams();
++  for (const [key, value] of Object.entries(request.query)) {
++    if (Array.isArray(value)) for (const item of value) query.append(key, String(item));
++    else if (value !== undefined) query.set(key, String(value));
++  }
++  if (query.size) path += "?" + query;
++  const server = createApp(connection).listen(0, "127.0.0.1");
++  try {
++    await once(server, "listening");
++    const address = server.address();
++    if (!address || typeof address === "string") throw new Error("No HTTP server address");
++    const headers: Record<string, string> = { "content-type": "application/json" };
++    for (const [key, value] of Object.entries(request.headers)) if (value !== undefined) headers[key] = value;
++    const response = await fetch(`http://127.0.0.1:${address.port}${path}`, {
++      method, headers, redirect: "manual", signal: AbortSignal.timeout(10000),
++      ...(["GET", "HEAD"].includes(method) ? {} : { body: JSON.stringify(request.body) }),
++    });
++    const resultHeaders: Record<string, string | string[]> = Object.fromEntries(response.headers.entries());
++    const cookies = response.headers.getSetCookie();
++    if (cookies.length) resultHeaders["set-cookie"] = cookies.length === 1 ? cookies[0] : cookies;
++    return { status: response.status, body: await response.json(), headers: resultHeaders };
++  } finally {
++    server.closeAllConnections();
++    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
++  }
++}''']
++    for api in apis.values():
++        signature = api["signature"]
++        name = signature["name"]
++        # Names already consumed as TypeScript exports by the pinned backend compiler.
++        lines.extend([f'export async function {name}(request: ApiRequest, connection: Database.Database): Promise<ApiResponse> {{',
++            f'  return transport({json.dumps(signature["method"])}, {json.dumps(signature["path"])}, request, connection);', '}'])
++    return "\n".join(lines) + "\n"
++
++
++def check_http(output, files, apis):
++    """Keep original application/tests untouched; use a disposable transport mirror."""
++    from infrastructure.stages.backend.testing import BackendChecks
++    from infrastructure.shared.agent.frozen_tests import verify_frozen_tests
++    verify_frozen_tests(output)
++    with TemporaryDirectory(prefix="compiler-http-") as temporary:
++        mirror = Path(temporary)
++        shutil.copytree(output / "backend", mirror / "backend",
++            ignore=shutil.ignore_patterns("node_modules", "dist", "*.db", "*.db-shm", "*.db-wal"))
++        shutil.copy2(output / "package.json", mirror / "package.json")
++        (mirror / "node_modules").symlink_to((output / "node_modules").resolve(), target_is_directory=True)
++        (mirror / "backend/tests/support/apis.ts").write_text(http_bindings(apis))
++        checks = BackendChecks(mirror)
++        compiled = checks.typecheck(files)
++        if compiled["returncode"]:
++            return {"returncode": compiled["returncode"], "output": compiled["output"], "tests": 0, "fail": 0}
++        result = checks.tests(files)
++    verify_frozen_tests(output)
++    return {**result, "transport": "real Express HTTP; same API assertions and SQLite connection"}
+--- a/infrastructure/stages/backend/testing.py
++++ b/infrastructure/stages/backend/testing.py
+@@ -12,9 +12,10 @@
+ 
+ class BackendChecks:
+     """Compiler-owned TypeScript and Node test commands; generated code cannot choose shell commands."""
+-    def __init__(self, output: Path, timeout: int = 600) -> None:
++    def __init__(self, output: Path, timeout: int = 600, http_apis=None) -> None:
+         """Bind fixed backend check commands to the generated workspace and require an available Node.js executable."""
+         self.output = output.resolve()
++        self.http_apis = http_apis
+         self.timeout = timeout
+         self.node = shutil.which("node")
+         if self.node:
+@@ -63,6 +64,12 @@
+         for kind in ("tests", "pass", "fail", "skipped", "todo"):
+             found = re.search(rf"^# {kind} (\d+)\s*$", result["output"], re.MULTILINE)
+             result[kind] = int(found.group(1)) if found else 0
++        if self.http_apis is not None:
++            from infrastructure.stages.backend.http_testing import check_http
++            result["http"] = check_http(self.output, files, self.http_apis)
++            if result["http"]["returncode"] or not result["http"].get("tests") or any(result["http"].get(key) for key in ("fail", "skipped", "todo")):
++                result["returncode"] = result["http"]["returncode"] or 1
++                result["output"] += "\nHTTP regression failed:\n" + result["http"]["output"]
+         return result
+ 
+ 
+--- a/infrastructure/stages/frontend/context.py
++++ b/infrastructure/stages/frontend/context.py
+@@ -11,7 +11,16 @@
+ 
+ def load_ui_design(arc_dir, tree):
+     from infrastructure.stages.frontend.ui.design import normalize_design
+-    return normalize_design(read_artifact(arc_dir, "ui_design.json"), tree)
++    from infrastructure.shared.agent.admission import validate_ui_controls
++    from infrastructure.stages.frontend.ui.contracts import control_contract, validate_control_contract
++    design = normalize_design(read_artifact(arc_dir, "ui_design.json"), tree)
++    validate_ui_controls(design)
++    for rid, requirement in tree.requirements.items():
++        contract = control_contract(requirement)
++        if contract["controls"] and contract["route"]:
++            validate_control_contract(design, contract)
++            design.setdefault("control_contracts", {})[rid] = contract
++    return design
+ 
+ 
+ def load_ui_context(arc_dir, input_dir):
 --- a/infrastructure/stages/frontend/triggers/implementation.py
 +++ b/infrastructure/stages/frontend/triggers/implementation.py
 @@ -5,6 +5,9 @@
@@ -299,21 +586,131 @@
              workspace = None
  
              def implementation_checks():
+@@ -306,6 +311,7 @@
+     ui_checks = FrontendChecks(output)
+     ui_files = [ui_test_path(pid) for pid in ui["pages"] if (output / ui_test_path(pid)).is_file()]
+     api_checks = BackendChecks(output)
++    api_checks.http_apis = backend["apis"]
+     api_files = [path for aid in backend["apis"]
+         if (path := selected_path(output, "backend_test", aid)) and (output / path).is_file()]
+     verification = final_checks(console,
+--- /dev/null
++++ b/infrastructure/stages/frontend/ui/contracts.py
+@@ -0,0 +1,94 @@
++"""Narrow, source-backed control contracts; never read frozen acceptance suites."""
++
++import re
++
++
++KINDS = {"page", "container", "form", "input", "checkbox", "select", "button", "text",
++    "heading", "link", "list", "item", "image", "alert", "table"}
++
++
++def control_contract(requirement):
++    """Extract explicit English lists/quoted labels; unrecognized prose stays prose.
++
++    This is deliberately not a general natural-language specification parser.
++    Every extracted control retains its exact source sentence for audit.
++    """
++    description = requirement.get("description", "")
++    text = description.get("text", "") if isinstance(description, dict) else description
++    controls = []
++    route = re.search(r"\bpage\s+(/[^\s,;]*)", text)
++    fields = re.search(r"\bcontains\s+(.+?)\s+fields\.", text)
++    if fields:
++        for label in re.split(r",\s*(?:and\s+)?|\s+and\s+", fields.group(1)):
++            label = label.strip()
++            if label:
++                controls.append({"kind": "field", "name": label, "evidence": fields.group(0)})
++    for control in list(controls):
++        label = re.escape(control["name"])
++        options = re.search(label + r"\s+(includes|offers)\s+([^;.]+)", text)
++        if options:
++            values = [x.strip() for x in re.split(r",\s*(?:and\s+)?|\s+and\s+", options.group(2))]
++            if options.group(1) == "offers":
++                controls.remove(control)
++                controls.extend({"kind": "radio", "name": value, "value": value,
++                    "group": control["name"], "evidence": options.group(0)} for value in values)
++            else:
++                control.update(kind="select", options=values)
++        if "password" in control["name"].lower() and re.search(r"[Pp]assword.*conceal", text):
++            control.update(input_type="password")
++    patterns = (
++        ("checkbox", r'checkbox is labeled "([^"]+)"'),
++        ("button", r'button is labeled "([^"]+)"'),
++        ("input", r'field has the placeholder and accessible name "([^"]+)"'),
++        ("input", r'password field is labeled "([^"]+)"'),
++    )
++    for kind, pattern in patterns:
++        for match in re.finditer(pattern, text):
++            item = {"kind": kind, "name": match.group(1), "evidence": match.group(0)}
++            if "placeholder and accessible name" in match.group(0):
++                item["placeholder"] = item["name"]
++            if "password field" in match.group(0):
++                item["input_type"] = "password"
++            controls.append(item)
++    return {"requirement": requirement.get("id"), "route": route.group(1) if route else None,
++        "controls": controls, "coverage": "explicit field lists and quoted labels only"}
++
++
++def normalize_controls(design):
++    """Only radio is a supported alias; unknown kinds cannot disappear from tests."""
++    for uid, element in design["elements"].items():
++        kind = element.get("type", "page" if element.get("parent") is None else "container")
++        if kind == "radio":
++            element["type"] = "input"
++            element.setdefault("prop", {})["input_type"] = "radio"
++            kind = "input"
++        if kind not in KINDS:
++            raise ValueError(f"{uid}: unsupported UI type {kind!r}; use a supported element kind")
++
++
++def validate_control_contract(design, contract):
++    """Require source names/types in the contract's page, independently of model IDs."""
++    if not contract.get("controls"):
++        return
++    from infrastructure.stages.frontend.ui.design import page_elements
++    pages = [pid for pid, page in design["pages"].items() if page["route"] == contract["route"]]
++    if len(pages) != 1:
++        raise ValueError(f"{contract['requirement']}: expected one page at {contract['route']}")
++    elements = page_elements(design, pages[0])
++    for required in contract["controls"]:
++        matches = []
++        for uid, element in elements.items():
++            kind, prop = element.get("type"), element.get("prop", {})
++            if prop.get("label", prop.get("text")) != required["name"]:
++                continue
++            expected = required["kind"]
++            valid = (kind in {"input", "select"} if expected == "field" else
++                kind == "input" and prop.get("input_type") == "radio" if expected == "radio" else kind == expected)
++            valid = valid and all(prop.get(key) == required[key] for key in ("input_type", "placeholder", "href", "value") if key in required)
++            if "options" in required:
++                valid = valid and set(required["options"]).issubset(prop.get("options", []))
++            if valid:
++                matches.append(uid)
++        if len(matches) != 1:
++            raise ValueError(f"{contract['requirement']}: require exactly one {required['kind']} named {required['name']!r}; "
++                f"found {len(matches)}. Preserve the source name; put visual required markers outside the accessible name. Source: {required['evidence']}")
 --- a/infrastructure/stages/frontend/ui/design.py
 +++ b/infrastructure/stages/frontend/ui/design.py
-@@ -1,6 +1,8 @@
+@@ -1,6 +1,9 @@
  """Canonical UI/data records and incremental design updates."""
  
  from copy import deepcopy
 +
 +from infrastructure.shared.agent.admission import validate_ui_controls
++from infrastructure.stages.frontend.ui.contracts import control_contract, validate_control_contract
  
  
  
-@@ -36,6 +38,10 @@
+@@ -36,6 +39,14 @@
  label, placeholder, input_type, options, style, href, alt or heading level. Optional
  prop.visible is a boolean or {var:VARIABLE_NAME, equals:VALUE}. Express business
  behavior through triggers later, not expression strings embedded in props.
++
++When a requirement specifies a control name, preserve its exact accessible name.
++Visual required markers and trailing decorative punctuation must not change that name.
++control_contract contains source-backed obligations, not additional business requirements.
 +
 +For radio controls, prop.value is the explicit string option value, independent of
 +the bound selection. Bind the group to one string variable; an empty selection means
@@ -321,11 +718,16 @@
  
  pages maps PAGE IDs to {name, route, root, images, fixtures}. route is a URL path, root
  is an ELEMENT ID, images lists supplied image IDs. fixtures maps display-state names
-@@ -144,4 +150,5 @@
+@@ -144,4 +155,10 @@
      updated["requirements"][rid] = proposal["requirement_ui"]
      updated["steps"].update(deepcopy(proposal["step_ui"]))
      normalize_design(updated, tree)
 +    validate_ui_controls(updated)
++    contract = control_contract(tree.requirements[rid])
++    if contract["controls"] and contract["route"]:
++        updated.setdefault("control_contracts", {})[rid] = contract
++    for required in updated.get("control_contracts", {}).values():
++        validate_control_contract(updated, required)
      return updated
 --- a/infrastructure/stages/frontend/ui/implementation.py
 +++ b/infrastructure/stages/frontend/ui/implementation.py
@@ -355,6 +757,24 @@
          report["pages"][pid] = {"status": "TESTS_READY", "requirements": uses, "test_path": relative}
          save_json(arc_dir / "ui_checks.json", report)
          label = f"UI {number}/{len(design['pages'])} {pid}"
+--- a/infrastructure/stages/frontend/ui/synthesis.py
++++ b/infrastructure/stages/frontend/ui/synthesis.py
+@@ -9,6 +9,7 @@
+ from infrastructure.stages.frontend.ui.design import INSTRUCTIONS, apply_proposal, empty_design, page_elements, normalize_design, page_context, UIResponseError
+ from infrastructure.stages.frontend.ui.proposals import INSTRUCTIONS as EXAMPLE_INSTRUCTIONS
+ from infrastructure.shared.rag.pages import PageRetriever
++from infrastructure.stages.frontend.ui.contracts import control_contract
+ from infrastructure.utils.files import save_json
+ from infrastructure.shared.agent.proposals import propose_json
+ 
+@@ -62,6 +63,7 @@
+         retrieved = retriever.retrieve(requirement, design, top_k)
+         console.show(label + " | 3. Retrieved page subtrees (RAG)", json.dumps(retrieved, ensure_ascii=False, indent=2))
+         request = {
++            "control_contract": control_contract(requirement),
+             "requirement": requirement, "retrieved_pages": retrieved["pages"],
+             "all_pages": {pid: {key: page[key] for key in ("name", "route", "root", "images")}
+                 for pid, page in design["pages"].items()},
 --- a/infrastructure/stages/frontend/ui/testing.py
 +++ b/infrastructure/stages/frontend/ui/testing.py
 @@ -9,6 +9,7 @@
@@ -373,7 +793,31 @@
      page = design["pages"][pid]
      elements = page_elements(design, pid)
      defaults = {var: binding["initial"] for var, binding in design["bindings"].items()}
-@@ -76,6 +78,10 @@
+@@ -51,6 +53,23 @@
+             '  if (runtimeErrors.length) throw new Error("UI_RUNTIME_ERROR: " + runtimeErrors.join("\\n"));',
+             '  try {',
+         ])
++        for contract in design.get("control_contracts", {}).values():
++            if contract["route"] != page["route"]:
++                continue
++            for required in contract["controls"]:
++                name = json.dumps(required["name"])
++                kind = required["kind"]
++                if kind in {"field", "input"}:
++                    target = f'page.getByLabel({name}, {{ exact: true }})'
++                else:
++                    role = "combobox" if kind == "select" else kind
++                    target = f'page.getByRole({json.dumps(role)}, {{ name: {name}, exact: true }})'
++                lines.append(f'  await expect({target}).toHaveCount(1);')
++                lines.append(f'  await expect({target}).toBeVisible();')
++                for key in ("placeholder", "input_type", "href", "value"):
++                    if key in required:
++                        attr = "type" if key == "input_type" else key
++                        lines.append(f'  await expect({target}).toHaveAttribute({json.dumps(attr)}, {json.dumps(required[key])});')
+         for uid, node in elements.items():
+             kind = node.get("type", "page" if uid == page["root"] else "container")
+             if kind not in KEY_TYPES:
+@@ -76,6 +95,10 @@
                      initial = values[node["data"][0]]
                      if kind == "checkbox" and isinstance(initial, bool):
                          lines.append(f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();")
@@ -386,7 +830,16 @@
              if prop.get("text") and kind in {"heading", "text", "button", "link", "alert"}:
 --- a/infrastructure/utils/presentation/model_io.py
 +++ b/infrastructure/utils/presentation/model_io.py
-@@ -101,7 +101,7 @@
+@@ -9,6 +9,8 @@
+ from contextvars import ContextVar
+ 
+ import httpx
++
++from infrastructure.shared.agent.experiment_budget import reserve, finish
+ 
+ from infrastructure.utils.presentation.console import current_activity, preview, show_panel, WaitingStatus
+ from infrastructure.utils.presentation.logging import session_info, full_detail
+@@ -101,7 +103,7 @@
  def http_client() -> httpx.Client:
      """Connect directly, retaining audit hooks and the SDK's transport limits."""
      from openai import DefaultHttpxClient
@@ -395,6 +848,21 @@
          event_hooks={"request": [_http_request], "response": [_http_response]})
  
  
+@@ -279,7 +281,13 @@
+     try:
+         _record("request", arguments=arguments)
+         started = monotonic()
+-        response = client.chat.completions.create(**arguments)
++        reservation = reserve()
++        try:
++            response = client.chat.completions.create(**arguments)
++        except BaseException:
++            finish(reservation, None)
++            raise
++        finish(reservation, response.model_dump(mode="json").get("usage"))
+         elapsed = monotonic() - started
+         # Preserve the SDK envelope and untouched message content before any JSON repair.
+         raw = response.model_dump(mode="json")
 --- a/main.py
 +++ b/main.py
 @@ -48,10 +48,10 @@

@@ -2,6 +2,9 @@
 
 from importlib import import_module
 from pathlib import Path
+import os
+
+from infrastructure.shared.agent.checkpoints import capture
 
 from infrastructure.utils.presentation.console import show_panel
 from infrastructure.utils.presentation.logging import console_log
@@ -27,6 +30,9 @@ class Compiler:
     def _run(self, module: str, function: str, *arguments, **options):
         """Call a pass directly, preserving its stage identity and error traceback."""
         self.current_stage = module + ".py"
+        checkpoint_root = os.getenv("ARC_STAGE_CHECKPOINTS")
+        if checkpoint_root:
+            capture(self.output_dir, Path(checkpoint_root) / module, stage=module)
         with console_log(self.output_dir, stage=self.current_stage,
                 model_log=self.model_log, debug_model_io=self.model_log):
             try:

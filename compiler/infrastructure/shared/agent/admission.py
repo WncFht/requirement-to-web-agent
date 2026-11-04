@@ -7,6 +7,19 @@ import re
 
 def validate_ui_controls(design):
     """Require resolvable display values and explicit native radio option values."""
+    from infrastructure.stages.frontend.ui.contracts import normalize_controls
+    normalize_controls(design)
+    roots = {page["root"] for page in design["pages"].values()}
+    for uid, element in design["elements"].items():
+        current, seen = uid, set()
+        while current is not None:
+            if current in seen or current not in design["elements"]:
+                raise ValueError(f"{uid}: cyclic or missing UI parent {current!r}")
+            seen.add(current)
+            parent = design["elements"][current].get("parent")
+            if parent is None and current not in roots:
+                raise ValueError(f"{uid}: UI subtree has no page root")
+            current = parent
     bindings = design["bindings"]
     for uid, element in design["elements"].items():
         variables = list(element.get("data", []))

@@ -11,7 +11,16 @@ REFERENCE = re.compile(r"\\ref\[image\]\(([^)]+)\)")
 
 def load_ui_design(arc_dir, tree):
     from infrastructure.stages.frontend.ui.design import normalize_design
-    return normalize_design(read_artifact(arc_dir, "ui_design.json"), tree)
+    from infrastructure.shared.agent.admission import validate_ui_controls
+    from infrastructure.stages.frontend.ui.contracts import control_contract, validate_control_contract
+    design = normalize_design(read_artifact(arc_dir, "ui_design.json"), tree)
+    validate_ui_controls(design)
+    for rid, requirement in tree.requirements.items():
+        contract = control_contract(requirement)
+        if contract["controls"] and contract["route"]:
+            validate_control_contract(design, contract)
+            design.setdefault("control_contracts", {})[rid] = contract
+    return design
 
 
 def load_ui_context(arc_dir, input_dir):
