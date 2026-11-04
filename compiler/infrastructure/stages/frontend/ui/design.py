@@ -45,7 +45,8 @@ Visual required markers and trailing decorative punctuation must not change that
 control_contract contains source-backed obligations, not additional business requirements.
 
 For radio controls, prop.value is the explicit string option value, independent of
-the bound selection. Bind the group to one string variable; an empty selection means
+the bound selection. Describe a named radiogroup container and its accessible field
+name; individual radio names are their option labels. Bind the group to one string variable; an empty selection means
 no option is checked, not that every option value becomes empty.
 
 pages maps PAGE IDs to {name, route, root, images, fixtures}. route is a URL path, root

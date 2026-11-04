@@ -621,17 +621,17 @@
         },
         "infrastructure/stages/frontend/ui/design.py": {
             "original_sha256": "c846ecac273f8631508be85a0d43fc7d2e926c925cb80e5eaa507d906286f6c7",
-            "sha256": "1bf836dfc2bc53af25c5fbe3526c75d43df7555e12f6af4728e5c8808ea9128b",
+            "sha256": "46b661a7c2675a7821e37c740d0072bb44d8bf4c0bbce68d51f21d22b39f697a",
             "reason": "Validate incremental UI design against supported types and narrow original-requirement control contracts; preserve exact accessible names in prompts."
         },
         "infrastructure/stages/frontend/ui/implementation.py": {
             "original_sha256": "1f973fc0f514d0c57b3dcae56ca4ae9842de023687818cbf56e426ce5c782c9c",
-            "sha256": "4a49a7e18b76b97915c0add3e123ca0ded7924fe496f91dcf2fb833e07f30989",
+            "sha256": "a1a369f104676c18d69d6b290af317b917b7dfbdd30a7ec3630706c895170f3b",
             "reason": "Require test IDs on real interactive nodes and seal generated UI tests before page implementation."
         },
         "infrastructure/stages/frontend/ui/testing.py": {
             "original_sha256": "e06b9719c72be8da6ab4cd6570ec4169d9671560074edd125f0fbfb46d2fcb32",
-            "sha256": "97f48dc625b103dcf572df86444f74719cbfda688c925a805cb22f73ba3cde56",
+            "sha256": "f0b458592f9bd1047e8e0296878849e22b86f38f8510a542cc0e77470f25667b",
             "reason": "Check radio option value and checked state independently, and emit exact role/name assertions from source-backed contracts."
         },
         "infrastructure/compiler.py": {
@@ -642,7 +642,7 @@
         "infrastructure/stages/frontend/ui/contracts.py": {
             "reason": "Extract narrow source-backed control names/options; normalize explicit radio aliases, reject unknown types and validate required controls independently of generated IDs.",
             "original_sha256": null,
-            "sha256": "04b75d7322be4492115180bf95012abc6a25715c838326bce062d01c79344cb5"
+            "sha256": "b0b84fc8b34d83dd12750f3e19503b40c01151b7458c93126ed5a4f5edb8b31c"
         },
         "infrastructure/stages/frontend/context.py": {
             "reason": "Validate saved UI designs and attach source-backed contracts before page implementation.",

@@ -43,6 +43,40 @@ class AcceptanceAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not proved"):
             adapter_from_schema(schema, transport)
 
+    def test_salted_scrypt_session_requires_actual_cookie_proof(self):
+        schema = self.schema()
+        fields = schema["sessions"]["fields"]
+        fields["token_hash"] = fields.pop("token")
+        salt = bytes.fromhex("00112233445566778899aabbccddeeff")
+
+        def encode(value):
+            return (
+                "scrypt$"
+                + salt.hex()
+                + "$"
+                + hashlib.scrypt(
+                    value.encode(), salt=salt, n=16384, r=8, p=1, dklen=64
+                ).hex()
+            )
+
+        schema["sessions"]["sample"]["token_hash"] = encode("observed-cookie")
+        transport = {
+            "names": ["session"],
+            "paths": ["/api/session"],
+            "cookies": [{"name": "session", "value": "observed-cookie"}],
+        }
+        result = adapter_from_schema(schema, transport)
+        self.assertEqual(
+            result["session_seed"]["token_hash"], encode(result["session_token"])
+        )
+        transport["cookies"][0]["value"] = "wrong-cookie"
+        with self.assertRaisesRegex(ValueError, "not proved"):
+            adapter_from_schema(schema, transport)
+        transport["cookies"][0]["value"] = "observed-cookie"
+        schema["sessions"]["sample"]["token_hash"] = "scrypt$bad$bad"
+        with self.assertRaisesRegex(ValueError, "not proved"):
+            adapter_from_schema(schema, transport)
+
     def schema(self):
         def field(**values):
             return {

@@ -72,3 +72,20 @@ class ControlContractTests(unittest.TestCase):
         contract = control_contract({"id": "X", "description": "A drawing canvas."})
         self.assertEqual(contract["controls"], [])
         self.assertIn("only", contract["coverage"])
+
+
+class RadioGroupContractTests(unittest.TestCase):
+    def test_named_group_and_options_are_derived_from_requirement(self):
+        from infrastructure.stages.frontend.ui.contracts import radio_group_suite
+
+        contract = control_contract(
+            {
+                "id": "R",
+                "description": "The example page /register contains Choice fields. Choice offers Male and Female.",
+            }
+        )
+        self.assertEqual(contract["radio_groups"][0]["name"], "Choice")
+        suite = radio_group_suite([contract])
+        self.assertIn('getByRole("radiogroup", { name: "Choice", exact: true })', suite)
+        self.assertIn('.getByRole("radio", { name: "Male", exact: true })', suite)
+        self.assertIn('.getByRole("radio", { name: "Female", exact: true })', suite)

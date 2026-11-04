@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 
 from infrastructure.shared.agent.admission import validate_ui_controls
+from infrastructure.stages.frontend.ui.contracts import radio_group_assertions
 from infrastructure.stages.frontend.ui.design import page_elements, visible
 from infrastructure.utils.processes import capture_process, npm_command
 
@@ -56,6 +57,7 @@ def existence_suite(design: dict, pid: str) -> str:
         for contract in design.get("control_contracts", {}).values():
             if contract["route"] != page["route"]:
                 continue
+            lines.extend(radio_group_assertions(contract))
             for required in contract["controls"]:
                 name = json.dumps(required["name"])
                 kind = required["kind"]

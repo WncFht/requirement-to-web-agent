@@ -16,6 +16,7 @@ def control_contract(requirement):
     description = requirement.get("description", "")
     text = description.get("text", "") if isinstance(description, dict) else description
     controls = []
+    radio_groups = []
     route = re.search(r"\bpage\s+(/[^\s,;]*)", text)
     fields = re.search(r"\bcontains\s+(.+?)\s+fields\.", text)
     if fields:
@@ -29,6 +30,7 @@ def control_contract(requirement):
         if options:
             values = [x.strip() for x in re.split(r",\s*(?:and\s+)?|\s+and\s+", options.group(2))]
             if options.group(1) == "offers":
+                radio_groups.append({"name": control["name"], "options": values, "evidence": options.group(0)})
                 controls.remove(control)
                 controls.extend({"kind": "radio", "name": value, "value": value,
                     "group": control["name"], "evidence": options.group(0)} for value in values)
@@ -51,7 +53,7 @@ def control_contract(requirement):
                 item["input_type"] = "password"
             controls.append(item)
     return {"requirement": requirement.get("id"), "route": route.group(1) if route else None,
-        "controls": controls, "coverage": "explicit field lists and quoted labels only"}
+        "controls": controls, "radio_groups": radio_groups, "coverage": "explicit field lists and quoted labels only"}
 
 
 def normalize_controls(design):
@@ -95,3 +97,29 @@ def validate_control_contract(design, contract):
     if failures:
         raise ValueError(f"{contract['requirement']}: " + "\n".join(failures) +
             "\nPreserve each source name in prop.label (button/link text in prop.text); put visual required markers outside the accessible name.")
+
+
+def radio_group_assertions(contract):
+    """Browser assertions for original named single-choice fields and membership."""
+    import json
+    lines = []
+    for group in contract.get("radio_groups", []):
+        target = f'page.getByRole("radiogroup", {{ name: {json.dumps(group["name"])}, exact: true }})'
+        lines.extend([f'  await expect({target}).toHaveCount(1);', f'  await expect({target}).toBeVisible();'])
+        for option in group["options"]:
+            radio = target + f'.getByRole("radio", {{ name: {json.dumps(option)}, exact: true }})'
+            lines.extend([f'  await expect({radio}).toHaveCount(1);', f'  await expect({radio}).toBeVisible();'])
+    return lines
+
+
+def radio_group_suite(contracts):
+    """Additive requirement regression; never rewrite an already frozen suite."""
+    import json
+    lines = ['import { test, expect } from "@playwright/test";', '']
+    for contract in contracts:
+        assertions = radio_group_assertions(contract)
+        if not assertions:
+            continue
+        lines.extend([f'test({json.dumps(contract["requirement"] + " / named radio group")}, async ({{ page }}) => {{',
+            f'  await page.goto({json.dumps(contract["route"])});', *assertions, '});', ''])
+    return "\n".join(lines)

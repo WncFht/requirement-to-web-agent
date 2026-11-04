@@ -30,7 +30,10 @@ references through real elements, not a screenshot background in place of contro
 Put data-testid=ELEMENT_ID on each actual designed element, including the page root.
 Use associated labels, specified input types/options, and role="alert" for alert elements.
 Place each test ID on the real interactive node, not a hidden proxy. Preserve native
-input/select/button/anchor semantics. For radio, value is prop.value and checked state
+input/select/button/anchor semantics. A named single-choice field must expose a
+radiogroup with that exact accessible field name, containing its real radio options;
+a generic group role is insufficient. Use role="radiogroup" and an associated label.
+For radio, value is prop.value and checked state
 is data[selection] == prop.value; do not bind every option value to the selection.
 Respect prop.visible booleans or variable-equality rules and original visible text.
 

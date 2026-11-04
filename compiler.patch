@@ -689,7 +689,7 @@
      verification = final_checks(console,
 --- /dev/null
 +++ b/infrastructure/stages/frontend/ui/contracts.py
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,125 @@
 +"""Narrow, source-backed control contracts; never read frozen acceptance suites."""
 +
 +import re
@@ -708,6 +708,7 @@
 +    description = requirement.get("description", "")
 +    text = description.get("text", "") if isinstance(description, dict) else description
 +    controls = []
++    radio_groups = []
 +    route = re.search(r"\bpage\s+(/[^\s,;]*)", text)
 +    fields = re.search(r"\bcontains\s+(.+?)\s+fields\.", text)
 +    if fields:
@@ -721,6 +722,7 @@
 +        if options:
 +            values = [x.strip() for x in re.split(r",\s*(?:and\s+)?|\s+and\s+", options.group(2))]
 +            if options.group(1) == "offers":
++                radio_groups.append({"name": control["name"], "options": values, "evidence": options.group(0)})
 +                controls.remove(control)
 +                controls.extend({"kind": "radio", "name": value, "value": value,
 +                    "group": control["name"], "evidence": options.group(0)} for value in values)
@@ -743,7 +745,7 @@
 +                item["input_type"] = "password"
 +            controls.append(item)
 +    return {"requirement": requirement.get("id"), "route": route.group(1) if route else None,
-+        "controls": controls, "coverage": "explicit field lists and quoted labels only"}
++        "controls": controls, "radio_groups": radio_groups, "coverage": "explicit field lists and quoted labels only"}
 +
 +
 +def normalize_controls(design):
@@ -787,6 +789,32 @@
 +    if failures:
 +        raise ValueError(f"{contract['requirement']}: " + "\n".join(failures) +
 +            "\nPreserve each source name in prop.label (button/link text in prop.text); put visual required markers outside the accessible name.")
++
++
++def radio_group_assertions(contract):
++    """Browser assertions for original named single-choice fields and membership."""
++    import json
++    lines = []
++    for group in contract.get("radio_groups", []):
++        target = f'page.getByRole("radiogroup", {{ name: {json.dumps(group["name"])}, exact: true }})'
++        lines.extend([f'  await expect({target}).toHaveCount(1);', f'  await expect({target}).toBeVisible();'])
++        for option in group["options"]:
++            radio = target + f'.getByRole("radio", {{ name: {json.dumps(option)}, exact: true }})'
++            lines.extend([f'  await expect({radio}).toHaveCount(1);', f'  await expect({radio}).toBeVisible();'])
++    return lines
++
++
++def radio_group_suite(contracts):
++    """Additive requirement regression; never rewrite an already frozen suite."""
++    import json
++    lines = ['import { test, expect } from "@playwright/test";', '']
++    for contract in contracts:
++        assertions = radio_group_assertions(contract)
++        if not assertions:
++            continue
++        lines.extend([f'test({json.dumps(contract["requirement"] + " / named radio group")}, async ({{ page }}) => {{',
++            f'  await page.goto({json.dumps(contract["route"])});', *assertions, '});', ''])
++    return "\n".join(lines)
 --- a/infrastructure/stages/frontend/ui/design.py
 +++ b/infrastructure/stages/frontend/ui/design.py
 @@ -1,6 +1,9 @@
@@ -799,7 +827,7 @@
  
  
  
-@@ -36,6 +39,14 @@
+@@ -36,6 +39,15 @@
  label, placeholder, input_type, options, style, href, alt or heading level. Optional
  prop.visible is a boolean or {var:VARIABLE_NAME, equals:VALUE}. Express business
  behavior through triggers later, not expression strings embedded in props.
@@ -809,12 +837,13 @@
 +control_contract contains source-backed obligations, not additional business requirements.
 +
 +For radio controls, prop.value is the explicit string option value, independent of
-+the bound selection. Bind the group to one string variable; an empty selection means
++the bound selection. Describe a named radiogroup container and its accessible field
++name; individual radio names are their option labels. Bind the group to one string variable; an empty selection means
 +no option is checked, not that every option value becomes empty.
  
  pages maps PAGE IDs to {name, route, root, images, fixtures}. route is a URL path, root
  is an ELEMENT ID, images lists supplied image IDs. fixtures maps display-state names
-@@ -144,4 +155,10 @@
+@@ -144,4 +156,10 @@
      updated["requirements"][rid] = proposal["requirement_ui"]
      updated["steps"].update(deepcopy(proposal["step_ui"]))
      normalize_design(updated, tree)
@@ -835,17 +864,20 @@
  from infrastructure.shared.agent.context import SourceFiles
  from infrastructure.shared.agent.loop import run_file_agent
  from infrastructure.shared.agent.recovery import implementation_task, final_checks, complete_report
-@@ -28,6 +29,9 @@
+@@ -28,6 +29,12 @@
  references through real elements, not a screenshot background in place of controls.
  Put data-testid=ELEMENT_ID on each actual designed element, including the page root.
  Use associated labels, specified input types/options, and role="alert" for alert elements.
 +Place each test ID on the real interactive node, not a hidden proxy. Preserve native
-+input/select/button/anchor semantics. For radio, value is prop.value and checked state
++input/select/button/anchor semantics. A named single-choice field must expose a
++radiogroup with that exact accessible field name, containing its real radio options;
++a generic group role is insufficient. Use role="radiogroup" and an associated label.
++For radio, value is prop.value and checked state
 +is data[selection] == prop.value; do not bind every option value to the selection.
  Respect prop.visible booleans or variable-equality rules and original visible text.
  
  Use defaultValue/defaultChecked for native editable controls. The host captures native
-@@ -66,6 +70,7 @@
+@@ -66,6 +73,7 @@
          relative = test_path(pid)
          suite = existence_suite(design, pid)
          save_text(output / relative, suite)
@@ -873,15 +905,16 @@
                  for pid, page in design["pages"].items()},
 --- a/infrastructure/stages/frontend/ui/testing.py
 +++ b/infrastructure/stages/frontend/ui/testing.py
-@@ -9,6 +9,7 @@
+@@ -9,6 +9,8 @@
  import subprocess
  import tempfile
  
 +from infrastructure.shared.agent.admission import validate_ui_controls
++from infrastructure.stages.frontend.ui.contracts import radio_group_assertions
  from infrastructure.stages.frontend.ui.design import page_elements, visible
  from infrastructure.utils.processes import capture_process, npm_command
  
-@@ -34,6 +35,7 @@
+@@ -34,6 +36,7 @@
  
  def existence_suite(design: dict, pid: str) -> str:
      """Render deterministic presence tests for key visible UI elements across the page's designed display fixtures."""
@@ -889,13 +922,14 @@
      page = design["pages"][pid]
      elements = page_elements(design, pid)
      defaults = {var: binding["initial"] for var, binding in design["bindings"].items()}
-@@ -51,6 +53,23 @@
+@@ -51,6 +54,24 @@
              '  if (runtimeErrors.length) throw new Error("UI_RUNTIME_ERROR: " + runtimeErrors.join("\\n"));',
              '  try {',
          ])
 +        for contract in design.get("control_contracts", {}).values():
 +            if contract["route"] != page["route"]:
 +                continue
++            lines.extend(radio_group_assertions(contract))
 +            for required in contract["controls"]:
 +                name = json.dumps(required["name"])
 +                kind = required["kind"]
@@ -913,7 +947,7 @@
          for uid, node in elements.items():
              kind = node.get("type", "page" if uid == page["root"] else "container")
              if kind not in KEY_TYPES:
-@@ -76,6 +95,10 @@
+@@ -76,6 +97,10 @@
                      initial = values[node["data"][0]]
                      if kind == "checkbox" and isinstance(initial, bool):
                          lines.append(f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();")

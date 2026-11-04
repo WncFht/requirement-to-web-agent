@@ -2,6 +2,8 @@
 
 import hashlib
 import json
+import re
+import hmac
 import shutil
 import subprocess
 from contextlib import contextmanager
@@ -65,6 +67,31 @@ def execute(output, args, *, timeout=300, env=None):
         "stdout": stdout,
         "output": (stdout + stderr)[-24000:],
     }
+
+
+def observed_session_seed(cookie, stored, token):
+    """Encode fixed Given state only after proving actual browser/storage correspondence."""
+    if not isinstance(stored, str) or not isinstance(cookie, str):
+        raise ValueError(
+            "Session hash encoding not proved by actual cookie and stored registration"
+        )
+    if hmac.compare_digest(stored, hashlib.sha256(cookie.encode()).hexdigest()):
+        return hashlib.sha256(token.encode()).hexdigest()
+    matched = re.fullmatch(r"scrypt\$([0-9a-fA-F]{32})\$([0-9a-fA-F]{128})", stored)
+    if matched:
+        salt, expected = matched.groups()
+
+        def encode(value):
+            digest = hashlib.scrypt(
+                value.encode(), salt=bytes.fromhex(salt), n=16384, r=8, p=1, dklen=64
+            ).hex()
+            return "scrypt$" + salt + "$" + digest
+
+        if hmac.compare_digest(encode(cookie).split("$")[-1], expected.lower()):
+            return encode(token)
+    raise ValueError(
+        "Session hash encoding not proved by actual cookie and stored registration"
+    )
 
 
 def adapter_from_schema(schema, transport):
@@ -159,15 +186,13 @@ def adapter_from_schema(schema, transport):
     if normalized(credential).endswith("hash"):
         cookies = transport.get("cookies", [])
         sample = schema[table].get("sample") or {}
-        if (
-            len(cookies) != 1
-            or sample.get(credential)
-            != hashlib.sha256(cookies[0]["value"].encode()).hexdigest()
-        ):
+        if len(cookies) != 1:
             raise ValueError(
                 "Session hash encoding not proved by actual cookie and stored registration"
             )
-        stored_token = hashlib.sha256(token.encode()).hexdigest()
+        stored_token = observed_session_seed(
+            cookies[0]["value"], sample.get(credential), token
+        )
     session_seed = {owner: account_id, credential: stored_token}
     for name, field in sf.items():
         if name in session_seed:
