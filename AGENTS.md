@@ -14,6 +14,8 @@
 
 ## 开发与交付
 
+新运行、审阅源码、diff、原始日志和图表检查材料优先放仓库内 gitignored 的 `work/`，按版本、输入和引擎隔离；保持历史工件原字节，禁止把材料纳入 Git 或平台 ZIP。
+
 长期维护 main，按需创建短期分支和 worktree，完成后移除。提交前执行：
 
 ```sh
@@ -22,4 +24,4 @@ make check
 
 上游原测试在独立解释器中执行，清除真实模型凭据并阻断外网。模型模拟和浏览器重集成按开发指南显式启用。上游快照、教师材料、固定验收与模板排除自动格式化；其余 Python 用 Ruff，文档工具版本来自 package.json 与锁文件。
 
-架构、开发、打包分别见 `docs/architecture.md`、`docs/development.md`、`docs/packaging.md`。长期理由归 `.agents/notes/`，沿用 agent-maintenance 规则。旧版 legacy 只通过固定标签恢复，不在当前代码中添加别名或重建旧驱动。
+架构、开发、交付分别见 `docs/architecture.md`、`docs/development.md`、`docs/submission.md`。长期理由归 `.agents/notes/`，沿用 agent-maintenance 规则。legacy 已停止维护，历史版本按 `docs/results.md` 的 SHA 或 `work/legacy-archive/` 恢复，不在当前代码中添加别名或重建旧驱动。

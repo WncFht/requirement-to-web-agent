@@ -65,7 +65,7 @@ def check(root: Path) -> list[str]:
     anchors = {}
     for path in sorted(root.rglob("*.md")):
         relative = path.relative_to(root)
-        if relative.parts[0] == "upstream":
+        if relative.parts[0] in {"upstream", "work"}:
             continue
         if relative.parts[:2] == ("assets", ".crossnote"):
             continue

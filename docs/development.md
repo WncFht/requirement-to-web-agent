@@ -1,32 +1,33 @@
-# 开发指南
+# 开发与维护
 
-当前维护两条路线：默认 upstream 贴近固定教师源码，coding 独立开发。用户仍禁止真实模型 API 调用；下面的生成命令仅作接口参考，离线验证可执行。
+默认 upstream 贴近固定教师源码，coding 独立维护。真实模型 API 与网站评测仍停用；生成命令仅作接口参考。安装步骤见[根 README](../README.md)，版本、包内容及上传见[交付指南](submission.md)。
 
 ## 修改范围
 
-| 改动           | 所属位置与要求                                                                   |
-| -------------- | -------------------------------------------------------------------------------- |
-| 更新教师路线   | 先确定上游提交，更新 upstream/ 和 upstream.json；必要小修正记录在 upstream.patch |
-| 改进 coding    | 修改 coding_agent/；support 是保留的检查依赖，模板和冻结测试不能为修绿而改       |
-| 平台入口与目录 | main.py、runtime/；保持引擎隔离和失败终态                                        |
-| 打包与独立验收 | scripts/；保留源码身份、原始断言及正负控制                                       |
+| 改动           | 所属位置与要求                                                                         |
+| -------------- | -------------------------------------------------------------------------------------- |
+| 教师路线       | 固定提交后更新 `upstream/`、`upstream.json`；必要修正登记 `upstream.patch`，保留原测试 |
+| coding         | `coding_agent/`；support 为独立检查依赖，模板和冻结测试不得为修绿而改                  |
+| 平台边界       | `main.py`、`runtime/`；保持隔离、失败拒绝和所属进程清理                                |
+| 打包、独立验收 | `scripts/`；保留来源、固定断言和正负控制                                               |
 
-不要继续向旧 legacy 添加补丁。旧调度、契约推断与 interactions 仍能在 `pre-upstream-migration-2026-11-02` 标签中查看。当前没有 legacy 别名或 --resume；需要复核旧实验时用固定标签的独立 checkout 和原协议。
+不继续维护 legacy；按[历史证据](results.md#历史证据)恢复独立版本，不给当前入口增加别名或 `--resume`。当前工作区执行 `python main.py` 会包含未提交改动；`make run` 使用指定提交的上传包，二者身份不同。
 
-## 安装与检查
+## 离线检查与格式
 
-Python 3.12、Node 22、npm 和 uv 为前提，安装步骤见根 README。执行：
+Python 3.12、Node 22、npm、uv 为前提。在根 README 的安装步骤后运行：
 
 ```sh
 make check
+# 仅在需要修正维护源码/文档格式时运行：
 make format
 ```
 
-检查包含上游完整文件哈希、上游原单测、coding/平台/打包回归、Notes、Ruff、Markdownlint 与 Prettier。上游文件和测试不经本地格式工具改写，原测试单独启动解释器，清除真实模型配置并阻断外网。交互终端测试使用 TERM=xterm，避免把模拟 TTY 当成 dumb 终端。
+统一检查包含快照文件哈希、教师原测试、coding/平台/打包回归、Notes、Ruff、Prettier 和 Markdownlint。教师原测试使用独立解释器，清除真实模型配置并阻断外网；终端模拟使用 TERM=xterm。不得跳过原测试或将非 GREEN 报告记为成功。
 
-当前上游原测试已有相应回归支持 2 个兼容修正：失败退出码和 SDK 超时类型。不能通过跳过原测试或把非 GREEN 报告算成功来保留未记录的行为差异。
+教师快照、根输入、固定验收、示例和 coding 模板不参与格式化。git-format-staged 处理暂存内容，CI 使用相同入口；Markdownlint 修正改变文件后需重新暂存。维护技能与检查来源记录在 `.agents/maintenance-source.json`。
 
-重浏览器模拟需要 Node 22、Chromium 和已准备的依赖快照，不调用真实模型：
+重浏览器模拟需已准备的 Node 22 依赖和 Chromium，不调用真实模型：
 
 ```sh
 export PATH="$HOME/.local/share/mise/installs/node/22.23.2/bin:$PATH"
@@ -34,54 +35,71 @@ ARC_RUN_BROWSER_TESTS=1 ARC_TEST_DEPENDENCIES=/absolute/dependency-snapshot \
   .venv/bin/python -m unittest discover -s tests -p test_coding_checks.py -q
 ```
 
-原候选已验证的本机 Node 为 22.23.2；不要将其他 ABI 的 better-sqlite3 混用。Windows 可以直接执行 Python 检查入口，make 和部署 Bash 需要相应环境。
+受测 Node 为 22.23.2，不混用其他 ABI 的 better-sqlite3。Windows 可直接运行 Python 检查入口；make、部署和部分命令需要 Bash。
 
 ## 模型配置与运行
 
-两条路线都读取环境中的 OPENAI_BASE_URL、OPENAI_API_KEY。make run 从 gitignored 的根 .env 读取配置，环境变量优先；ZIP 不携带 .env。包装入口缺省 MODEL=deepseek-flash。
+两条路线读取 OPENAI_BASE_URL、OPENAI_API_KEY。`make run` 读取 gitignored 的根 `.env`，环境变量优先；ZIP 不携带 `.env`，包装入口缺省 MODEL=deepseek-flash。
 
-| 配置                                      | 行为                                                          |
-| ----------------------------------------- | ------------------------------------------------------------- |
-| ARC_AGENT_ENGINE                          | 源码默认 upstream；ZIP 固定所选引擎                           |
-| MODEL_REASONING、VISUAL_REASONING         | upstream 默认 low，沿用上游；不会套用旧 legacy 的关闭思考开关 |
-| MAX_OUTPUT_TOKENS                         | upstream 默认 320000，按上游配置，不是本地已验证的提供方额度  |
-| ARC_AGENT_MAX_TURNS/TOKENS/SECONDS        | coding 默认 100 轮、2500000 token、1200 秒                    |
-| ARC_AGENT_OUTPUT_TOKENS/TRANSPORT_RETRIES | coding 默认 8192 和 1                                         |
+| 配置                                      | 行为                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| ARC_AGENT_ENGINE                          | 源码默认 upstream，ZIP 固定所选引擎          |
+| MODEL_REASONING、VISUAL_REASONING         | upstream 默认 low，沿用教师配置              |
+| MAX_OUTPUT_TOKENS                         | upstream 默认 320000，不表示提供方额度已验证 |
+| ARC_AGENT_MAX_TURNS/TOKENS/SECONDS        | coding 默认 100 轮、2500000 token、1200 秒   |
+| ARC_AGENT_OUTPUT_TOKENS/TRANSPORT_RETRIES | coding 默认 8192、1                          |
 
 ```sh
-# 接口参考；真实模型生成目前禁止执行。
-make run ENGINE=upstream INPUT=input OUT=../work/manual-upstream-001
-make run ENGINE=coding INPUT=input OUT=../work/manual-coding-001
-make serve OUT=../work/manual-upstream-001 PORT=3000
+# 真实模型生成目前禁止执行，仅作接口参考。
+make run ENGINE=upstream INPUT=input OUT=work/manual-upstream-001
+make run ENGINE=coding INPUT=input OUT=work/manual-coding-001
+make serve OUT=work/manual-upstream-001 PORT=3000
 ```
 
-直接 `python main.py input --output-dir <目录>` 使用当前工作区，包括未提交改动。make run 执行指定提交的同一份上传包，要求新目录。平台预置模板由薄层隔离生成并备份交付；日志中的临时目录保存失败诊断，已有编译状态不被当作新模板。
+要求新的 OUT，并在相邻 run.json 记录身份。平台预置模板由适配层隔离生成并备份发布；失败工件保留，已有编译输出不当作新模板。目录和进程语义见[架构](architecture.md#平台与评估边界)。
 
 ## 诊断与验收
 
-upstream 首先看 `.arc/compilation.json`、各阶段报告与 compiler.log；--model-log 才保存详细模型输入输出。coding 先看 `.arc/agent/result.json`，再按事件查找原调用、检查和附件。原生日志及用量边界不同，不直接比较旧 summarizer 的数字。
+upstream 先看 `.arc/compilation.json`、逐阶段报告及 compiler.log，`--model-log` 才保存详细模型输入输出；coding 先看 `.arc/agent/result.json`，再沿事件查调用、检查与附件。原生格式和测点不同，旧汇总工具不自动适配新格式；未返回 usage 和未闭合计时保持未知，不计零成本。
 
-对已有登录应用执行独立固定验收，每个证据路径必须全新：
-
-```sh
-.venv/bin/python scripts/accept_agent.py ../work/my-run --evidence ../work/my-fixed --mode fixed
-.venv/bin/python scripts/accept_agent.py ../work/my-run --evidence ../work/my-production --mode production
-```
-
-字段/环境映射错误归评估错误，诊断不回填原成绩；视觉截图仍需独立复核。原生报告的成功不是教师任务全部通过的证明。
-
-实际 ZIP 的预置目录启动检查会在模型客户端创建前强制停止，完全不连接模型：
+对已有登录应用执行固定验收，证据目录必须全新：
 
 ```sh
-.venv/bin/python scripts/test_platform_startup.py dist/<当前版本>.zip --output ../work/new-startup-check
+.venv/bin/python scripts/accept_agent.py work/my-run --evidence work/my-fixed --mode fixed
+.venv/bin/python scripts/accept_agent.py work/my-run --evidence work/my-production --mode production
 ```
 
-coding 包另有本地假兼容服务全流程，检查测试冻结、跨层修复、构建、交付后审计、PORT 与图片：
+适配错误归评估错误，事后诊断不回填原成绩。完整验收标准与已知缺口见[结果摘要](results.md#当前验收标准)；视觉截图单独复核。
+
+实际 ZIP 的预置目录保护检查在模型客户端创建前停止，不连接模型：
 
 ```sh
-make package ENGINE=coding ZIP=../work/new-coding-package.zip
-.venv/bin/python scripts/test_agent_package.py ../work/new-coding-package.zip \
-  --output ../work/new-package-check --dependencies /absolute/dependency-snapshot --initial-template
+.venv/bin/python scripts/test_platform_startup.py dist/<当前版本>.zip --output work/new-startup-check
 ```
 
-这些模拟不证明真实模型的成功率、视觉质量或 token 优势。历史用量/计时工具仍可复核对应格式的原日志，但不自动适配所有上游报告。
+coding 假兼容服务可离线检查冻结测试、跨层修复、构建、交付后审计、PORT 和图片：
+
+```sh
+make package ENGINE=coding ZIP=work/new-coding-package.zip
+.venv/bin/python scripts/test_agent_package.py work/new-coding-package.zip \
+  --output work/new-package-check --dependencies /absolute/dependency-snapshot --initial-template
+```
+
+这些模拟不增加真实成功样本，也不证明视觉质量或 token 优势。
+
+## 分支与本地材料
+
+长期维护 main，功能分支与 worktree 按需短期使用，完成检查和审阅后移除。共享仓库为 `WncFht/requirement-to-web-agent`；源码历史和交付包用途不同，不把平台 ZIP 当源码备份。
+
+```sh
+git switch -c feat/my-change
+# 确需并行开发时：
+git worktree add -b feat/parallel-change work/parallel-change main
+# 合入且工作区干净后：
+git worktree remove work/parallel-change
+git branch -d feat/parallel-change
+```
+
+新 run、审阅快照、diff、报告和绘图检查优先放仓库内 gitignored 的 `work/`，按版本、引擎和输入隔离，索引为 `work/README.md`；不进入 Git、源码导出或平台 ZIP。历史绝对路径保留在原始记录，兼容软链不视为新 run。
+
+清理前保存协议、源码、冻结测试、调用、报告、截图、数据库和哈希；可删除可重建依赖，不改失败或未知用量。`scripts/archive_runs.py` 不替代数据库/图片备份。`scripts/export_source.py --output-dir <新目录>` 与 Git bundle 用于源码恢复，旧分享包不随 main 自动更新。凭据仅来自环境或 gitignored `.env`，不写入文档、日志、清单或 ZIP。

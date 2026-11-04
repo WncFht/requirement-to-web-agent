@@ -98,6 +98,11 @@ class DocumentChecksTests(unittest.TestCase):
             )
 
         self.assertEqual(run().returncode, 0)
+        # Local run evidence and frozen source exports are not maintained docs.
+        evidence = self.root / "work" / "run-evidence"
+        evidence.mkdir(parents=True)
+        (evidence / "README.md").write_bytes(b"\xff[historical](missing.md)")
+        self.assertEqual(run().returncode, 0)
         self.page.write_text('# Intro\n\n<a href="#missing">bad</a>\n')
         result = run()
         self.assertNotEqual(result.returncode, 0)

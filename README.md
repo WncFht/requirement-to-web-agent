@@ -28,12 +28,11 @@ make check
 ## 打包
 
 ```sh
-make versions
 make package-check ENGINE=upstream
 make package-check ENGINE=coding
 ```
 
-产物为 `dist/agent-<引擎>-<提交SHA>-v3.zip` 和同名哈希清单，只包含指定提交中的运行源码。[打包范围](docs/packaging.md)说明具体内容，[提交指南](docs/submission.md)说明上传及本地运行。
+产物为 `dist/agent-<引擎>-<提交SHA>-v3.zip` 和同名哈希清单，只包含指定提交中的运行源码。包内容、来源检查及上传步骤见[打包与提交](docs/submission.md)，模型配置与本地运行见[开发指南](docs/development.md)。
 
 ## 目录
 
@@ -46,4 +45,4 @@ make package-check ENGINE=coding
 | `tests/`、`scripts/`                 | coding、适配层、打包、独立验收与维护检查             |
 | `docs/`、`.agents/`                  | 当前文档、维护规则与决策理由                         |
 
-共享仓库为 `WncFht/requirement-to-web-agent`。长期维护一个 main，用短期功能分支协作；原本地 legacy 及其实验保留在 `pre-upstream-migration-2026-11-02` 等历史标签中。更多说明见[文档导航](docs/README.md)。
+共享仓库为 `WncFht/requirement-to-web-agent`。文档入口见[导航](docs/README.md)，历史版本和恢复入口见[结果摘要](docs/results.md#历史证据)。
