@@ -1,0 +1,598 @@
+# Stack Overflow developer knowledge sharing
+
+A developer question-and-answer platform for discovering, publishing, answering, commenting on, voting on, and managing questions.
+
+The application, server and evaluator use the fixed UTC time 2026-07-21T12:02:00Z.
+
+For public historical question index: Historical metrics cannot be reproduced by a single new UI post. Missing timestamps use 2026-07-15T12:00:00Z. Answered sample questions contain an answer by Helpful User. Only dedicated voting/editing records are mutable; other samples remain public after deletion of any UI-created question.
+
+For accounts, questions, answers and comments: All ordinary mutable source examples are created through UI within each case. Question titles append the automatically generated worker-run identifier, parallelIndex and case slug; registration email is new_stack_user+<suffix>@example.com. Helpers create a question as the named owner, then answers/comments as the named author in separate authenticated browser contexts. Each case owns its objects.
+
+For session, edit draft, search and voting: Produced only by public interactions. No storage injection or hidden API. Vote effects are relative to the author current public reputation, which may include other independent case contributions.
+
+## REQ-1 Discover the community
+
+Support read a public question anonymously.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-1.1 Read a public question anonymously
+
+An anonymous visitor can open a published question through the public feed or search and read its title, rendered body, tags, and existing answers in "Question post"(role=region). Reading public knowledge requires no session; the header continues to offer "Log in"(role=button) and "Sign up"(role=button). This public access is independent of the authenticated comment controls in REQ-3.2.
+
+**IMG-HOMEPAGE · home**
+
+![IMG-HOMEPAGE · home](reference/homepage.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.1, REQ-6.1
+
+**Scenarios:**
+
+- SCN-REQ-1.1-01 — Read without an account
+  - **Step:** STEP-REQ-1.1-01-01
+    - **Given:** The browser has no session and public historical question index includes How can I safely retry an idempotent HTTP request in Node.js? with its body, tags and answers.
+      Seed prerequisites (prepared before this scenario):
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}]}
+    - **When:** Open Questions, enter the exact title in banner Search, press Enter and choose that title from Search results.
+    - **Then:** The public heading, Question post body and node.js/http/retry tags are readable without a login form; existing Answers remains readable and the banner still offers Log in and Sign up.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-QUESTIONS-PAGE)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+## REQ-2 Account access
+
+Support sign in with email and password, create an account.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-2.1 Sign in with email and password
+
+Clicking "Log in"(role=button) opens "Log in"(role=region) containing "Email"(role=textbox), "Password"(role=textbox), a "Show password"(role=button) toggle, Forgot password? and Sign up entry points. "Show password" reveals the current password without changing its value and becomes "Hide password"(role=button), which restores masking. "Forgot password?"(role=button) remains available as the recovery entry. Submitting valid credentials returns home with "Stack User"(role=button) as the profile action and a session that survives reload. Empty credentials show Email cannot be empty and Password cannot be empty; malformed email shows The email is not a valid email address; an absent account shows No account found with this email; an incorrect password shows The email or password does not match any account. Rejections retain the form and anonymous state.
+
+Login and Sign up are named form regions with errors visible within each form. Forgot password? is an entry affordance only; recovery, public profile and user catalog flows are outside scope. Seeded accounts, password and display names are declared at task level.
+
+**IMG-HOMEPAGE · home**
+
+![IMG-HOMEPAGE · home](reference/homepage.jpeg)
+
+**IMG-LOGIN · login**
+
+![IMG-LOGIN · login](reference/login.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** None
+
+**Scenarios:**
+
+- SCN-REQ-2.1-01 — Sign in and retain session
+  - **Step:** STEP-REQ-2.1-01-01
+    - **Given:** verified accounts contains stack_user@example.com with Password123! and display name Stack User; the browser is anonymous.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"stack_user": {"email": "stack_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+    - **When:** Open Log in from the banner, enter the account Email and Password, submit Log in, and reload the returned homepage.
+    - **Then:** Question feed appears; after reload the banner still exposes Stack User and no Log in action, demonstrating a retained session.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+- SCN-REQ-2.1-02 — Reject empty credentials
+  - **Step:** STEP-REQ-2.1-02-01
+    - **Given:** The anonymous Log in region is open with Email and Password both empty.
+    - **When:** Click Log in inside that form without entering credentials.
+    - **Then:** Email cannot be empty and Password cannot be empty are visible within the retained form; the banner remains anonymous and no account profile action appears.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+- SCN-REQ-2.1-03 — Reject malformed email
+  - **Step:** STEP-REQ-2.1-03-01
+    - **Given:** The anonymous Log in region is open.
+    - **When:** Enter invalid-email-format in Email and Password123! in Password, then submit Log in.
+    - **Then:** The email is not a valid email address appears in the retained form and no Stack User profile action appears.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+- SCN-REQ-2.1-04 — Reject unknown account
+  - **Step:** STEP-REQ-2.1-04-01
+    - **Given:** The anonymous Log in form is open; unknown_user@example.com does not exist in the initial account world.
+    - **When:** Fill Email with unknown_user@example.com and Password with Password123!, then submit Log in.
+    - **Then:** No account found with this email appears in the retained form; no Stack User profile action appears and the browser remains anonymous.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+- SCN-REQ-2.1-05 — Reject wrong password
+  - **Step:** STEP-REQ-2.1-05-01
+    - **Given:** The anonymous Log in form is open and stack_user@example.com exists with Password123!.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"stack_user": {"email": "stack_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+    - **When:** Enter that email and WrongPassword123!, then submit Log in.
+    - **Then:** The email or password does not match any account appears in the retained form; the account profile action is absent.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+- SCN-REQ-2.1-06 — Toggle password visibility
+  - **Step:** STEP-REQ-2.1-06-01
+    - **Given:** The anonymous Log in form is open with its Forgot password? and Sign up entries available; Password starts masked.
+    - **When:** Enter Password123!, click Show password, inspect the field, then click Hide password and inspect again.
+    - **Then:** Password becomes readable and then masked again without changing Password123!; recovery and signup entries remain available throughout the form.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-LOGIN)`
+
+### REQ-2.2 Create an account
+
+Clicking "Sign up"(role=button) opens "Sign up"(role=region) with Join Stack Overflow heading, "Email"(role=textbox), "Password"(role=textbox), password help, consent text, and a Log in entry. Submitting a unique valid email and password creates the account and signs it in automatically, exposing "<registered email>"(role=button) as the profile action when no display name was entered. An existing email shows Email is already in use; a short password shows visible requirements including a minimum of eight characters. Rejections retain the form without an authenticated session. Registration emails use deterministic run, worker, and case suffixes; verification is not added.
+
+Login and Sign up each expose a named form region and submit button. Form errors are visible within their form. Social login and SSO are excluded.
+
+Login and Sign up each expose a named form region and submit button, with errors visible inside the corresponding form. Public profile is a named region. Profile actions in the user catalog combine display name and email to distinguish identical display names; unavailable unauthorized actions may be absent or disabled.
+
+**IMG-HOMEPAGE · home**
+
+![IMG-HOMEPAGE · home](reference/homepage.jpeg)
+
+**IMG-SIGN-UP · signup**
+
+![IMG-SIGN-UP · signup](reference/sign-up.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** None
+
+**Scenarios:**
+
+- SCN-REQ-2.2-01 — Register and automatically sign in
+  - **Step:** STEP-REQ-2.2-01-01
+    - **Given:** A fresh anonymous browser uses an unused new_stack_user email containing the evaluator's deterministic case suffix; Password123! satisfies the declared password rule.
+    - **When:** Open Sign up from the banner, inspect Join Stack Overflow and terms/privacy text, fill Email with the isolated email and Password with Password123!, then submit Sign up.
+    - **Then:** The banner exposes that exact registered email as the profile action and Question feed appears, confirming account creation and automatic authentication.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-SIGN-UP)`
+- SCN-REQ-2.2-02 — Reject duplicate email
+  - **Step:** STEP-REQ-2.2-02-01
+    - **Given:** The anonymous Sign up form is open and verified accounts already contains stack_user@example.com.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"stack_user": {"email": "stack_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+    - **When:** Enter stack_user@example.com and Password123! and submit Sign up.
+    - **Then:** Email is already in use appears within the retained form; Stack User is absent from the banner and no authenticated session is created.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-SIGN-UP)`
+- SCN-REQ-2.2-03 — Reject weak password
+  - **Step:** STEP-REQ-2.2-03-01
+    - **Given:** The anonymous Sign up form is open with an unused weak_password_candidate email using the deterministic case suffix.
+    - **When:** Enter the unused email and short as Password, then submit Sign up.
+    - **Then:** The form visibly explains the minimum eight-character requirement and stays open; the proposed email profile action is absent and registration does not authenticate.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-SIGN-UP)`
+
+## REQ-3 Publish and maintain questions capability
+
+Support open public Questions listing, read question detail, publish a question, revise a question, delete an eligible own question, toggle question upvote, protect question deletion by ownership.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-3.1 Open public Questions listing
+
+Follow Questions in Main navigation. Question feed exposes Ask Question and published question summaries.
+
+**IMG-HOMEPAGE · home**
+
+![IMG-HOMEPAGE · home](reference/homepage.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** None
+
+**Scenarios:**
+
+- SCN-REQ-3.1-01 — Open public Questions listing
+  - **Step:** STEP-REQ-3.1-01-01
+    - **Given:** A visitor is on the populated public homepage.
+      Seed prerequisites (prepared before this scenario):
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}, {"title": "SO Upvote Question", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["http"], "author": "helpful_user", "score": 7, "answers": 0, "views": 12}, {"title": "How does React state update?", "body": "React state updates and rendering examples.", "tags": ["javascript"], "author": "helpful_user", "score": 2, "answers": [{"body": "Batch state updates safely.", "author": "activity_user", "score": 5, "accepted": true}], "views": 18, "asked": "2026-07-20T10:00:00Z", "modified": "2026-07-20T11:00:00Z"}, {"title": "SO Python Unanswered Recent", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["python"], "author": "helpful_user", "score": 0, "answers": 0, "views": 5, "asked": "2026-07-20T12:00:00Z", "modified": "2026-07-20T12:00:00Z"}, {"title": "SO Python Answered Active", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["python"], "author": "helpful_user", "score": 4, "answers": 1, "views": 10, "asked": "2026-07-19T12:00:00Z", "modified": "2026-07-21T11:00:00Z"}]}
+    - **When:** Follow Questions in Main navigation.
+    - **Then:** Question feed exposes Ask Question and published question summaries.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-QUESTIONS-PAGE)`
+
+### REQ-3.2 Read question detail
+
+Selecting "How can I safely retry an idempotent HTTP request in Node.js?"(role=button) from the feed opens that question's heading and "Question post"(role=region), with its rendered source body, node.js/http/retry tags, Ask Question entry, numeric "Score"(role=status), and "Up vote"(role=button), "Down vote"(role=button), "Save"(role=button), "Timeline"(role=button), "Share"(role=button), "Edit"(role=button), and "Follow"(role=button) controls. "Asked"(role=status) and "Modified"(role=status) display shared examples timestamps or an unambiguous UTC equivalent; "View count"(role=status) is at least the initial 42 because opening may increase views. "Author"(role=region) shows Helpful User's identity, avatar, initial reputation, current badges, and time. Authenticated users also see Comments with "Add a comment"(role=button). Feed tags, score, and answer count agree with the detail. Unrequested Share, Follow, and Timeline behavior is not invented.
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.1, REQ-6.1
+
+**Scenarios:**
+
+- SCN-REQ-3.2-01 — Read a published question
+  - **Step:** STEP-REQ-3.2-01-01
+    - **Given:** Authenticate stack_user and use public Search to open the seeded retry question, whose score is 7, initial views 42, Asked July 1 and Modified July 10, with Helpful User as author.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"stack_user": {"email": "stack_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}]}
+    - **When:** Inspect the heading, Question post, named Asked/Modified/View count outputs, tags, vote/save/timeline/share/edit/follow controls, Author information and Comments entry.
+    - **Then:** The exact heading and seeded rendered body appear with node.js/http/retry tags, Score 7, correct UTC Asked and Modified dates and View count at least 42. Author shows Helpful User, avatar, numeric reputation, badges and time; authenticated Comments offers Add a comment. All declared post actions are visible.
+    - **References:** `\ref[requirement](REQ-6.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTIONS-PAGE)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+### REQ-3.3 Publish a question
+
+A signed-in user clicks "Ask Question"(role=button), enters "Title"(role=textbox) with at least 15 characters and "Body"(role=textbox) with at least 220 characters, and selects at least one tag through "Tags"(role=textbox). Markdown renders live in "Preview"(role=region), while "Title character count"(role=status) shows the title length. Entering node.js displays "Suggestions"(role=region) including node.js, http, and retry; the tag input accepts comma-separated selected names. "Post Your Question"(role=button) publishes the entered title, body, and tags, opens their detail,. Missing or insufficient inputs show Title is required (minimum 15 characters), Question body is required (minimum 220 characters), or Please add at least one tag as applicable, retaining the editor without publishing. No upper tag-count limit is invented.
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**IMG-ASK-QUESTION-PAGE · question_editor**
+
+![IMG-ASK-QUESTION-PAGE · question_editor](reference/ask-question-page.jpeg)
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-2.1, REQ-3.1
+
+**Scenarios:**
+
+- SCN-REQ-3.3-01 — Publish with preview and tags
+  - **Step:** STEP-REQ-3.3-01-01
+    - **Given:** Authenticate question_creator with no question having the isolated How can I safely retry an idempotent HTTP request in Node.js without duplicating side effects? title; the shared UI-created examples supplies a valid body longer than 220 characters.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Click Ask Question in Question feed, fill Title with that isolated title and Body with Markdown Retry safety followed by the shared example body; inspect Title character count and Preview. Enter node.js in Tags to inspect suggestions, then enter node.js,http,retry and Post Your Question.
+    - **Then:** The entered title heading, rendered body and node.js/http/retry tag actions are visible on the saved question detail.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTIONS-PAGE)`, `\ref[image](IMG-ASK-QUESTION-PAGE)`, `\ref[image](IMG-QUESTION-PAGE)`
+- SCN-REQ-3.3-02 — Reject missing required fields
+  - **Step:** STEP-REQ-3.3-02-01
+    - **Given:** Authenticate question_creator and open an empty Ask Question editor with no current draft published.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Click Post Your Question with all fields empty; enter a valid isolated title and submit again with Body empty; enter the valid shared example body and submit again with Tags empty.
+    - **Then:** Each stage shows the corresponding exact Title is required (minimum 15 characters), Question body is required (minimum 220 characters), or Please add at least one tag message. The editor remains available and no Question post is published.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTIONS-PAGE)`, `\ref[image](IMG-ASK-QUESTION-PAGE)`, `\ref[image](IMG-QUESTION-PAGE)`
+- SCN-REQ-3.3-03 — Reject too-short title and body
+  - **Step:** STEP-REQ-3.3-03-01
+    - **Given:** Authenticate question_creator and open Ask Question with a valid shared example body and http tag available.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Enter the 14-character title 12345678901234 with valid Body and Tags and submit; replace it with a valid isolated title, set Body to 219 a characters and submit again.
+    - **Then:** The first submission shows the minimum-15 title error and the second the minimum-220 body error; Body remains editable and no Question post is published.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTIONS-PAGE)`, `\ref[image](IMG-ASK-QUESTION-PAGE)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+### REQ-3.4 Revise a question
+
+The owner clicks Edit in Question post to open Title, Body and Tags prefilled from that question, and Edit Summary for a reason. Save edits updates that same question, displays edited metadata and records the reason and old/new body under Timeline → Revision history (region). Tags removed in an edit are absent from the saved post. Rich editor toolbar, revision selection and edit cancellation are outside scope.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**IMG-EDIT-QUESTION · question_editor**
+
+![IMG-EDIT-QUESTION · question_editor](reference/edit-question.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.3
+
+**Scenarios:**
+
+- SCN-REQ-3.4-01 — Save revision and summary
+  - **Step:** STEP-REQ-3.4-01-01
+    - **Given:** UI-create isolated SO Question Edit Save under question_editor with shared example body and node.js,http,retry, then authenticate its owner and open Edit.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_editor": {"email": "question_editor@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Append clarified to Title and Include bounded retry budgets. to Body, set Tags to http,retry and Edit Summary to Fixed a typo in the second paragraph; Save edits and open Timeline.
+    - **Then:** The detail shows the replacement heading and body, edited metadata and only http/retry tags. Revision history contains the summary and both original and replacement body values.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-3.3)`, `\ref[requirement](REQ-3.2)`, `\ref[image](IMG-QUESTION-PAGE)`, `\ref[image](IMG-EDIT-QUESTION)`, `\ref[image](IMG-QUESTIONS-PAGE)`
+
+### REQ-3.5 Delete an eligible own question
+
+The author of an unanswered, minimally engaged UI-created SO Deletable Question can click "Delete"(role=button). Confirmation presents its consequences in "Confirm deletion"(role=dialog), and "Confirm deletion"(role=button) removes the selected question from public Question feed and returns to the populated homepage. Internal soft deletion or database retention is not asserted.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.3, REQ-6.1
+
+**Scenarios:**
+
+- SCN-REQ-3.5-01 — Confirm own question deletion
+  - **Step:** STEP-REQ-3.5-01-01
+    - **Given:** UI-create isolated SO Deletable Question under question_deleter, unanswered and minimally engaged; authenticate that author and open its detail.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_deleter": {"email": "question_deleter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}]}
+    - **When:** Click Delete, inspect the Confirm deletion dialog's consequences, confirm, reopen Questions and search the exact deleted title publicly.
+    - **Then:** Populated Question feed returns and still includes the seeded retry question. The deleted title is absent from both public feed and exact-title Search results; no internal database-retention claim is made.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-3.3)`, `\ref[image](IMG-QUESTION-PAGE)`, `\ref[image](IMG-QUESTIONS-PAGE)`
+
+### REQ-3.6 Toggle question upvote
+
+The question_upvoter account clicks "Up vote"(role=button) on SO Upvote Question, changing "Score"(role=status) from 7 to 8, setting pressed=true, and increasing the author's public "Reputation"(role=status) by 10. Reload retains both changes. Clicking again restores score 7, pressed=false, and the prior reputation. Reputation is measured relative to baseline because Helpful User may receive independent contributions.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-2.1, REQ-3.2
+
+**Scenarios:**
+
+- SCN-REQ-3.6-01 — Apply and remove question upvote
+  - **Step:** STEP-REQ-3.6-01-01
+    - **Given:** Authenticate question_upvoter and open SO Upvote Question with Score 7; record the author's current numeric Reputation from Author.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_upvoter": {"email": "question_upvoter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - public historical question index: {"questions": [{"title": "SO Upvote Question", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["http"], "author": "helpful_user", "score": 7, "answers": 0, "views": 12}]}
+    - **When:** Click Up vote, reload the detail, then click Up vote again.
+    - **Then:** First activation and reload retain Score 8, pressed=true and author reputation baseline+10. Second activation restores Score 7, pressed=false and the recorded reputation baseline.
+    - **References:** `\ref[requirement](REQ-3.1)`, `\ref[requirement](REQ-2.1)`, `\ref[requirement](REQ-3.2)`, `\ref[image](IMG-QUESTION-PAGE)`, `\ref[image](IMG-QUESTIONS-PAGE)`
+
+### REQ-3.7 Protect question deletion by ownership
+
+An ordinary authenticated non-owner has no usable "Delete"(role=button) on another author's eligible question; the action is absent or disabled. The question remains publicly readable in "Question post"(role=region). The author's deletion privilege does not transfer to other users, and moderator behavior is outside these scenarios.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**IMG-QUESTIONS-PAGE · questions**
+
+![IMG-QUESTIONS-PAGE · questions](reference/questions-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.3
+
+**Scenarios:**
+
+- SCN-REQ-3.7-01 — Prevent non-owner question deletion
+  - **Step:** STEP-REQ-3.7-01-01
+    - **Given:** UI-create isolated SO Ownership Protected Question under question_deleter, then authenticate ordinary stack_user and open it through public Search.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"stack_user": {"email": "stack_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "question_deleter": {"email": "question_deleter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Inspect the Question post's Delete availability without invoking any private operation.
+    - **Then:** Delete is absent or disabled, no Confirm deletion dialog opens, and the exact heading and original shared example body remain readable.
+    - **References:** `\ref[requirement](REQ-3.5)`, `\ref[requirement](REQ-6.1)`, `\ref[image](IMG-QUESTION-PAGE)`, `\ref[image](IMG-QUESTIONS-PAGE)`
+
+## REQ-4 Answer and evaluate solutions
+
+Support publish an answer, toggle answer upvote, accept a single answer.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-4.1 Publish an answer
+
+The authenticated answer_submitter opens the UI-created SO Answer Submission Question, enters the the shared UI-created examples answer in "Your Answer"(role=textbox), and clicks "Post Your Answer"(role=button). The detail adds "Answer by Stack User"(role=region) under that question's "Answers"(role=region), showing its author and updating "Answer count"(role=status). Reload retains the answer.
+
+Answers contains answer regions named "Answer by <display name>", unique per question in the supplied data. Author information is scoped to Author. Score is a named numeric status; active votes expose pressed state. Each answer belongs to exactly its question.
+
+Unless a scenario supplies another answer, the standard example answer body is: Use exponential backoff together with an idempotency key so duplicate requests can be safely retried without creating duplicate side effects in downstream services.
+
+Answers is a region containing Answer by <display name> regions, unique per question in the supplied examples. Author information is scoped to Author. Score is a named numeric status and active vote controls expose pressed state. Each answer belongs to its own question.
+
+**IMG-POST-ANSWER · question**
+
+![IMG-POST-ANSWER · question](reference/post-answer.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.3, REQ-3.2
+
+**Scenarios:**
+
+- SCN-REQ-4.1-01 — Publish and discover own answer
+  - **Step:** STEP-REQ-4.1-01-01
+    - **Given:** question_creator has UI-published isolated SO Answer Submission Question with no answers. Authenticate answer_submitter and open that exact question.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "answer_submitter": {"email": "answer_submitter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Enter the standard example body in Your Answer and click Post Your Answer. Inspect Answer by Stack User under Answers and reload the page.
+    - **Then:** Answers contains Answer by Stack User with the submitted body, which remains visible after reload.
+    - **References:** `\ref[requirement](REQ-3.3)`, `\ref[image](IMG-POST-ANSWER)`
+
+### REQ-4.2 Toggle answer upvote
+
+The answer_voter clicks "Up vote"(role=button) within "Answer by Helpful User"(role=region) on the UI-created SO Answer Voting Question. The new answer's "Score"(role=status) changes from 0 to 1, the vote becomes active, and author "Reputation"(role=status) increases by 10. Clicking the same vote again restores score 0, inactive state, and the prior reputation.
+
+Answers contains answer regions named "Answer by <display name>", unique per question in the supplied data. Author information is scoped to Author. Score is a named numeric status; active votes expose pressed state. Each answer belongs to exactly its question.
+
+Answers is a region containing Answer by <display name> regions, unique per question in the supplied examples. Author information is scoped to Author. Score is a named numeric status and active vote controls expose pressed state. Each answer belongs to its own question.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-4.1
+
+**Scenarios:**
+
+- SCN-REQ-4.2-01 — Apply and remove answer upvote
+  - **Step:** STEP-REQ-4.2-01-01
+    - **Given:** UI-create isolated SO Answer Voting Question and a Helpful User answer through Post Your Answer. Authenticate answer_voter, open it, record question Score and answer Author reputation; answer Score starts 0.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"helpful_user": {"email": "helpful_user@example.com", "password": "Password123!", "display_name": "Helpful User", "reputation": 100, "verified": true}, "question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "answer_voter": {"email": "answer_voter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Click Up vote inside Answer by Helpful User, then click the same action again.
+    - **Then:** First activation makes answer Score 1, pressed=true and author reputation baseline+10; second restores Score 0, pressed=false and baseline. The parent question's recorded Score is unchanged at both stages.
+    - **References:** `\ref[requirement](REQ-4.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+### REQ-4.3 Accept a single answer
+
+The question owner answer_accept_owner clicks "Accept answer"(role=button) in Helpful User's answer to mark it with a green check and "Accepted answer"(role=button), persisting after reload. With two answers, accepting the other transfers the marker and leaves exactly one accepted answer. Non-owners have no usable Accept answer action; exclusivity is observed through public markers rather than storage.
+
+Answers contains answer regions named "Answer by <display name>", unique per question in the supplied data. Author information is scoped to Author. Score is a named numeric status; active votes expose pressed state. Each answer belongs to exactly its question.
+
+Answers is a region containing Answer by <display name> regions, unique per question in the supplied examples. Author information is scoped to Author. Score is a named numeric status and active vote controls expose pressed state. Each answer belongs to its own question.
+
+Only the question owner can accept an answer. At most one answer per question is accepted, shown in green and marked Accepted answer.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-4.1
+
+**Scenarios:**
+
+- SCN-REQ-4.3-01 — Accept and replace definitive solution
+  - **Step:** STEP-REQ-4.3-01-01
+    - **Given:** answer_accept_owner UI-creates isolated SO Accepted Answer Question; Helpful User and answer_submitter each publish an answer, the latter saying Use a bounded retry budget with diagnostics. Authenticate the question owner.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"helpful_user": {"email": "helpful_user@example.com", "password": "Password123!", "display_name": "Helpful User", "reputation": 100, "verified": true}, "answer_submitter": {"email": "answer_submitter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "answer_accept_owner": {"email": "answer_accept_owner@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Click Accept answer in Helpful User's answer, reload, then click Accept answer in Answer by Stack User.
+    - **Then:** Helpful User's Accepted answer remains after reload. Accepting Stack User transfers the marker: Answers contains exactly one Accepted answer, on Stack User, with none remaining on Helpful User.
+    - **References:** `\ref[requirement](REQ-4.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTION-PAGE)`
+- SCN-REQ-4.3-02 — Prevent non-owner acceptance
+  - **Step:** STEP-REQ-4.3-02-01
+    - **Given:** answer_accept_owner UI-creates the isolated question and Helpful User posts an answer; authenticate ordinary answer_voter, who does not own the question.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"helpful_user": {"email": "helpful_user@example.com", "password": "Password123!", "display_name": "Helpful User", "reputation": 100, "verified": true}, "answer_voter": {"email": "answer_voter@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "answer_accept_owner": {"email": "answer_accept_owner@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Open the question and inspect Accept answer in Helpful User's visible answer.
+    - **Then:** Accept answer is absent or disabled and Answers has no Accepted answer marker.
+    - **References:** `\ref[requirement](REQ-4.1)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+## REQ-5 Discuss posts capability
+
+Support open a question comment thread, comment on a question, delete an own comment immediately.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-5.1 Open a question comment thread
+
+A public question opened from Questions and Search exposes a Comments region in Question post, with Add a comment available. The anonymous entry may expose the control, but comment submission requires the account established by the comment creation scenario. Existing comments are readable without authentication.
+
+**IMG-ADD-COMMENT · question**
+
+![IMG-ADD-COMMENT · question](reference/add-comment.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-3.2
+
+**Scenarios:**
+
+- SCN-REQ-5.1-01 — Open a question comment thread
+  - **Step:** STEP-REQ-5.1-01-01
+    - **Given:** The declared public retry question is available.
+      Seed prerequisites (prepared before this scenario):
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}]}
+    - **When:** Open the question through public navigation and search.
+    - **Then:** Question post exposes its Comments region and Add a comment.
+    - **References:** `\ref[requirement](REQ-3.2)`, `\ref[image](IMG-ADD-COMMENT)`
+
+### REQ-5.2 Comment on a question
+
+A signed-in user activates Add a comment within Question post, fills Comment and presses Enter. Comments contains a region named Comment <body> displaying that body, author display name and timestamp. The comment remains after reload. Comments belong to the selected question and are ordered chronologically; ordinary comments are created through UI in each scenario.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-2.1, REQ-3.3, REQ-5.1
+
+**Scenarios:**
+
+- SCN-REQ-5.2-01 — Publish a question comment
+  - **Step:** STEP-REQ-5.2-01-01
+    - **Given:** UI-create isolated SO Question Comment Question under question_creator; authenticate question_comment_user and open that question.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "question_comment_user": {"email": "question_comment_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Click Add a comment within Question post, enter Can you share what you tried so far? in Comment and press Enter; reload.
+    - **Then:** The question's Comments contains the submitted text with Stack User attribution and a timestamp, and the same comment remains visible after reload.
+    - **References:** `\ref[requirement](REQ-5.1)`, `\ref[requirement](REQ-3.3)`, `\ref[requirement](REQ-2.1)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+### REQ-5.3 Delete an own comment immediately
+
+The author clicks Delete within their own Comment <body> region. The comment disappears immediately without a confirmation dialog; the question heading and content remain. The comment and parent question are created through UI within this case. Comment editing, replies and voting are outside scope.
+
+**IMG-QUESTION-PAGE · question**
+
+![IMG-QUESTION-PAGE · question](reference/question-page.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** REQ-5.2
+
+**Scenarios:**
+
+- SCN-REQ-5.3-01 — Remove comment without confirmation
+  - **Step:** STEP-REQ-5.3-01-01
+    - **Given:** UI-create isolated SO Comment Delete Question and comment_delete_user's Can you share what you tried so far? comment through Add a comment and Enter; authenticate its author.
+      Seed prerequisites (prepared before this scenario):
+      - verified accounts: {"question_creator": {"email": "question_creator@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}, "comment_delete_user": {"email": "comment_delete_user@example.com", "password": "Password123!", "display_name": "Stack User", "reputation": 100, "verified": true}}
+      - tag catalog: {"tags": [{"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+    - **When:** Open the question and click Delete within that exact comment.
+    - **Then:** The comment disappears immediately, no confirmation dialog appears, and the parent heading and body remain readable.
+    - **References:** `\ref[requirement](REQ-5.1)`, `\ref[requirement](REQ-5.2)`, `\ref[image](IMG-QUESTION-PAGE)`
+
+## REQ-6 Search public questions
+
+Support search public questions.
+
+**Type:** FOLDER
+**Dependencies:** None
+
+### REQ-6.1 Search public questions
+
+Entering react state in the banner's "Search"(role=searchbox) displays real-time "Search suggestions"(role=region). Pressing Enter opens "Search results"(role=region) with relevant public question links ranked by relevance. The initial index includes one known React-state match and nonmatching retry and python posts, which are excluded. Keyword, tag, user, and date criteria remain general capability context; unspecified syntax and ranking examples are not invented.
+
+Search accepts a full published question title and returns that exact matching record, including UI-created questions.
+
+Tag entries use regions named Tag <name>. Selected combobox options expose their visible labels. Tag watches and saved filters belong only to the authenticated account.
+
+Search accepts the complete title of any published question, including one created through the UI, and returns that exact matching record.
+
+**IMG-HOMEPAGE · home**
+
+![IMG-HOMEPAGE · home](reference/homepage.jpeg)
+
+**IMG-SEARCH-AND-FILTER · questions**
+
+![IMG-SEARCH-AND-FILTER · questions](reference/search-and-filter.jpeg)
+
+**Type:** ATOMIC
+**Dependencies:** None
+
+**Scenarios:**
+
+- SCN-REQ-6.1-01 — Suggest and search react state
+  - **Step:** STEP-REQ-6.1-01-01
+    - **Given:** The anonymous public index contains How does React state update? as the unique seeded react-state match and nonmatching retry and python questions.
+      Seed prerequisites (prepared before this scenario):
+      - tag catalog: {"tags": [{"name": "python", "description": "python programming questions", "question_count": 20}, {"name": "node.js", "description": "node.js programming questions", "question_count": 10}, {"name": "http", "description": "http programming questions", "question_count": 8}, {"name": "retry", "description": "retry programming questions", "question_count": 5}]}
+      - public historical question index: {"questions": [{"title": "How can I safely retry an idempotent HTTP request in Node.js?", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["node.js", "http", "retry"], "author": "helpful_user", "score": 7, "answers": 0, "views": 42, "asked": "2026-07-01T12:00:00Z", "modified": "2026-07-10T12:00:00Z"}, {"title": "How does React state update?", "body": "React state updates and rendering examples.", "tags": ["javascript"], "author": "helpful_user", "score": 2, "answers": [{"body": "Batch state updates safely.", "author": "activity_user", "score": 5, "accepted": true}], "views": 18, "asked": "2026-07-20T10:00:00Z", "modified": "2026-07-20T11:00:00Z"}, {"title": "SO Python Unanswered Recent", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["python"], "author": "helpful_user", "score": 0, "answers": 0, "views": 5, "asked": "2026-07-20T12:00:00Z", "modified": "2026-07-20T12:00:00Z"}, {"title": "SO Python Answered Active", "body": "I am building a Node.js service and need a safe retry pattern for idempotent HTTP requests. I have already tried a simple timeout wrapper, but I need guidance on exponential backoff, duplicate suppression, timeout handling, and observability across intermittent failures in production. What patterns should I use and how should I structure retries so the client remains correct, debuggable, and safe for repeated delivery attempts?", "tags": ["python"], "author": "helpful_user", "score": 4, "answers": 1, "views": 10, "asked": "2026-07-19T12:00:00Z", "modified": "2026-07-21T11:00:00Z"}]}
+    - **When:** Enter react state in the banner Search, inspect Search suggestions, then press Enter.
+    - **Then:** Suggestions and Search results expose the React-state title; results exclude the retry title, SO Python Unanswered Recent and SO Python Answered Active.
+    - **References:** `\ref[image](IMG-HOMEPAGE)`, `\ref[image](IMG-SEARCH-AND-FILTER)`

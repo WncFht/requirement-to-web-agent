@@ -1,0 +1,96 @@
+{
+  "kind": "offline_public_test_collection",
+  "tests_executed": false,
+  "model_calls": 0,
+  "node": "v22.23.2",
+  "playwright": "1.64.1",
+  "results": [
+    {
+      "task_id": "arc-bench-lite--12306",
+      "status": "COLLECTED",
+      "collected_tests": 49,
+      "published_test_count": 49,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-lite--bookstack",
+      "status": "COLLECTED",
+      "collected_tests": 12,
+      "published_test_count": 12,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-lite--ctrip",
+      "status": "COLLECTED",
+      "collected_tests": 50,
+      "published_test_count": 50,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-lite--keep",
+      "status": "COLLECTED",
+      "collected_tests": 11,
+      "published_test_count": 11,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-lite--prestashop",
+      "status": "COLLECTED",
+      "collected_tests": 32,
+      "published_test_count": 32,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-lite--stackoverflow",
+      "status": "FAILED",
+      "collected_tests": 27,
+      "published_test_count": 28,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--12306",
+      "status": "COLLECTED",
+      "collected_tests": 142,
+      "published_test_count": 142,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--bookstack",
+      "status": "COLLECTED",
+      "collected_tests": 35,
+      "published_test_count": 35,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--ctrip",
+      "status": "COLLECTED",
+      "collected_tests": 152,
+      "published_test_count": 152,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--keep",
+      "status": "COLLECTED",
+      "collected_tests": 33,
+      "published_test_count": 33,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--prestashop",
+      "status": "COLLECTED",
+      "collected_tests": 86,
+      "published_test_count": 86,
+      "assertions_unchanged": true
+    },
+    {
+      "task_id": "arc-bench-web--stackoverflow",
+      "status": "FAILED",
+      "collected_tests": 66,
+      "published_test_count": 67,
+      "assertions_unchanged": true
+    }
+  ],
+  "total_collected": 695,
+  "total_published": 697,
+  "limitations": "Collection checks loading/counts only. Stack Overflow count mismatch is retained; official assertions are not changed or supplemented."
+}

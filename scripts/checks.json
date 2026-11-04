@@ -101,6 +101,14 @@
             "needs": [],
             "timeout": 60,
             "allow_failure": false
+        },
+        {
+            "id": "platform-snapshot",
+            "command": ["python3", "scripts/platform_materials.py", "verify"],
+            "modes": ["ci", "test"],
+            "needs": [],
+            "timeout": 60,
+            "allow_failure": false
         }
     ]
 }

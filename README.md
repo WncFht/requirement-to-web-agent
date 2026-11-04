@@ -7,15 +7,17 @@
 | `compiler`，默认 | 基于教师仓库固定提交 `13e78ef`，沿用其十三阶段、契约、triggers、模型配置和部署模板 |
 | `coding`         | 我们的单循环候选；先冻结测试，再由同一循环修改整个前后端                           |
 
-`compiler/` 保存教师 `13e78ef` 的完整 141 文件基座，并登记第一轮修正和两个新增的测试准入/冻结模块。来源、原/新哈希及原因见 `compiler.json`，完整差异见 `compiler.patch`。默认引擎由 `upstream` 更名为 `compiler`；旧提交打包仍按原名称选择。`coding_agent/support/` 保留候选原有检查与模板依赖。
+`compiler/` 保存教师 `13e78ef` 的完整 141 文件基座，并逐项登记本地必要修正与新增检查模块。来源、原/新哈希及原因见 `compiler.json`，完整差异见 `compiler.patch`。默认引擎由 `upstream` 更名为 `compiler`；旧提交打包仍按原名称选择。`coding_agent/support/` 保留候选原有检查与模板依赖。
 
-真实模型 API 按用户要求停用；未经重新明确授权，仅进行本地整理与离线验证。两条路线的真实效果尚未完成同期比较，已有结果及限制见[结果摘要](docs/results.md)。
+真实模型 API 默认不调用；仅在用户明确授权的范围与预算内执行生成，其余操作保持本地或离线。两条路线的真实效果尚未完成同期比较，已有结果及限制见[结果摘要](docs/results.md)。
 
 ## 环境与离线检查
 
-使用 Python 3.12、Node 22、npm 和 uv：
+使用 Python 3.12、Node 22、npm、uv 和 Git LFS；首次 clone 后拉取平台快照二进制：
 
 ```sh
+git lfs install
+git lfs pull --include="benchmarks/arc-bench/**"
 uv sync
 uv pip install --python .venv/bin/python -r requirements-dev.txt
 npm ci --ignore-scripts --no-audit --no-fund
@@ -43,6 +45,9 @@ make package-check ENGINE=coding
 | `coding_agent/`                      | 独立循环、检查、工具和记录；support 是保留的检查依赖 |
 | `input/`、`examples/`、`acceptance/` | 原教师任务、扩展示例和固定独立验收                   |
 | `tests/`、`scripts/`                 | coding、适配层、打包、独立验收与维护检查             |
+| `benchmarks/`                        | 官方平台材料、公开断言与LFS档案；与生成运行分开      |
 | `docs/`、`.agents/`                  | 当前文档、维护规则与决策理由                         |
+
+平台Smoke/Lite/完整版材料、离线导出与公开测试工具见[平台材料与本地验证](docs/platform.md)。Smoke隐藏测试和公开测试计数差异均保留，不将本地检查宣称为平台等价。
 
 共享仓库为 `WncFht/requirement-to-web-agent`。文档入口见[导航](docs/README.md)，历史版本和恢复入口见[结果摘要](docs/results.md#历史证据)。

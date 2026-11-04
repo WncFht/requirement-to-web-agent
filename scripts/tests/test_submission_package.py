@@ -214,6 +214,7 @@ class SubmissionPackageTests(unittest.TestCase):
             self.write(f"compiler/{number:02d}_stage.py", f"STAGE = {number}\n")
         self.write("compiler/tests/test_compiler.py", "# development only\n")
         self.write("compiler/input/requirements.yaml", "private fixture\n")
+        self.write("benchmarks/arc-bench/sample/acceptance.spec.ts", "public fixture\n")
         self.write("coding_agent/support/shared/project/templates/package.json", "{}")
         self.commit()
         teacher = self.build("compiler", name="compiler.zip")
@@ -225,6 +226,7 @@ class SubmissionPackageTests(unittest.TestCase):
             self.assertNotIn("coding_agent/loop.py", names)
             self.assertNotIn("compiler/tests/test_compiler.py", names)
             self.assertNotIn("compiler/input/requirements.yaml", names)
+            self.assertFalse(any(name.startswith("benchmarks/") for name in names))
             self.assertNotIn("legacy/00_stage.py", names)
         with zipfile.ZipFile(coding["zip_path"]) as archive:
             names = archive.namelist()

@@ -1,0 +1,3744 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-11-05",
+  "captured_utc": "2026-11-04T18:48:20.569474+00:00",
+  "source": "https://arc-bench.com/competitions",
+  "scope": "Official downloadable Smoke, Lite and full Web task artifacts; not a platform run or hidden-test reconstruction.",
+  "competitions": [
+    {
+      "id": "first-competition",
+      "title": "Smoke Competition",
+      "published_test_count": 5,
+      "task_ids": [
+        "first-competition--ticket-booking"
+      ],
+      "metadata": "catalogs/first-competition.json"
+    },
+    {
+      "id": "arc-bench-lite",
+      "title": "ARC-Bench Lite: Web Application",
+      "published_test_count": 182,
+      "task_ids": [
+        "arc-bench-lite--12306",
+        "arc-bench-lite--bookstack",
+        "arc-bench-lite--ctrip",
+        "arc-bench-lite--keep",
+        "arc-bench-lite--prestashop",
+        "arc-bench-lite--stackoverflow"
+      ],
+      "metadata": "catalogs/arc-bench-lite.json"
+    },
+    {
+      "id": "arc-bench-web",
+      "title": "ARC-Bench: Web Application",
+      "published_test_count": 515,
+      "task_ids": [
+        "arc-bench-web--12306",
+        "arc-bench-web--bookstack",
+        "arc-bench-web--ctrip",
+        "arc-bench-web--keep",
+        "arc-bench-web--prestashop",
+        "arc-bench-web--stackoverflow"
+      ],
+      "metadata": "catalogs/arc-bench-web.json"
+    }
+  ],
+  "tasks": [
+    {
+      "competition": "first-competition",
+      "task_id": "first-competition--ticket-booking",
+      "title": "Train Ticket Booking Demo",
+      "platform_test_count": 5,
+      "platform_module_count": 2,
+      "yaml_nodes_including_root": 3,
+      "scenarios": 2,
+      "reference_files": 3,
+      "test_source_files": 0,
+      "spec_files": 0,
+      "requirements_sha256": "ce9b5490e2454c118784452467975e113a4160999b5ef46c052c634fa7e4aba4",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": false,
+      "tests_origin": "Official tests not exposed; endpoint 404 and frontend skips test fetch.",
+      "input_yaml": "tasks/first-competition--ticket-booking/input/requirements.yaml",
+      "metadata": "tasks/first-competition--ticket-booking/task.json",
+      "test_response": null,
+      "acceptance": null,
+      "reference_archive": "archives/first-competition-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--12306",
+      "title": "12306 railway travel",
+      "platform_test_count": 49,
+      "platform_module_count": 31,
+      "yaml_nodes_including_root": 50,
+      "scenarios": 49,
+      "reference_files": 14,
+      "test_source_files": 35,
+      "spec_files": 31,
+      "requirements_sha256": "e63e2d3f2389b7ad1abdc3daefafa49dd4bf1fd738814671bdf8a71550b448b4",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--12306/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--12306/task.json",
+      "test_response": "tasks/arc-bench-lite--12306/tests.json",
+      "acceptance": "tasks/arc-bench-lite--12306/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--bookstack",
+      "title": "BookStack knowledge base",
+      "platform_test_count": 12,
+      "platform_module_count": 8,
+      "yaml_nodes_including_root": 12,
+      "scenarios": 12,
+      "reference_files": 7,
+      "test_source_files": 9,
+      "spec_files": 8,
+      "requirements_sha256": "e183912ef246fa52eecc91523656bd5339c0b214a78f785eb6b16d7377d526c2",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--bookstack/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--bookstack/task.json",
+      "test_response": "tasks/arc-bench-lite--bookstack/tests.json",
+      "acceptance": "tasks/arc-bench-lite--bookstack/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--ctrip",
+      "title": "Ctrip travel services",
+      "platform_test_count": 50,
+      "platform_module_count": 32,
+      "yaml_nodes_including_root": 37,
+      "scenarios": 50,
+      "reference_files": 15,
+      "test_source_files": 34,
+      "spec_files": 32,
+      "requirements_sha256": "f74f1b51bd8a822400d6d0b0b28dbca945ae16338264d3303780673b565862c4",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--ctrip/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--ctrip/task.json",
+      "test_response": "tasks/arc-bench-lite--ctrip/tests.json",
+      "acceptance": "tasks/arc-bench-lite--ctrip/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--keep",
+      "title": "Keep personal note management",
+      "platform_test_count": 11,
+      "platform_module_count": 6,
+      "yaml_nodes_including_root": 9,
+      "scenarios": 11,
+      "reference_files": 9,
+      "test_source_files": 8,
+      "spec_files": 6,
+      "requirements_sha256": "234f4510ab5082163800f6022a389b2c7dbf8609c44e3754582d9c009d2582a2",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--keep/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--keep/task.json",
+      "test_response": "tasks/arc-bench-lite--keep/tests.json",
+      "acceptance": "tasks/arc-bench-lite--keep/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--prestashop",
+      "title": "PrestaShop B2C storefront",
+      "platform_test_count": 32,
+      "platform_module_count": 19,
+      "yaml_nodes_including_root": 27,
+      "scenarios": 32,
+      "reference_files": 14,
+      "test_source_files": 21,
+      "spec_files": 19,
+      "requirements_sha256": "51c3077ac95d7d389e37b0d8dd50774e4811481fe37bc4e1690aa358c3972aeb",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--prestashop/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--prestashop/task.json",
+      "test_response": "tasks/arc-bench-lite--prestashop/tests.json",
+      "acceptance": "tasks/arc-bench-lite--prestashop/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-lite",
+      "task_id": "arc-bench-lite--stackoverflow",
+      "title": "Stack Overflow developer knowledge sharing",
+      "platform_test_count": 28,
+      "platform_module_count": 17,
+      "yaml_nodes_including_root": 24,
+      "scenarios": 27,
+      "reference_files": 10,
+      "test_source_files": 19,
+      "spec_files": 17,
+      "requirements_sha256": "fd7d59a362c95ba650f91cdabdbfc3a797a2633b5ade84f7db7b5e36e390cd73",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-lite--stackoverflow/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-lite--stackoverflow/task.json",
+      "test_response": "tasks/arc-bench-lite--stackoverflow/tests.json",
+      "acceptance": "tasks/arc-bench-lite--stackoverflow/acceptance",
+      "reference_archive": "archives/arc-bench-lite-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--12306",
+      "title": "12306 railway travel",
+      "platform_test_count": 142,
+      "platform_module_count": 93,
+      "yaml_nodes_including_root": 129,
+      "scenarios": 142,
+      "reference_files": 26,
+      "test_source_files": 96,
+      "spec_files": 93,
+      "requirements_sha256": "2a1b7d66d9e2678313023533fcf831e1434a07aee78274714728495229d5161b",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--12306/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--12306/task.json",
+      "test_response": "tasks/arc-bench-web--12306/tests.json",
+      "acceptance": "tasks/arc-bench-web--12306/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--bookstack",
+      "title": "BookStack knowledge base",
+      "platform_test_count": 35,
+      "platform_module_count": 24,
+      "yaml_nodes_including_root": 34,
+      "scenarios": 35,
+      "reference_files": 19,
+      "test_source_files": 25,
+      "spec_files": 24,
+      "requirements_sha256": "8189d63bbffef9e873d3c27589dbe26532f44afa2d485d3e9d1d8c593f7e7274",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--bookstack/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--bookstack/task.json",
+      "test_response": "tasks/arc-bench-web--bookstack/tests.json",
+      "acceptance": "tasks/arc-bench-web--bookstack/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--ctrip",
+      "title": "Ctrip travel services",
+      "platform_test_count": 152,
+      "platform_module_count": 97,
+      "yaml_nodes_including_root": 107,
+      "scenarios": 152,
+      "reference_files": 46,
+      "test_source_files": 99,
+      "spec_files": 97,
+      "requirements_sha256": "215f676015e688b37718d2a37091b55bff5464e2bfd7af1375a51aaec1d309be",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--ctrip/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--ctrip/task.json",
+      "test_response": "tasks/arc-bench-web--ctrip/tests.json",
+      "acceptance": "tasks/arc-bench-web--ctrip/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--keep",
+      "title": "Keep personal note management",
+      "platform_test_count": 33,
+      "platform_module_count": 16,
+      "yaml_nodes_including_root": 22,
+      "scenarios": 33,
+      "reference_files": 20,
+      "test_source_files": 19,
+      "spec_files": 16,
+      "requirements_sha256": "b1bf79c1579e6bf5fd48034d6e68082e026cd6c3b52abffffdcdd6d6ef101b7c",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--keep/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--keep/task.json",
+      "test_response": "tasks/arc-bench-web--keep/tests.json",
+      "acceptance": "tasks/arc-bench-web--keep/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--prestashop",
+      "title": "PrestaShop B2C storefront",
+      "platform_test_count": 86,
+      "platform_module_count": 55,
+      "yaml_nodes_including_root": 63,
+      "scenarios": 86,
+      "reference_files": 38,
+      "test_source_files": 56,
+      "spec_files": 55,
+      "requirements_sha256": "1cd020c5debbe77d017af7fbd8509b0036d5c079f6ad396c7805d2a84455a487",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--prestashop/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--prestashop/task.json",
+      "test_response": "tasks/arc-bench-web--prestashop/tests.json",
+      "acceptance": "tasks/arc-bench-web--prestashop/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    },
+    {
+      "competition": "arc-bench-web",
+      "task_id": "arc-bench-web--stackoverflow",
+      "title": "Stack Overflow developer knowledge sharing",
+      "platform_test_count": 67,
+      "platform_module_count": 52,
+      "yaml_nodes_including_root": 60,
+      "scenarios": 66,
+      "reference_files": 16,
+      "test_source_files": 54,
+      "spec_files": 52,
+      "requirements_sha256": "feccc47c4a5bc2a4754b45eec82b3181a63a4a91e008283ba7add503904d9263",
+      "api_yaml_matches_zip_bytes": true,
+      "missing_image_references": [],
+      "tests_available": true,
+      "tests_origin": "Official GET tests JSON, UTF-8 content strings; assertions not executed or edited.",
+      "input_yaml": "tasks/arc-bench-web--stackoverflow/input/requirements.yaml",
+      "metadata": "tasks/arc-bench-web--stackoverflow/task.json",
+      "test_response": "tasks/arc-bench-web--stackoverflow/tests.json",
+      "acceptance": "tasks/arc-bench-web--stackoverflow/acceptance",
+      "reference_archive": "archives/arc-bench-web-requirements.zip"
+    }
+  ],
+  "archives": [
+    {
+      "path": "archives/first-competition-requirements.zip",
+      "kind": "requirements",
+      "competition": "first-competition"
+    },
+    {
+      "path": "archives/arc-bench-lite-requirements.zip",
+      "kind": "requirements",
+      "competition": "arc-bench-lite"
+    },
+    {
+      "path": "archives/arc-bench-web-requirements.zip",
+      "kind": "requirements",
+      "competition": "arc-bench-web"
+    },
+    {
+      "path": "archives/starter-blank-python.zip",
+      "kind": "starter",
+      "language": "python"
+    },
+    {
+      "path": "archives/starter-blank-javascript.zip",
+      "kind": "starter",
+      "language": "javascript"
+    },
+    {
+      "path": "archives/starter-blank-typescript.zip",
+      "kind": "starter",
+      "language": "typescript"
+    },
+    {
+      "path": "archives/demo-agent.zip",
+      "kind": "demo"
+    }
+  ],
+  "files": {
+    "catalogs/first-competition.json": {
+      "sha256": "2f11e45af78412b0f6bdc13d30fbbb802276022a53a8aaadfd88761b89e584ac",
+      "bytes": 2304,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition",
+      "kind": "official_response"
+    },
+    "archives/first-competition-requirements.zip": {
+      "sha256": "beeec6bce18de67277aab3f3b3d0d683cdf52b84be47bad91b8f8f1a373c78b5",
+      "bytes": 3828116,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition/requirements-download",
+      "kind": "official_archive"
+    },
+    "catalogs/arc-bench-lite.json": {
+      "sha256": "5a48e03656a45abc3ff1999bb4bedfc0b5f4556b63ab3b06ad1cb92ec5afd36a",
+      "bytes": 7395,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite",
+      "kind": "official_response"
+    },
+    "archives/arc-bench-lite-requirements.zip": {
+      "sha256": "cf5b44c46d4e625d708c419497e32d303d5ff5a7ec482d9e2c5922840ef288af",
+      "bytes": 36383963,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_archive"
+    },
+    "catalogs/arc-bench-web.json": {
+      "sha256": "69022e2375dbac2ef8f78f68a51fd8146fcc5d267204e8123ebd7b205bdb6cad",
+      "bytes": 8210,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web",
+      "kind": "official_response"
+    },
+    "archives/arc-bench-web-requirements.zip": {
+      "sha256": "5eb43a3ea3f20ea0bbe93b6a9a08c8a82950ec3036773c1b3c7613e3fbe7d031",
+      "bytes": 67541593,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_archive"
+    },
+    "tasks/first-competition--ticket-booking/task.json": {
+      "sha256": "127e29f1bd8a282f92098ea2381dd9beeb89a0f3531b0be41adbc17f5453dbb0",
+      "bytes": 15844,
+      "source_url": "https://arc-bench.com/api/requirements/first-competition--ticket-booking?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/first-competition--ticket-booking/input/requirements.yaml": {
+      "sha256": "ce9b5490e2454c118784452467975e113a4160999b5ef46c052c634fa7e4aba4",
+      "bytes": 7250,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/first-competition--ticket-booking/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/first-competition--ticket-booking?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/first-competition--ticket-booking/docs/requirements.md": {
+      "sha256": "82d23d85a0f54ca9910af46eb342e473ed5c34fa9e6e06457c1940f08c6ecb72",
+      "bytes": 7044,
+      "source_url": "https://arc-bench.com/api/requirements/first-competition--ticket-booking?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--12306/task.json": {
+      "sha256": "b8c95a0cb7d7b04cc2d9d5b589503a904e8b31aa7c213c6229465aa40f25ba4e",
+      "bytes": 245155,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--12306/input/requirements.yaml": {
+      "sha256": "e63e2d3f2389b7ad1abdc3daefafa49dd4bf1fd738814671bdf8a71550b448b4",
+      "bytes": 121224,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--12306/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--12306/docs/requirements.md": {
+      "sha256": "e1c28d813bfecc503e726b2f9df868652da18a51bfc1d6b9bdc7416bec470e9c",
+      "bytes": 111936,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--12306/tests.json": {
+      "sha256": "0730f3dc105dd70bffe43c272f8b9cdb281bbd3847ab2915b51af3f4edc746a1",
+      "bytes": 43935,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-1.1.1.spec.ts": {
+      "sha256": "9627749dd74fb721325ad146faabc05f3e71614188fc29ab3e482cb1bab5417a",
+      "bytes": 521,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-1.1.2.spec.ts": {
+      "sha256": "64ec8d7a9e5a8ba4dde7c24af0dbd8c7018371d0da2597d071ac0a814392ebdb",
+      "bytes": 2547,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "ac232f32466b066837d6c5bdbc48f7c88266f585deecfde32b42e61d7180f778",
+      "bytes": 552,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.1.1.spec.ts": {
+      "sha256": "577fb8e5d28598ac96b488088d5ed1558c89d2e751cacfb56349c7995b6adc21",
+      "bytes": 621,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.1.2.spec.ts": {
+      "sha256": "10b730bcf7c50a8167a4e6ee14090023e7581e5fd07ef62906dfb5968e3f6916",
+      "bytes": 1338,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.1.3.spec.ts": {
+      "sha256": "96c8ee9a00e36df745b7a7f84196f9d42b2229b08a0c4261418b50aec412958c",
+      "bytes": 1091,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "97905248361a3b588f41e440f251f08068c8f1d86c397c7c1c04c337c2b004b8",
+      "bytes": 1507,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.3.1.spec.ts": {
+      "sha256": "311b4012a833b8a8af3f4ad99d6481025b05c53466fa4c9b0a01fd80ce6acbf1",
+      "bytes": 480,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.3.2.spec.ts": {
+      "sha256": "a70fc8d1baa5906aeba55343bce865836ef772faafb6ac7ab88e8407a9768def",
+      "bytes": 817,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.4.1.spec.ts": {
+      "sha256": "15bd3962b902cfa43b1482c85069ffbf7c664d8723dc692fddfa108fc900dc41",
+      "bytes": 567,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.5.1.spec.ts": {
+      "sha256": "3e8a6079c2a1affb79c968582378febbb5eb869c944c263d6043e14ce6e8d306",
+      "bytes": 303,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.6.1.spec.ts": {
+      "sha256": "15648808acdbffcbb8a25b3006bd664610427f718e6fab60508c2a36b9974e6b",
+      "bytes": 1245,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-2.7.spec.ts": {
+      "sha256": "a594d74006427e542bca85b3383ed59012a4674adeec4182c36c3870565d8ed8",
+      "bytes": 351,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.1.1.spec.ts": {
+      "sha256": "7c03b2221fe3fd2259e702af684cfd1850d36be965d9de3726f6864b67d75ea4",
+      "bytes": 521,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.1.2.spec.ts": {
+      "sha256": "e029c92e6b4ca01d500e63de756fa4959f99eb8bce9ba0b6695270f9129c9dbc",
+      "bytes": 1155,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.2.1.spec.ts": {
+      "sha256": "13512a0b6744362f1632cbad5007fb4951011822b7579c2b94268bebfbbfffa4",
+      "bytes": 496,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.3.1.spec.ts": {
+      "sha256": "36b468d1e3822ea911c1101ac282476da8f23c430eaafcddf966b3f601282da3",
+      "bytes": 424,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.3.2.spec.ts": {
+      "sha256": "01034ccf2f4390447a040c717988112d8e9a84e953cab5b7101a77712e3687ef",
+      "bytes": 675,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-3.3.3.spec.ts": {
+      "sha256": "555f450d864d54621c3c24a9577c2201914d090fd213dee6feac7931b6b4a7d5",
+      "bytes": 576,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "f23054f2555b0b72917f332b4cb22f348dcc8954b1bb73ae18d5e9cdf8636233",
+      "bytes": 571,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "0a86a790339485034268d6e8a6ce17a76b2520a717e33b624d0500fa0a3934ad",
+      "bytes": 2488,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.1.1.spec.ts": {
+      "sha256": "032685f0df73ba1e978066e14621787a37c054b8e7717c6a5311122b1d51ca12",
+      "bytes": 444,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.1.2.spec.ts": {
+      "sha256": "dafa2ece34ddeceb5a47f97dd185182a2a9e347e83f8e1ace1686f12820d053c",
+      "bytes": 841,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.1.3.1.spec.ts": {
+      "sha256": "cd3e5c41ea35915ae1b7a50aea65670882b74961d5cfbdc8ad5f98708916540d",
+      "bytes": 1305,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.2.1.spec.ts": {
+      "sha256": "aeeb9d32cd4cd52baaa535362a00229a07b8269900fde0050094dd00d03d84be",
+      "bytes": 644,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.2.2.spec.ts": {
+      "sha256": "3b7c3f9fb3ce48aa7bd0bf86939a11d7831412b80fda59377773b6f88504f149",
+      "bytes": 1703,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.2.3.1.spec.ts": {
+      "sha256": "3727493c2be8c60bb52091ebe25f279723856ef99bb9ceb43c710a2a8f50fca2",
+      "bytes": 680,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.2.3.2.spec.ts": {
+      "sha256": "c7c2f5af26a239922ce256e821aef85416a4b22243c5a91fe530702cbafb5e29",
+      "bytes": 774,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "1aa0977ac177b46c683b8521e40044c8321406043c3f2a327fd55031efa711d6",
+      "bytes": 1321,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "87ed1a8188422940d27a0e063772b5e5f6cc62c97e841baba1bbf011e1f133d0",
+      "bytes": 662,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "dc8daa94e66cd5a1a8be45cc484fe54a61ca94cabdf4c71001275eefb872f2c2",
+      "bytes": 713,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/fixtures/case-accounts.ts": {
+      "sha256": "f4e95413ce467d0398da7b9aec5376f2b30c5b64e5dccbd1603deb313eaccc9c",
+      "bytes": 2898,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/fixtures/data.ts": {
+      "sha256": "77274ca07a1b9c6b4b6c2edbd67bee185bdf6085a2847aec5952074b1b83f83a",
+      "bytes": 752,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/fixtures/test.ts": {
+      "sha256": "27aa2e4e986725178272698a6ac73a3faa02199a724ecb6d67873f8cb682e19b",
+      "bytes": 105,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--12306/acceptance/helpers.ts": {
+      "sha256": "e2b602187fd209f889ffbe4cb44c53faf3c847b24e92fe48ccbbeb2475a7dd90",
+      "bytes": 9551,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/task.json": {
+      "sha256": "f8a583a512c141a2e4176cd2e752c57ebdf0a475d1f7a365fd171bc451a67dc1",
+      "bytes": 25671,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--bookstack/input/requirements.yaml": {
+      "sha256": "e183912ef246fa52eecc91523656bd5339c0b214a78f785eb6b16d7377d526c2",
+      "bytes": 13007,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--bookstack/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--bookstack/docs/requirements.md": {
+      "sha256": "1f386e0bc522ea5a153ab290c447941704560a6477ada31d489a7caa74588ede",
+      "bytes": 11351,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--bookstack/tests.json": {
+      "sha256": "6b5904e7b35aea7b8e41fd81c55449b5a9880b7609b0628f13c91889ff23ed35",
+      "bytes": 10749,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "f1452ddfc8b196c9f07782fda2df71c225e1517bc77d36daa7884cd6315b03cc",
+      "bytes": 447,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "c96abdad2dcd1c318720fed5b78ab5f542e754fb567bd5e19903c9c034914978",
+      "bytes": 442,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "fe5d8404b5cd02cac0d87f5347cfd01c6945c073633b91450dc4f5f232cba025",
+      "bytes": 444,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "075262f46c8a2de057b13883b9213067d1f68faec5aaae4ecdcadd8a9d71dc07",
+      "bytes": 1050,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "c50b67c0cafa3f89968eb78f2b323e758d11d9bca478e8ea07b9208244e4dbcd",
+      "bytes": 1664,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "0d1fe607109413fbe09c31acd7c2626e52d1338639fcb28558ad35c11ae0308e",
+      "bytes": 1068,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "6f2344941a481771cf2ac5197f0160b2fbc932a05336855b1f187f14b1a35326",
+      "bytes": 581,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "0f215036449ad181b35b1e7c4fa1816d7917c0bd5ed7a48e0e133ed6617965c7",
+      "bytes": 1261,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--bookstack/acceptance/helpers.ts": {
+      "sha256": "bea7d8988f3fcda39719f42af5b4c03a6aa476fb5489613b45e462b78419a8ed",
+      "bytes": 3158,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/task.json": {
+      "sha256": "9a5efe1294267b1474bc34bf5c5401c76a4d91596c62187cd259346874eeac70",
+      "bytes": 200687,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--ctrip/input/requirements.yaml": {
+      "sha256": "f74f1b51bd8a822400d6d0b0b28dbca945ae16338264d3303780673b565862c4",
+      "bytes": 97928,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--ctrip/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--ctrip/docs/requirements.md": {
+      "sha256": "dbb6ea14cbda7f7b5593032bc844a9d86882bfb6d0bc68d47074040249c88995",
+      "bytes": 91237,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--ctrip/tests.json": {
+      "sha256": "9ffe243bdd82ac12f7e82d47372a3f1717a1e7e551b53b82ada148e11d0f011d",
+      "bytes": 42971,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "b0674ee8f398a4b16899da5708a786c55f7662f44a8e1c0dfdf22059f9a81866",
+      "bytes": 764,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "0ae06974ce02ae99bd6bd46ef38fe400997d835022ac3930dee3d6e61a4fe5fd",
+      "bytes": 462,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-1.3.spec.ts": {
+      "sha256": "529befaa33c9b9fc08e685630a0421dbcd78b913dba5b9e3c8fe4fcc6db6a89d",
+      "bytes": 3357,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-1.4.spec.ts": {
+      "sha256": "8c6b5eec8fe806a9a90998aab01c6b2d5e4eb7dbf01a009c7164516168f97f4a",
+      "bytes": 561,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "140308909f9ff321596520746a0d9967167f335687eeab54bf039de45ac83f2a",
+      "bytes": 774,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.10.spec.ts": {
+      "sha256": "62f08974eaeac87b01c8f60417df8b72cf5e8385bfae8b1175fe396d9494a55c",
+      "bytes": 661,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.11.spec.ts": {
+      "sha256": "ec7c7df2997bfd9b77c2fdffaba220db2417a4057339f846b9248e6a2b0df726",
+      "bytes": 1097,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.12.spec.ts": {
+      "sha256": "ab771b55f678aa7b45b774b60df20caf6d6172f841e16655260e2dad8093be74",
+      "bytes": 1056,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.13.spec.ts": {
+      "sha256": "0e0072ccd7a47d9d5695f6cc7783f076f7efc08b54ef53bf52e308b0ae7f5354",
+      "bytes": 964,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.14.spec.ts": {
+      "sha256": "008d297f93f50d54826d7136c0a7d47df13204b123e5f64531dd2f966a6f4430",
+      "bytes": 972,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "0ac1bd92699f62b1b46ccb35858afabe6dbd1abbb5e6e56b16fa72e0fc7ae7c4",
+      "bytes": 1469,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "bbcd1be206f137aef56c82eb5e31c5021ac7a046483eb9094750674f2ab67e69",
+      "bytes": 1616,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "fa178de1bcc793225bf79e0452e31fe052208b6743261bc4eb56aa719be6786e",
+      "bytes": 1729,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "ec27c9ce47dd0cba5f5362a1b2721bcadfc12633bb084360bf4bf3734e79cdfe",
+      "bytes": 871,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.6.spec.ts": {
+      "sha256": "970806d4c59860680e2a8add450d485a4eed8ebaa39e34858a3090216de2ba73",
+      "bytes": 976,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.7.spec.ts": {
+      "sha256": "50c4d03b7abedda2eb8cb1c182f17573e62f5582c4e36bfb6227cc991d13a602",
+      "bytes": 941,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.8.spec.ts": {
+      "sha256": "409742244797c121f7eefaba00934dcd80937a0ec75ae086410817d14b87b86c",
+      "bytes": 1308,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-2.9.spec.ts": {
+      "sha256": "2c36d74fc591328312013936d1490c38136d6622e3290afebf048c458536e9bf",
+      "bytes": 937,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "6bf1400ed18b21a8241d0d8a964b18e0b01adb083e5bd6bc51490e162ca74c0b",
+      "bytes": 1030,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "7ed36769ac77e988564e02b0d55fd8ca3c2fc90f3d96c0601a7fb46475ce33bb",
+      "bytes": 1210,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "0a8cb8b3592420cf2217e2c7e8967545c5fc013a412de1e10b37f89d5d09eb98",
+      "bytes": 775,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "b20697dcfd678a46dbf63131434393abe21d7032d4e7d56667b88bd7275f4d59",
+      "bytes": 753,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.5.spec.ts": {
+      "sha256": "02d926c2ff8e32964dc048af9bfd1b0a8741a76a37465313cbbbd590a7c7a42b",
+      "bytes": 614,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.6.spec.ts": {
+      "sha256": "60e51befaaef557c5f8a368de13203f8c9b42cd606b971cb4646107be4dea954",
+      "bytes": 1042,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "6c76649849ea7c52b231dba2944798c7b832d37206494115d8e2725ebecc5a06",
+      "bytes": 946,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-3.8.spec.ts": {
+      "sha256": "953c89be90f7a93890248f2b9fb291b4d3c752a034fe49cf800d0163aaad5a1e",
+      "bytes": 922,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "b101f443548d9fa6660bc75df8c006b3e88e37e66af1552ca6c282c546cf9a68",
+      "bytes": 690,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "86c81959a6d51bb171f0880fa5916a7184f71351b0678120d96cf328d54dea2d",
+      "bytes": 840,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "f47a72a7769525dd03d108665b40e026e08a60a2dc81455e3a0b847dff7a9756",
+      "bytes": 1803,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "7b840572e700e6d99b5e8bb05d3cb0f9cefd658a8148988bfb760406174350d9",
+      "bytes": 887,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "0e9b3c3f7e3b7a5e01aa91709529e4c573f73ffb2984bbd83191751039cca9ee",
+      "bytes": 841,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/REQ-4.6.spec.ts": {
+      "sha256": "9acbb0248681f3b6511c7383de420b2ff17b710b49b0716be8083154374159d8",
+      "bytes": 690,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/fixtures/data.ts": {
+      "sha256": "a815ad74ec1157ed8594f783940a92e6e0570f94005aebe03f9a1990a860dd9e",
+      "bytes": 693,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--ctrip/acceptance/helpers.ts": {
+      "sha256": "a866a3b34c70ec2e106e9d547aff64a2b8601668ff588a8c1163256d5f95f640",
+      "bytes": 6272,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/task.json": {
+      "sha256": "5314ab965f7a1230be7f8c3e2003059601d1adb5568023663868b8848b70b908",
+      "bytes": 28174,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--keep/input/requirements.yaml": {
+      "sha256": "234f4510ab5082163800f6022a389b2c7dbf8609c44e3754582d9c009d2582a2",
+      "bytes": 14077,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--keep/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--keep/docs/requirements.md": {
+      "sha256": "2d92f393c809ead5e191e053dac65a705ff65783bd4aef6e96a7204adfc77961",
+      "bytes": 12722,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--keep/tests.json": {
+      "sha256": "29d100f68f70160618f5ed07fe17b7d47a746d5400eb6815e89823e5cfe0b822",
+      "bytes": 11304,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "8c4ee2327d712ad3c3236c184ff20a57fed39873244687ecbfd95dd399a015ad",
+      "bytes": 568,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "9312cd04b93d697039b5802aaf1b34ff6e355b88dda01d23f28e0138302921f5",
+      "bytes": 1155,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "1cd685500de28b5dcd68b3b80355ad1f3b6bf1f159cbc397a05c82bb61452c16",
+      "bytes": 621,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "44a624abc682fc4a138de758cfdcd809b752c97522005b3e5a90d6fc530bd6a7",
+      "bytes": 1013,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "dc04a70630c6629c35cb56640e15b430e0b7f38e711588564e41f5c260e31bdf",
+      "bytes": 2375,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "c40ed998a1642f33c4746fb168c109b2f9a27d25dbc8bec14eebe5439654f134",
+      "bytes": 2335,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/fixtures/data.ts": {
+      "sha256": "82a49539a383b9157cc6b43a407bf07d5521a88c58a1940decd590c8681b2738",
+      "bytes": 440,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--keep/acceptance/helpers.ts": {
+      "sha256": "27c7e4e0da7e8f2bfc91ff5451a1281475945b4e1a62ea3388e5a6f5ec38415b",
+      "bytes": 2225,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/task.json": {
+      "sha256": "cccbd69078ae4b149a30c1a3ef9895027fcc6aad229e83e79283c68d91059d83",
+      "bytes": 130462,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--prestashop/input/requirements.yaml": {
+      "sha256": "51c3077ac95d7d389e37b0d8dd50774e4811481fe37bc4e1690aa358c3972aeb",
+      "bytes": 64060,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--prestashop/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--prestashop/docs/requirements.md": {
+      "sha256": "896a235ef806c59d4ed04e77172087d26bf0fe0656f7b428a5aa127afa67fe8d",
+      "bytes": 59536,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--prestashop/tests.json": {
+      "sha256": "e808cf451a6a8e82e98134f489d2f7d3f266942201575fdc16a5121bba174bff",
+      "bytes": 32606,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "2271306c36ca5c40defa158d57e8c66aecfc10f5cbd46d2020043584175dc823",
+      "bytes": 1289,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "e13a9e4ce4b11c50648b9cd4727b5599abc69fae760c754c4b83a79779b7b504",
+      "bytes": 752,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "7068e5b848c56c65cf244935288ece859a5c712770ed74c1fcfdfb100971e559",
+      "bytes": 1038,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "60afdb0a32991bc90d35ad78e4148c93658571310ba44b77ff17cc31ad61fc99",
+      "bytes": 1715,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "2e4b305a91a99eadce7247c774fe3d13d6ef5abcdf81a002b126ceca8ef9babb",
+      "bytes": 1347,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "e2c5900059470218ceac47108e17e97747dbffa0d9625cc7d477c7485ca6f857",
+      "bytes": 1312,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "4df02d2a963e5e9c0407b975fec0ab9a8fdf47e7d60bec45b8898dd411a41d4b",
+      "bytes": 1085,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "3c4e0bad843d30c1fb38aa50e0d42621eba6a17a35013e4729c138bbadfbd704",
+      "bytes": 1012,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "b165e5718c6d8fc9711d889e911d0469f774dd35fe1bf81dfc348ea81df68d43",
+      "bytes": 818,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "f2584df18bdca8ee53d46eb8e143aa7b842e38d8984fff0d19a885c2d6e06214",
+      "bytes": 790,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "2bbb93533a73d06c29bae99385346f81f71c12955a281b4663c0054d99e9c261",
+      "bytes": 1266,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "21ffe8addd76e739fa0843435ed6195127d0f902a08ee06a1f750c5ba71c23b0",
+      "bytes": 1007,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "e16ab203991cf204bcf734aaae9a1e21c99afb6d97a7e0635571b535657cb23a",
+      "bytes": 697,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "c612342b5faa61b88a9ce0def62822744656210654a5b1649a1e95f6ac6beb91",
+      "bytes": 1233,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "692e98612a6ccbe6c77a9dc500afb13bb5195bb09c8294db8800645c00264f7a",
+      "bytes": 1620,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "cd0ab6d2c9094bcbfdfde601aca3e51d132f33c2d63e5536ad9e4b52216ef608",
+      "bytes": 1669,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "bb2e01843ca7f061bde0c91f06a7c12825e0e4a95887626a164abc41e6ec9a5a",
+      "bytes": 1433,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "13cc2e8ca2767c4e9f8d49455e8090e7ecc9162e97dcfa7afae042b1bb92ebe2",
+      "bytes": 556,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/REQ-7.2.spec.ts": {
+      "sha256": "5416ff6f9bb20fa88952d9f7f245b586e1b114fa43ddaf2ac161317ac92739a8",
+      "bytes": 1301,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/fixtures/case-accounts.ts": {
+      "sha256": "d95b1e5b94a57755e1905535a0cf99b374b04bd13490af49af9cc94382178453",
+      "bytes": 2201,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--prestashop/acceptance/helpers.ts": {
+      "sha256": "ea9afcd4129e2ed66aa8b45373bb8ecc3e42514c35a7d5fdd7ef661eb3128f37",
+      "bytes": 6936,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/task.json": {
+      "sha256": "7db89a48a7ed21ac710a46890a61b1eb7f40f04396b871db96a15b56e1a53eee",
+      "bytes": 120766,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--stackoverflow/input/requirements.yaml": {
+      "sha256": "fd7d59a362c95ba650f91cdabdbfc3a797a2633b5ade84f7db7b5e36e390cd73",
+      "bytes": 59085,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-lite/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-lite--stackoverflow/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--stackoverflow/docs/requirements.md": {
+      "sha256": "d72f715728a969805a0c16faa3bee2317c4d1fa1e9b32992436b3d5922ccc881",
+      "bytes": 55139,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-lite--stackoverflow/tests.json": {
+      "sha256": "6ae4f5a01d2343b453c207f3fbc024d0ec50e8cc2b244ef3175a6c62a8518dc8",
+      "bytes": 30709,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "c4040655fb3bd3a4b21b5168bc43f980b8b71e60537fc93e31f54e2ffb058089",
+      "bytes": 701,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "fe07d585eb418924e3b561566c0142dca4e6b1ae82b72b2e6089aa0fd444f502",
+      "bytes": 2970,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "8c264a323ed5d4ab45df05dfe1976ed5073255e6c16d6d1c8dc3fea3f0bfba0d",
+      "bytes": 2016,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "67ee6082d353a9f7b8fb6de1cf9d5b367fa9efb1cc9684b2c1c300b193f1e91e",
+      "bytes": 391,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "80e9e242fe6cee8e415c077e3b105a33427c043c307b417bacfd73cfabf9c087",
+      "bytes": 1540,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "2162330a9207e8ccb5a4c42dc0064ffc47887ca0fbab31f477c8524cf14a219e",
+      "bytes": 3092,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "0ed0f005a25e3170f552dffaa58a67be4671e51c673ac2f2150cfbca82e9f49d",
+      "bytes": 1424,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.5.spec.ts": {
+      "sha256": "52481fdedfb26b1fc2c716da8c5ccab9a80eebe645d5ed935d14e1f33920c8ff",
+      "bytes": 1021,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.6.spec.ts": {
+      "sha256": "d5b8a9ea9c3cc53a05dc4cf01f794191c0c8a64ec92c603834b4e18431feea7c",
+      "bytes": 1170,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "35bbf4a3e745a7052905ec559ffd1328cebd3942c324898a48e7c73034c3d717",
+      "bytes": 696,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "e90d738047f376fe15bf62cf1594f802a0a8006e4bca0293b953d47115025d4b",
+      "bytes": 692,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "c3661a7579afca1cb3d36d2387b68ee42195031ea6ef329eb00b3dd7068297cd",
+      "bytes": 1226,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "21297448108edebbb20f47a7510988dcb375eb9a718e76896560d7048cb1d0d7",
+      "bytes": 1520,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "0f432b3a671b0bdc3bbb146922a935d54217488cdda8ee19088d7202f93d32e4",
+      "bytes": 440,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "e3f7f2884280bb32386750e5e30eb483982f00fdab98491c62554cacad1c117f",
+      "bytes": 643,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "f338ae258d47e19a84ee046facfe2a42198bfba5c940b197f7717eead61ba735",
+      "bytes": 714,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "9f8a6a83b9510efc4421a3a23c1bf29c48b4fe0f74316d5b78cb0ba6d5eefff7",
+      "bytes": 777,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/fixtures/data.ts": {
+      "sha256": "70c252cc825421f9c5848e3223ecd035542f8ba4b1e238332c9201eebca25a58",
+      "bytes": 1470,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-lite--stackoverflow/acceptance/helpers.ts": {
+      "sha256": "bf0690402cb8611b25bec5fe4a229c40f07f137160722c5723b6183358240ffb",
+      "bytes": 6812,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-lite--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/task.json": {
+      "sha256": "6f8593405d4b7999dcf8d11685e5550e42230020bc231df264aa3b7b0a033c3e",
+      "bytes": 819006,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--12306/input/requirements.yaml": {
+      "sha256": "2a1b7d66d9e2678313023533fcf831e1434a07aee78274714728495229d5161b",
+      "bytes": 405527,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--12306/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--12306/docs/requirements.md": {
+      "sha256": "c5961d60768e4e684c8543d80f6dc6d76750a6bcbd3fc6c05c616f312a2c87f2",
+      "bytes": 379710,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--12306/tests.json": {
+      "sha256": "683eea35b8b836942160f403165843fbb98534fe67624c235850829908e30a18",
+      "bytes": 109318,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "8200fbbcd91a8eaf88858b30ade74b517499f2f3c472b018612a41d83451106e",
+      "bytes": 1544,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.1.1.spec.ts": {
+      "sha256": "183bc6d720356abfe2834a6d05a20f82c30303a946a4a9329d7bedfa39c1bfb8",
+      "bytes": 584,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.1.2.spec.ts": {
+      "sha256": "7115a1dfcb851cf9caf199004025e21a2b960d27fe81456bc00db3bee5f6813e",
+      "bytes": 609,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.1.3.spec.ts": {
+      "sha256": "ee83a638682c60a8a4a8693360cba1c0df32989c3700ab98142b3a47b7064760",
+      "bytes": 3481,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.2.1.spec.ts": {
+      "sha256": "6c4f245aa2f0a2be8f9680d5b34d9e72fdf52d2299c47fcfb4b3f96374fbda8b",
+      "bytes": 613,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.2.2.spec.ts": {
+      "sha256": "00157f66b7b6119f0029c1f43f795d077eb877b997c456f9dda5b66ea15e79e8",
+      "bytes": 2547,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.2.3.spec.ts": {
+      "sha256": "ef51298d41a41f8a1000bf4b997d2ffc7bd522e19f8de1b4d1edcbbac6c90904",
+      "bytes": 553,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "1ed5c4fe61015db5cd95ece67d3928a7bf034b45a9d66d0c719f1281c1485ee5",
+      "bytes": 552,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "5ec5e58a94e482b8e644bd3c414873c7939209e966b7a9843b6b94380eedbf6a",
+      "bytes": 1924,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.5.1.spec.ts": {
+      "sha256": "458a14976b21d64353d2854dd40062885b0afc2db86caccd88834eb0874f8cbd",
+      "bytes": 596,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.5.2.spec.ts": {
+      "sha256": "7c8ecba99ae66e42e932613447cfd2d7b7c84bc10fdfe103a6f467a0ba895bb8",
+      "bytes": 450,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-2.5.3.spec.ts": {
+      "sha256": "33f66df1aea90527018e7fcb4fd56cbf3f73ec03a04ccbb4df21383842867773",
+      "bytes": 444,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.1.1.spec.ts": {
+      "sha256": "b9e53b5ac32545b9f8b2648d3d5845ee31574c2030e636361a8e3c5ee79e8ee5",
+      "bytes": 706,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.1.2.spec.ts": {
+      "sha256": "bcbfceba74f9f5045602377b669207a8ec7af1f9089bdf1b32793e72a16fb1d2",
+      "bytes": 1338,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.1.3.spec.ts": {
+      "sha256": "dc81bd9cbc4b875a80064c3b3f28dabc496a5b522a5333a835ac854e81595b8c",
+      "bytes": 1099,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "26103bcba59325417a556da1e14c01a4df9b80c472a887457e2454a12fa6fab8",
+      "bytes": 1515,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.3.1.spec.ts": {
+      "sha256": "c69eeeffe27bfdc4955e799504486de11acc7efb166b68ad6fb5b0134c71aae6",
+      "bytes": 480,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.3.2.spec.ts": {
+      "sha256": "f502c4078a2fe05b0474a437e6e9111eb266e07120230d058b4cb4364301c503",
+      "bytes": 825,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.4.1.spec.ts": {
+      "sha256": "7d354c25b5f4509f2781d541b37004b1212e889fe8b33bb4455b68ad3b59f51f",
+      "bytes": 567,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.4.2.spec.ts": {
+      "sha256": "e3bc21e59b09eb3923d72736e71abfa276e3292f7e19497e89683eb905d69b2c",
+      "bytes": 519,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.5.1.spec.ts": {
+      "sha256": "28ef27ea54cea2855a1870f555d7338f7247b246658186474261a142bda0777d",
+      "bytes": 345,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.5.2.spec.ts": {
+      "sha256": "5bf0a082d2fae896e6c1094f16314866ea9db27f860b5b72b9af08a2cdb69dbe",
+      "bytes": 338,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.5.3.spec.ts": {
+      "sha256": "401c763dd5b58d1ab0cb9465cd9323b93ec0e49ae0cadd1a14b9176c744b3259",
+      "bytes": 339,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.6.1.spec.ts": {
+      "sha256": "4455a95d1a6044dbfb4bb2e44ba202c7766543a55acca541798ddac52bdccc37",
+      "bytes": 1287,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.6.2.spec.ts": {
+      "sha256": "538307a302097b63a5cd8f5fb5c9e60477ac133767a0be6dd9dcf895c22acc14",
+      "bytes": 445,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.6.3.spec.ts": {
+      "sha256": "171ffd539a4fe111ecba5ee6c15e67ad353289370158537c8ef89792dc045717",
+      "bytes": 446,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.6.4.spec.ts": {
+      "sha256": "23f0af7339146b72b0589aee6b01c5fb04650ffe2446ef2f93191267b17ee429",
+      "bytes": 442,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "76b264d1f35d7021ea6f18ef7b030a3d3dc8441aa7dc7f2df789fa6db27c2343",
+      "bytes": 393,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "325245ba24a078e5ba133d4c7725e0f5c37e06ae2587f2621f4b40413743cc98",
+      "bytes": 1151,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-4.2.1.spec.ts": {
+      "sha256": "7d0978ed5ff215cc559ad2b0c01305604eb5dce63beea5472c2b2c7ae82fbf65",
+      "bytes": 365,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-4.2.2.spec.ts": {
+      "sha256": "6570822b13e692f8b7ccc203c09792b716b480d560adf8a2dc2ba65edf7db3c8",
+      "bytes": 355,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-4.2.3.spec.ts": {
+      "sha256": "a5fe61fcca2cddc3569544c9f5c7b1175ca11f01ed6a699f3b88e5db5beea852",
+      "bytes": 359,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.1.1.spec.ts": {
+      "sha256": "017326dec34147b10b7e16a5bdf847f727d8d26f82c13ab3646deeb5872bd403",
+      "bytes": 604,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.1.2.spec.ts": {
+      "sha256": "c9894834bb9c14d605ebee982591293eda08618e367c2b75e05b742df25fe165",
+      "bytes": 1155,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.1.3.spec.ts": {
+      "sha256": "fb4e2fbe4751ffc44a097ddd745513c2044997b19eb4590c00c2c81564f31a84",
+      "bytes": 461,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.2.1.spec.ts": {
+      "sha256": "73ce76ceb64dad65a95613e716febf184f92b1241d4e85e5380333bf86b35c72",
+      "bytes": 587,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.2.2.spec.ts": {
+      "sha256": "f47d6db30aeebb45c62f4d618aa7e3eea3b0210c1881059a212f01228a17988d",
+      "bytes": 1126,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.2.3.spec.ts": {
+      "sha256": "6aa79d0bf664a35a93c7860d3434cc756a7207f686160f7afcda039dc9162663",
+      "bytes": 1173,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.2.4.spec.ts": {
+      "sha256": "4b04a3c7340f446eae804e32e384df89c644518461ad7675a8d703af1ad599db",
+      "bytes": 1235,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.3.1.spec.ts": {
+      "sha256": "01a2cb3cf84d3c878c60d1a3a6ba5fe041fe4db0a8232340fb1b0d2b3e246c53",
+      "bytes": 497,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.3.2.spec.ts": {
+      "sha256": "0c983c1fb2716dffb0e862710c8a64f1f64508511075783bce47cd7b0a4a96fb",
+      "bytes": 675,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.3.3.spec.ts": {
+      "sha256": "edf89bc088e813c4a380dec8c19caa6381b015b415bfd07256a0f3e7afa2e376",
+      "bytes": 585,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.4.1.spec.ts": {
+      "sha256": "df2d483ab1d8323fa1b8221258fef3cf98236e62194e131b0977ed7b46d9a26c",
+      "bytes": 623,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.4.2.spec.ts": {
+      "sha256": "70b97078aa868275418fb7cf039a6694b62573b86d00520f67e8966e81a86fb8",
+      "bytes": 582,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.4.3.spec.ts": {
+      "sha256": "bf1bd1dcfd15a300c89974c564765e3f06c3b50da7d5ffad78cc5b57c244ac81",
+      "bytes": 1798,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "c2a9d0ea3961023619b7156a31f8e1dda2ff5ff0867724bdc1635b1ba555436e",
+      "bytes": 1065,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.6.spec.ts": {
+      "sha256": "7cab2d34d586a6bbf4fc3e6db207816f630cf8333703da54eab5cbc2b0505762",
+      "bytes": 682,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.7.1.spec.ts": {
+      "sha256": "9a26dd2fc2dde9ace413256e91623807fdbe95b360b734d710e594bba4b6a518",
+      "bytes": 600,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.7.2.spec.ts": {
+      "sha256": "c516ef4a5ad684db334f5d540b101bf3c088b0e7f1522ec7451cedf98fb9f612",
+      "bytes": 566,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.7.3.spec.ts": {
+      "sha256": "8786777f2c3856da154f8c8b5e6704e707e3484d42f587ef933100eb19e0aa97",
+      "bytes": 1705,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.8.1.spec.ts": {
+      "sha256": "29aa23ee4cdf40644071ec09c5f5b9ffefe49d926dfb05e4c08c1e20ebfd4386",
+      "bytes": 934,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.8.2.spec.ts": {
+      "sha256": "4e6d1c073da1ee99b320848eb58816b1391f22976ed52ca4fd30618fa22bf0df",
+      "bytes": 713,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.8.3.spec.ts": {
+      "sha256": "53bf8db4c95c7ed98cbecf33152b8ddc841be261bec6066f9e29736e83795fa4",
+      "bytes": 708,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-5.8.4.spec.ts": {
+      "sha256": "b34a4789077e77596c8c31e3a34d3acd0f6ee95f789ba202bd066c18aa4f33e9",
+      "bytes": 712,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "42e616e5f9939e6121bf23a06e21a659f5a616e3c14fbbfc8a5c92bdafcbe3dd",
+      "bytes": 809,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.2.spec.ts": {
+      "sha256": "0f19ec22982128f023139920fefdf6389c8af64bf4ac7e9d5616db341fada757",
+      "bytes": 891,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.3.1.spec.ts": {
+      "sha256": "6133749df101141b81fa4f2cb35610c367ab67ee2f70e7769e50f1c7b59d7e01",
+      "bytes": 787,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.3.2.spec.ts": {
+      "sha256": "4cfc3da4960ba352cea9de74635effe4406c3abf6aa915479239f6dfb9e411d7",
+      "bytes": 741,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.4.spec.ts": {
+      "sha256": "48aaf73ff7f8a555169c21db827d11a0a09d9b6d84ea04ac99568d479567eac4",
+      "bytes": 2563,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.5.spec.ts": {
+      "sha256": "c307ff41d1d446fffb490f9f870575520290d505f09c6f0edcd1aa7d777f375b",
+      "bytes": 2177,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-6.6.spec.ts": {
+      "sha256": "51526bc5fef3b488a8e06f7d264f9cc1de704f5ba725cff9465ecf3b81fcdffb",
+      "bytes": 2378,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "f3c8d6c09695d4cf6371b1a1d06eefe160bd0b1e78f714805e22dd3ccd94fb1e",
+      "bytes": 571,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.2.spec.ts": {
+      "sha256": "e045ece638e9a75ce3df7d420b7f7d2f3f93894c5bba9ce25c8e16760c8e4a1b",
+      "bytes": 2488,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.3.1.spec.ts": {
+      "sha256": "4df90191f8580e398cfd32b37a25ccddb924a1a261d4b2f203ab226361b05a30",
+      "bytes": 921,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.3.2.spec.ts": {
+      "sha256": "07b3463c20bfce13ca2bad0babc6bd0d0ce2f0350ee446720c047e0d5a6393d9",
+      "bytes": 855,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.4.spec.ts": {
+      "sha256": "a2fe5db756299553be67740ba178e38777f34217d114e11f2d45f3786e8e172b",
+      "bytes": 1106,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.5.1.spec.ts": {
+      "sha256": "bddcab85bee3ee534c0b675018349269b5f4fac07818b2ece3230a49732e036c",
+      "bytes": 1098,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-7.5.2.spec.ts": {
+      "sha256": "2310b8b56deeb06c3aba77340c285038afd9c4021be5f91f1e04ce496b75387d",
+      "bytes": 831,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.1.1.spec.ts": {
+      "sha256": "02b756229fcf6f5c994d3ce02a736fa8b5f1fd43451ef53510d26cfe47684354",
+      "bytes": 778,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.1.2.spec.ts": {
+      "sha256": "773dabe8c3a13368c4b59d08eb70252185c9c0aa075177981bc18eca018ac612",
+      "bytes": 948,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.1.3.spec.ts": {
+      "sha256": "5b5b6e9f08921e2758e1650229b16f79d47574fd4d898ee5a9c603df305713bc",
+      "bytes": 638,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.1.4.spec.ts": {
+      "sha256": "3835ebb5ffc9292c616561d770e68167aaeba6a312257c1202415ce0181046e0",
+      "bytes": 665,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.2.1.spec.ts": {
+      "sha256": "e1c70f2ca192941fc241c9bad27463f4237146de2e60d51bcbbbff8c3fc667cc",
+      "bytes": 525,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.2.2.spec.ts": {
+      "sha256": "e72beec391cdd1937782db79380168af032d845cf78a401a163acbfbbb1929ce",
+      "bytes": 841,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.2.3.1.spec.ts": {
+      "sha256": "3b929fe8cfc454935852f81813baa62110f7f9668c6c892ee0ef974df400028d",
+      "bytes": 1305,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.2.3.2.spec.ts": {
+      "sha256": "f7b76cf1f2e782d8d8c9fea52ff56e356e8a556fc595706ca84d115eb07867ab",
+      "bytes": 857,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.2.4.spec.ts": {
+      "sha256": "bd52483d2b657e980a1b94836959a7d65137b10b81d0970a4a2e553f5d99dd9e",
+      "bytes": 469,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.3.1.spec.ts": {
+      "sha256": "a79e0ecf622ed01c244d9b692758579976c32e6a3d7fe1c3619c8a630abd1cf1",
+      "bytes": 728,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.3.2.spec.ts": {
+      "sha256": "9b728a91eab445838554c71873caae54cd4b2e4315897e235ae8a5475cf06be5",
+      "bytes": 1703,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.3.3.1.spec.ts": {
+      "sha256": "d17d66fe509e9956d23e362eff8e9218852c71a83888cf435e85b7b8f1fabfb8",
+      "bytes": 689,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.3.3.2.spec.ts": {
+      "sha256": "ce40e6639d71ce83277d95df64444b69b56f3812e2e91fd1f0acc7de3c4a2a68",
+      "bytes": 774,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.4.spec.ts": {
+      "sha256": "816dcb6f890e56d09054ee1c87ec44b12e1019e2fd2975d316778915846d2f3e",
+      "bytes": 1321,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.5.spec.ts": {
+      "sha256": "e22b0399665b475c63af1a988918a2ffe9e9369800e6cab2173608f34f5b289c",
+      "bytes": 662,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.6.spec.ts": {
+      "sha256": "2492f03c69ced17ef2a1f5b12adf44dedd78831fc8fa96d1c06d63f97427485d",
+      "bytes": 713,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.7.spec.ts": {
+      "sha256": "fa795b3765305be03ce072e10a6a61c98b385aded1dc6be7b06866244161d69d",
+      "bytes": 770,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.8.1.spec.ts": {
+      "sha256": "ea076e53b08875310d45c49d9532210f620cb7e5b4c5ccce22ef07bcb3cb6e8e",
+      "bytes": 943,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-8.8.2.spec.ts": {
+      "sha256": "e47cd0b30218846dd0e8d4e17605971e0578222371f944f01e8c1cfa6ead0220",
+      "bytes": 799,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.1.spec.ts": {
+      "sha256": "687e4ba5596463b78b9504c6abe2d4ccdc17b9aa8b42b69445de21815258a763",
+      "bytes": 804,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.2.1.spec.ts": {
+      "sha256": "d1ff5fc7d823dcc0d99faa7b5918ca7fed4465279441cc0f589c07f71ba14dd4",
+      "bytes": 657,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.2.2.spec.ts": {
+      "sha256": "a82629e65d19a869ded7503cffaccbd5c15282ef2c248248a2aa294e9520df80",
+      "bytes": 1088,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.2.3.spec.ts": {
+      "sha256": "0820d224a6ad79bd234e451e0118fce7065554d82dac3c5c17923d3a45d10148",
+      "bytes": 780,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.3.1.spec.ts": {
+      "sha256": "857b5a898329e52cde92db25b299fb79443f7cf47851f13031ae4ad542d27681",
+      "bytes": 2759,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/REQ-9.3.2.spec.ts": {
+      "sha256": "59ba5fd43a1d0bdd8a3a8a93e6f669edadfb91cc0ed824ee03648ddb0779b73c",
+      "bytes": 573,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/fixtures/data.ts": {
+      "sha256": "1fdc3252480ee2324211db5eec90382611516bf017556a3a27629ea48bbef696",
+      "bytes": 1326,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/fixtures/test.ts": {
+      "sha256": "27aa2e4e986725178272698a6ac73a3faa02199a724ecb6d67873f8cb682e19b",
+      "bytes": 105,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--12306/acceptance/helpers.ts": {
+      "sha256": "844062d802a1eae4b3f98802c9ecf20fb25eea8c26171e761cf7842e6e2b5db2",
+      "bytes": 14101,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--12306/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/task.json": {
+      "sha256": "30cce485a90ddcb3f01400f3f2c1de0f2278548fc12784775026780f82b2b63f",
+      "bytes": 102387,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--bookstack/input/requirements.yaml": {
+      "sha256": "8189d63bbffef9e873d3c27589dbe26532f44afa2d485d3e9d1d8c593f7e7274",
+      "bytes": 51599,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--bookstack/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--bookstack/docs/requirements.md": {
+      "sha256": "9245bcc0557fa638b6424ed5d8eb9ad6a8f154191dfc632939f8c862b1e726b5",
+      "bytes": 46865,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--bookstack/tests.json": {
+      "sha256": "d7891ab48093270e7d098b8ae292d9e1c521d21ce509e85fdc35507741871482",
+      "bytes": 28041,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "dc6d869bf15bc528d7b4bb42ef4c1233d7b7bf94dec27664275fc19d4337e4fb",
+      "bytes": 327,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "1c9adc5389dfad729881888facca2df6f07dcc72d9a0687f8892c293e7c8662a",
+      "bytes": 404,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "0ed493937b461c4c0713b209836405856f278c0a509f3ef116e931b0097236e2",
+      "bytes": 590,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "57fa65987d09b8adef287e026556495eb19b41cb3c2c5adc105d34f28eea3e99",
+      "bytes": 374,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "141563ab2559a411b487b4b83687a09addf904e4a66d386ee037e80fa998f9c0",
+      "bytes": 467,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "804d57f60848195e435625ee26d9179e4814365f6070f3914edb60ef72017c0b",
+      "bytes": 448,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "50896442013b5804dd43600c313c82d281669f2404f77eaf495512558cb0b3e5",
+      "bytes": 450,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "98e4113ad355a848f86d1f73ce2c6b79dd046a8dcf9dc43356037bb71f83026e",
+      "bytes": 1098,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "b79cd84633c1e1ceebc705635eac06eba629e6a1845a8fef4de8fe4f88fb0752",
+      "bytes": 1083,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "8e62aa83ef4e01fa0c6eef3cc5d5e2ebe1f0a2adc80e946949b65d3c602653ea",
+      "bytes": 1714,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "c2de78f4171f63933adfbe35d5743ae7b38cde4a9ad254d453631f351a318786",
+      "bytes": 442,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "520b97c336e316e15a6a5a1fc8fd3436bab3b9f690575c7629467c5fbf09c0c7",
+      "bytes": 950,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "28d8da95c78fa561302f009c66458540a3e7552e95c89e595f080f9664adf4de",
+      "bytes": 1066,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "9ff695eac89b112565d278bab04d1900af88145cf000c87ac64bb504f865600d",
+      "bytes": 1680,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "ff91e97e888568bceb1604233596feb3569f56c8440de427bc9ad10bec6b4759",
+      "bytes": 1068,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-5.6.spec.ts": {
+      "sha256": "b359675e682e8adbc6f6ac84583c76af65d4cf992d0e8ee7f17bb071b69560c2",
+      "bytes": 617,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "e4c612a85aca69ad393f4ee6f3dda1268121a23e66f09699e52aeb55a4270f76",
+      "bytes": 1047,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-6.2.spec.ts": {
+      "sha256": "0eae57de816d8db94f0ca831d706413be33543922550982a2d36fb27c1eb7037",
+      "bytes": 774,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-6.3.spec.ts": {
+      "sha256": "088ef09c3e8b14275651c905214eeea6bef9f5c9499d125110adcd6ac76dc8e1",
+      "bytes": 944,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-6.4.spec.ts": {
+      "sha256": "5a05c49c14ca9a48d6b54d66cea41e878de42349b2fd4df024574e866f544c6d",
+      "bytes": 1261,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "b4190fe9364652188a603c360504c5a9ab6e12ce053a5802c6585ef926cabcf4",
+      "bytes": 1069,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-8.1.spec.ts": {
+      "sha256": "cf87827845d9c66d505b0caa8b39989e21196ae353b3edb86f621f86ccb20593",
+      "bytes": 1355,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-8.2.spec.ts": {
+      "sha256": "23474778718e91b5f0d07784ac75c9c4828f5ce4dab58a118e9ef3dd00b205e6",
+      "bytes": 688,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/REQ-9.1.spec.ts": {
+      "sha256": "2a4f8d0bff7aac1f312496d9441cfd028100dbb24fc1c60d8fc5fe47b4926db3",
+      "bytes": 766,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--bookstack/acceptance/helpers.ts": {
+      "sha256": "502214a60db49215ebe965134f85eb24e8c8c600e65583678f7217fb0764769c",
+      "bytes": 5676,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--bookstack/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/task.json": {
+      "sha256": "3418848c4b1ab59f6f6a6914adc6fe6060e3f2f3d8d2ed1d3974260f3bd95fb5",
+      "bytes": 616577,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--ctrip/input/requirements.yaml": {
+      "sha256": "215f676015e688b37718d2a37091b55bff5464e2bfd7af1375a51aaec1d309be",
+      "bytes": 303261,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--ctrip/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--ctrip/docs/requirements.md": {
+      "sha256": "3d0b0226ca2e2cd99d191edf0c4c2be87e601eae1f4f1b3fe1a85bf8e983342f",
+      "bytes": 285826,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--ctrip/tests.json": {
+      "sha256": "2f16f219bda3094540451cbb066ef2ea30a44ce14582301a13e65aae1c640401",
+      "bytes": 149788,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "d166d0384b45447b153dfd9b35d45f613b803500e778a1013c48f84c11d1f501",
+      "bytes": 940,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.10.spec.ts": {
+      "sha256": "aff0651878c1b6f4b6d22dca98628f25f3845d09921188b66349558a64e537f1",
+      "bytes": 823,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.11.spec.ts": {
+      "sha256": "b6cd104a4dd4b196098a8c717eae743cc6a8c642b6bb8183260857c9fa12029b",
+      "bytes": 823,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.12.spec.ts": {
+      "sha256": "0c1f3573c31972b865f3bde80c9c11c74af499160dfb7a5cbaf0df1cf5e7d66d",
+      "bytes": 1019,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.13.spec.ts": {
+      "sha256": "ddc3948083373aeef5efd9b1822fee8d17e1584e57dc6bdc0e45e249441f03be",
+      "bytes": 757,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.14.spec.ts": {
+      "sha256": "a1b3f5e021d0602890216cd784eeaf295c547f5c9465232c0ab72367917fae5c",
+      "bytes": 820,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.15.spec.ts": {
+      "sha256": "39b76746df84c0b1fb909a1a3551b6bb4c17ff1bf9f2819100eaa4789f765329",
+      "bytes": 1081,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "c4102729118431dba2b3198f9795cd418cfde1e1d34224cd61c0b19764e416d2",
+      "bytes": 893,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.3.spec.ts": {
+      "sha256": "529befaa33c9b9fc08e685630a0421dbcd78b913dba5b9e3c8fe4fcc6db6a89d",
+      "bytes": 3357,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.4.spec.ts": {
+      "sha256": "b294e9de0903888f9a0dcc40dc8e36704648885a1f6daf4d5c6055df07dd24a6",
+      "bytes": 2906,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.5.spec.ts": {
+      "sha256": "3a7beb0bb10c885fa1ab321ed09013f02e866487edae13aecdd09cdcde5edbf5",
+      "bytes": 1746,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.6.spec.ts": {
+      "sha256": "bd4ae46b13b09300467ba971fcff2abce71e8c53649684bc247deb68a8948a06",
+      "bytes": 565,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.7.spec.ts": {
+      "sha256": "36247ff778674a3c920de56f78612c1718c787d49eeffb7ea52a079dae0859ad",
+      "bytes": 2124,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.8.spec.ts": {
+      "sha256": "d17b380d858c367aa86863c9f5104b432ad5d1b3be35f11412d2e0fe7ed1905c",
+      "bytes": 569,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-1.9.spec.ts": {
+      "sha256": "9d6a5238dcee06ac705b7ae7b198f3c56680f39c02c124a7af1b80780575ee6b",
+      "bytes": 1019,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "140308909f9ff321596520746a0d9967167f335687eeab54bf039de45ac83f2a",
+      "bytes": 774,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.10.spec.ts": {
+      "sha256": "08a94a3069cbbbf67f404af21a00707467e260a72c13cee10daab743efee1417",
+      "bytes": 1312,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.11.spec.ts": {
+      "sha256": "b7be9f40d82d20573e548c7748fecca5995743f9086a1b2d51282111cf8bb279",
+      "bytes": 939,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.12.spec.ts": {
+      "sha256": "3ac630993c418814a7106e8df744ef996a4c5d063c97f6c4554fdec64a8ebd7f",
+      "bytes": 669,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.13.spec.ts": {
+      "sha256": "656a006d55f00c12981edf868ebfbe12d5087527df9c4e843daea5defe50f1e9",
+      "bytes": 1097,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.14.spec.ts": {
+      "sha256": "a0eae9fe6b5498bfed69f2bd41002810311d8bd27f1c78358d5b28203b5f3a54",
+      "bytes": 1056,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.15.spec.ts": {
+      "sha256": "f1a2f33adb7cea6a58a4c22ffb983ab6495a6df11dab181c05dd73bb2b6951ff",
+      "bytes": 964,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.16.spec.ts": {
+      "sha256": "5ed228469e4c27f36456f8f29b38bd7bdcef987ea65d08cac34980b93ad8b6db",
+      "bytes": 972,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "0ac1bd92699f62b1b46ccb35858afabe6dbd1abbb5e6e56b16fa72e0fc7ae7c4",
+      "bytes": 1469,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "bbcd1be206f137aef56c82eb5e31c5021ac7a046483eb9094750674f2ab67e69",
+      "bytes": 1616,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "fa178de1bcc793225bf79e0452e31fe052208b6743261bc4eb56aa719be6786e",
+      "bytes": 1729,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "ec27c9ce47dd0cba5f5362a1b2721bcadfc12633bb084360bf4bf3734e79cdfe",
+      "bytes": 871,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.6.spec.ts": {
+      "sha256": "0af40a563bb3e8d4db717b151ac7ccecb0d66bf25ddca299313413439807ce81",
+      "bytes": 659,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.7.spec.ts": {
+      "sha256": "77a33e4a4d60936a2a832bb2ada226e83fd7503731d0df6761f20278c31ee3ff",
+      "bytes": 976,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.8.spec.ts": {
+      "sha256": "3d1112b2215aaa7d4d8351b7016c571ddd9a881327b91666d6f67a77669c7396",
+      "bytes": 1355,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-2.9.spec.ts": {
+      "sha256": "613bdd97f87390061f4a48f9dba217a3f3a9f615cc232dfb5911eaf0b8a717cf",
+      "bytes": 941,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "c20c0a10bd604384de8fe59483f7313407d2ed4b01a7e97f18de61dae1a81716",
+      "bytes": 603,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.10.spec.ts": {
+      "sha256": "612d94d3430e899aa4474e05f6f1e961fc63962caf09b15ddc590462edd5c69a",
+      "bytes": 1044,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.11.spec.ts": {
+      "sha256": "aa0c3e7e7532f1ddf9788b2bb72121c6427e9e3011e9e651155f4b513a068d74",
+      "bytes": 956,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.12.spec.ts": {
+      "sha256": "f64258e06ed2caeb566a8c4fa990af7c897b0bc30df18899e5613fd839f4a498",
+      "bytes": 932,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.13.spec.ts": {
+      "sha256": "d3e4c93e310a3bbe97ea8bdb1b97fc0cd25530cb2c8a162077268dfc431032ad",
+      "bytes": 1135,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.14.spec.ts": {
+      "sha256": "37a045695b0ac4c4681602fa3b152a20f1e2353ec9c2238dd48a82a5ac36cf0f",
+      "bytes": 964,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.15.spec.ts": {
+      "sha256": "880d7dd2eea2daf735f153ba77f34a40aeba226b257e65fc278f97c61ab09b3f",
+      "bytes": 847,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "c38c516b1fd4a839d50069e27f3dad426f85537eefc81219f9228a62d5880ece",
+      "bytes": 1030,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "7b65891632bdeb9fd7bdc1b680b638218e96fed51502ba09c714d1ddad16911b",
+      "bytes": 1210,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "41166ef81e34756f45de2e9207d8b403b41d78ff5b4423891d615819b703a98c",
+      "bytes": 606,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.5.spec.ts": {
+      "sha256": "5d1c57f5c6855c9bf3957c46f965badf86e0f4fdac8dc934b1c96d922a3ddf0e",
+      "bytes": 775,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.6.spec.ts": {
+      "sha256": "781a1b1c8874ba609ba9184237a7e2c21d77b4243a18f007781e5862cfc10b7e",
+      "bytes": 2731,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "7f1cf68891d951144d81406df90a62e9e5d123f9fe88b4498279fd2d84b89d6d",
+      "bytes": 1305,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.8.spec.ts": {
+      "sha256": "0b15958f67b7b7721a5e76913f6988dd41b291bf1c238576253ad7b5137f3b36",
+      "bytes": 753,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-3.9.spec.ts": {
+      "sha256": "49fa7dabeae7357a281ae608b430a3547ad88662073795bbab77f4d33ecff659",
+      "bytes": 622,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "1c9f6933046464afcd47df25b6393792963fb0d39257f1790b422a230e7f6891",
+      "bytes": 698,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "e0155612fe88b7cd81fd0707f375acb5f17e102ae8ae12818160e0cd19acb4f8",
+      "bytes": 2620,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "cd74a444be9d8480647e406af204058fc4ef617697c6eb0568d94205ad753484",
+      "bytes": 840,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "045b0e954afa7c1eb69a784120779b34322331f01079e9b975aea2b997dd8be5",
+      "bytes": 1803,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "80338f5f9b8ef8dcb770715fe8deeb86f3abcd1fb8f7fee6a350e93683376dbf",
+      "bytes": 895,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.6.spec.ts": {
+      "sha256": "2afd7cc66bc79ea75890021ad512384d3bc951448422eae47f2930c1637f6b8d",
+      "bytes": 841,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-4.7.spec.ts": {
+      "sha256": "1ac6a4b33255e45b7a7012a97e6f15d860c8864f080aa4559e03a03e249f7ced",
+      "bytes": 690,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "88e7b65f9a6fbdbf04a66be253b2aa73eed253f06be16f7ce0d86f6b89bc4d2e",
+      "bytes": 1311,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.10.spec.ts": {
+      "sha256": "05572fbfe09ab25f3853f4a735ebcc35ed4ff566c6c56769955ab83925e9a30d",
+      "bytes": 2482,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.11.spec.ts": {
+      "sha256": "556cd5df9109f273dd5a3367bdfd9c429cbb96847b3b89a7c62506972a2e18a0",
+      "bytes": 2405,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.12.spec.ts": {
+      "sha256": "32a722e3146d50982e3a60cc304efa79084f8e90045ee66faa39ac7ec7e225a1",
+      "bytes": 2416,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.13.spec.ts": {
+      "sha256": "4b3e8738be3ffb7988298c1bd19e8afd682d32c65a0f786710e27377b2e0c6d5",
+      "bytes": 2656,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.14.spec.ts": {
+      "sha256": "0309c4c0d5f8e254b47ec623d8adbb06b04d4091e37ac22be8cf267b22add47a",
+      "bytes": 1532,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.15.spec.ts": {
+      "sha256": "67f8452eadc9d18c1801b0bde65aeee182503bf13df52b807e01ace3da3637e1",
+      "bytes": 843,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.16.spec.ts": {
+      "sha256": "b5fe5134f3c8831ad35e977799f470ba8a9338a978e57a42dd2a69cda81541fd",
+      "bytes": 851,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.17.spec.ts": {
+      "sha256": "67fe254c5596b699b4836a8dff51090d55478c68b85f56b708c5dcd6cabb608f",
+      "bytes": 723,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.18.spec.ts": {
+      "sha256": "357d1b755d4e7a35024d1f00cadbc97efbfd40fc7e85673ddd21f7b036f4b336",
+      "bytes": 762,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.19.spec.ts": {
+      "sha256": "1e89126c9b9214ce25d6dbe0a6297ce3e48af53dd21ccdc21f432caef64c4a0f",
+      "bytes": 1224,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "dc3e6be3c430f4017e34df872d8078c3868939b715fc079d859e0dda93981179",
+      "bytes": 1087,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "2a5a0891924032a978ae45fe4d982ee43437f3495cfc38c1f352dc570cd4e62e",
+      "bytes": 1400,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "e50864666f5f903f97ff86396e624e3cab1b9345e38ce79428f653dda55037b7",
+      "bytes": 644,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "297240daec82bedf41e12b7c86c9c2e50fed4cb8dff4bdfbf332943c5ac6bafd",
+      "bytes": 840,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.6.spec.ts": {
+      "sha256": "77d9af34b013dc7ed3843e1a17e4b49b911b44adb861b152f99466780e4d796b",
+      "bytes": 663,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.7.spec.ts": {
+      "sha256": "760da2b43496ba70151ca065063c07950fc24857718836501932f0170404a8be",
+      "bytes": 843,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.8.spec.ts": {
+      "sha256": "e0507201ef919a85869248e64390a4518363464c19a0a2ff6b4ce168d0c8ac7c",
+      "bytes": 745,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-5.9.spec.ts": {
+      "sha256": "2cf4897055d0bafb36147c6ab3e5a6feccc3fb237e9d362b6d0ccc720f50c106",
+      "bytes": 2169,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "43cd9ba4bb25431b8f20bbb14d532bebab929b1d77dd8a109e0b917cfca6cf32",
+      "bytes": 581,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.2.spec.ts": {
+      "sha256": "b1bf7efcf5e18506c3738b15a15a9d3641d771721e1f67c910b39df8e3a8b1ea",
+      "bytes": 993,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.3.spec.ts": {
+      "sha256": "b0f5730233efba712ce4535f15e277a2a6f2446cc7fdbda38485d0b5ffacd3b3",
+      "bytes": 640,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.4.spec.ts": {
+      "sha256": "38dbffe14d236cbac72c2093550bbda1a6c79b7c71d8284e95aebd2f049eabda",
+      "bytes": 1341,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.5.spec.ts": {
+      "sha256": "77072203c8ccf2b78e2ce1254365c87e4df5b8af4553f902f5d543becd780829",
+      "bytes": 842,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.6.spec.ts": {
+      "sha256": "06b92930020fc61a2121aa909775e337e5b32470b8db089f3f0298c9c28f1cff",
+      "bytes": 740,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.7.spec.ts": {
+      "sha256": "b452e11dbeac4ecf397c765c2ff8a15b18c5e13eb3d6e7190cda2d7cf55fbb67",
+      "bytes": 1149,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.8.spec.ts": {
+      "sha256": "fd4eebf38fa19a90f5e24f660a25de50917bf62e089ac1b099a8b15b82b55abe",
+      "bytes": 947,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-6.9.spec.ts": {
+      "sha256": "be8067988376e3ad3ecb5d3881e98f727a2190e193de1cf3054c29aa4f98638a",
+      "bytes": 800,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "0f56dc747c0b482e5e3eb74a1e934012620446d6fb4273081ad920ddafb9562d",
+      "bytes": 497,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.2.spec.ts": {
+      "sha256": "d45938428c3fc41823997d59e93429383df9d2fd9216983737286dd843dda2bc",
+      "bytes": 681,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.3.spec.ts": {
+      "sha256": "0856a91d2f66bb7a6a2cc4173215018b432584fd3ba1a093c164dd85b4f002b1",
+      "bytes": 1442,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.4.spec.ts": {
+      "sha256": "8b04e1ad8e5a06977511de89ab0ee567c280aee0cc83da5d4c5e5a11c6c2d858",
+      "bytes": 710,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.5.spec.ts": {
+      "sha256": "4603dbad9687bd9eeb2d1f17f808ee567efbf6ad92d0d98cab425cc5cef1fb9b",
+      "bytes": 1009,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.6.spec.ts": {
+      "sha256": "7af59c66148a7b93392b9476a73c577ff787938e3a8a371949c4a2e1b0e651df",
+      "bytes": 1199,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.7.spec.ts": {
+      "sha256": "1b3d27730d529ac65685c133e7d5b860b3bc1a46ac33a880e4df5da01bd8a515",
+      "bytes": 1239,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-7.8.spec.ts": {
+      "sha256": "f12ab97d32138c3ad2ad89463a824af9034c821224dc81b937dd0d144c2b1246",
+      "bytes": 879,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-8.1.spec.ts": {
+      "sha256": "5aeb43ab548b24d7bd95c31f64207e6fd742b62582119729434379671c80edc8",
+      "bytes": 535,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-8.2.spec.ts": {
+      "sha256": "4a800c77beb2ad64a06941a0d7bd4d97f6493ed29623e7d8840870d64ca6c7d8",
+      "bytes": 772,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-8.3.spec.ts": {
+      "sha256": "df3057f3dd6c464695f928347aaec2ed9b29130a96431203debde495dbe0d92b",
+      "bytes": 1414,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-8.4.spec.ts": {
+      "sha256": "08d09e28e8294e459a5c2cb20c09762123fe51c3e3403159ea00d4d5fa1d47a7",
+      "bytes": 804,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-9.1.spec.ts": {
+      "sha256": "fda42eccc4be76c06bf55cd944ad099f89a87d7df7ed57b848b77026d04b5511",
+      "bytes": 381,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-9.2.spec.ts": {
+      "sha256": "ac3d5eedc00bca52a9534661a5bb37d18833a5ac20ffba7522ae9b8431758e86",
+      "bytes": 1300,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-9.3.spec.ts": {
+      "sha256": "351999319522c7315dddd4ebfa9869712e40c8b7f956966f247678e2a3a23d7d",
+      "bytes": 1251,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/REQ-9.4.spec.ts": {
+      "sha256": "74f2cb8eaad251a37a98b463d92a28e41f35d4caa646bb3b80249da710912a26",
+      "bytes": 1318,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/fixtures/data.ts": {
+      "sha256": "d345cd900e9fa31a639bcffa9410a5dd59f47b8dd53c8d5363e31d00652c395a",
+      "bytes": 19705,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--ctrip/acceptance/helpers.ts": {
+      "sha256": "f8b81a90bb2d33b9049015f282f28902a78e8c90197ab2b9a6e397f708647727",
+      "bytes": 11057,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--ctrip/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/task.json": {
+      "sha256": "6db93ce6949fda5cee052ae77a2ad5644c9e2323388b055f4ccf1f4774f2f8ce",
+      "bytes": 96214,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--keep/input/requirements.yaml": {
+      "sha256": "b1bf79c1579e6bf5fd48034d6e68082e026cd6c3b52abffffdcdd6d6ef101b7c",
+      "bytes": 48386,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--keep/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--keep/docs/requirements.md": {
+      "sha256": "3a64a5b852933bf9475eaa306c6f10744b94cfb58ec5995df79a55cc2f2f051e",
+      "bytes": 45033,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--keep/tests.json": {
+      "sha256": "22cf34f102c77037b33276e7f8e2867f8ea0b5ea99f97dce056336213eab3300",
+      "bytes": 36616,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "57b78508fbaf2470e80c0e1cc9429f91a23f5c132df6752982664b7ac57d518a",
+      "bytes": 1566,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "9312cd04b93d697039b5802aaf1b34ff6e355b88dda01d23f28e0138302921f5",
+      "bytes": 1155,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "1cd685500de28b5dcd68b3b80355ad1f3b6bf1f159cbc397a05c82bb61452c16",
+      "bytes": 621,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "44a624abc682fc4a138de758cfdcd809b752c97522005b3e5a90d6fc530bd6a7",
+      "bytes": 1013,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "001cde4d8e03b9f561fbd3398d65047aaa456f98add71e58a61fcd91ecd0acbf",
+      "bytes": 1874,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "71cac907443b3687221a33c1f28a7f0c7b65e3f9cdda7170b8b5f94c49331852",
+      "bytes": 2756,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.6.spec.ts": {
+      "sha256": "8513250229fed4b21128806ae40197008dabe8df7d86dbc4f54b8bcefb8effff",
+      "bytes": 2375,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.7.spec.ts": {
+      "sha256": "10c450e74c6de3dc05507a949cac82ce0d2f18aae4e91e5aab663b72b8bcd1fa",
+      "bytes": 1161,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.8.spec.ts": {
+      "sha256": "6c45d7e8c09be176281392105cfe86aa847a33b67431965e3159b21dc9aaee39",
+      "bytes": 2014,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-2.9.spec.ts": {
+      "sha256": "adf9ab364ca73482f1659d2d3e30d7ad9681d55fa789dff46ac248be633953c7",
+      "bytes": 2335,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "a0882c980b6342ba593a114575ea0f0645ab307cf1973dabb73d1834adc2284c",
+      "bytes": 801,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "e2a10bb8d18bcf48537f6fff2328b28245cffb6853764a4d21675a721f820959",
+      "bytes": 2247,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "33df4e844d697e3a6e3c7c2ccbe498051bef2781aa90b472eac08e6327927aa7",
+      "bytes": 2064,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "818c2f4f899d600ad66773d0107f100455aa4259a0c22bd5cbeee49f811c9863",
+      "bytes": 2287,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "a1d0d1900e2c8ee4d41085799c66730e2de0b9ceb462359a1249f976f05567ce",
+      "bytes": 1121,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "9ca54da2bc24e510fdd82ff03d3cd085a31015ef2638410ac0ffde86c78bf9b7",
+      "bytes": 1674,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/fixtures/data.ts": {
+      "sha256": "82a49539a383b9157cc6b43a407bf07d5521a88c58a1940decd590c8681b2738",
+      "bytes": 440,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/helpers.ts": {
+      "sha256": "ba6c2c8fcb747f233480df024004b299f139d9c24e947e45cf1371d3da5ecaab",
+      "bytes": 5003,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--keep/acceptance/visual.ts": {
+      "sha256": "df74d671d67a165a980a3352fc7498b21f1daace0d28c294349f39ce8070ea89",
+      "bytes": 2599,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--keep/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/task.json": {
+      "sha256": "53aaf24ee5d4230195d2edfd0e0eaf0b92b66b03f2776b6a560e6c2241de9f19",
+      "bytes": 386209,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--prestashop/input/requirements.yaml": {
+      "sha256": "1cd020c5debbe77d017af7fbd8509b0036d5c079f6ad396c7805d2a84455a487",
+      "bytes": 185046,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--prestashop/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--prestashop/docs/requirements.md": {
+      "sha256": "b7da3fa4a7d6d97013de7236f87c9f6b85c995534b772a5dd687d5b7f8ec7598",
+      "bytes": 175544,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--prestashop/tests.json": {
+      "sha256": "0dc46cf7ffc9e81874397f510344bf52ed9c4714d3d4928a4941b9b2a2a674d2",
+      "bytes": 90685,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "5dc771ccfe478133f5fad05a8154231187b9e56c11a4d86a22fe9f84b82b7657",
+      "bytes": 2068,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "36bee29c2cf5f64fb1e2d648de4b6ba82667baf1ba15cef775cf175985e4a1e0",
+      "bytes": 1675,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.3.spec.ts": {
+      "sha256": "d86d9fdaac5bb5016816192fe8ea4ccb5622254a052c575856535a593e7bd6c9",
+      "bytes": 980,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.4.spec.ts": {
+      "sha256": "160722d325ad4b2f979f23ffe0889f33273f7a0ce25ad28c722ef9f0be7c798b",
+      "bytes": 1452,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.5.spec.ts": {
+      "sha256": "7733426a79e3b245b95376b51cf0546e1b6481f4d545e114fd2bc1205dbf9965",
+      "bytes": 833,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.6.spec.ts": {
+      "sha256": "abf10fae02e2277cd89f024e31dde95c4db5e700d12fa923f20427d6affc291b",
+      "bytes": 898,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-1.7.spec.ts": {
+      "sha256": "5acd1b3f0c71f190382b1a9cce58109b6abd349a5b464c2f2892d57d961099e4",
+      "bytes": 1295,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "3fe9c0d1f5c290057b504c99d72ff7e76e065af0f549110faff2f9f2f3963b71",
+      "bytes": 1990,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.10.spec.ts": {
+      "sha256": "b203b07d796a0cafa91960b372f533eb556776884cdcb9bbbbcd9bd1be5ef377",
+      "bytes": 1600,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "70bd14f28a6a9d2fc6739e81ef7f43d80347f701b69ff4c84f0472a094759d14",
+      "bytes": 1494,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "60056e671158a619ba7cc4ac988387c6fc0a0d4f582746be6065326b1668d82c",
+      "bytes": 2194,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "450a2fd617db96c9f85b096df117af283738f67f74251f3c042e33c7ac44cb0f",
+      "bytes": 1109,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "c201c025cd808ad7e728c65c982808cfa205e0d57bc14395770fcbe905cb29d5",
+      "bytes": 1227,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.6.spec.ts": {
+      "sha256": "46c080f2dc08243fd24a45ee8a1203354e5b52bf96d8b27486406c00e64edb58",
+      "bytes": 1030,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.7.spec.ts": {
+      "sha256": "37b8442dd19dd431ad2adb623e09681920584c8e40b2cb7cada7fde7c87d5cb4",
+      "bytes": 1003,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.8.spec.ts": {
+      "sha256": "bfd3ae29a0d4c5bb7a13849a09a8663364004d3772a5beeff6a76352c3e18ed4",
+      "bytes": 1015,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-2.9.spec.ts": {
+      "sha256": "83ecac18c4f85a39fba345441d3dc777ad527887e8da3f6db8155941987ed535",
+      "bytes": 1031,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "2d938fa4519aeab1818aea8b9e86e6f18636c3f0c61d6aa2751dce03fc5b2149",
+      "bytes": 1416,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "db24b9fd8a3a404e45bfa56e5219cf467491b3d06f93a9460ed634e8c479a1a7",
+      "bytes": 2100,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "c7522e2c4837e33790953f0c6de56732c27c22990c726f1e65df908279b181ad",
+      "bytes": 1692,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "1c6cee101f8340716c60c6c5c4c00099fe0d008a9ea99aff0cbb25609f5476e3",
+      "bytes": 1298,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.5.spec.ts": {
+      "sha256": "65b4bcc96c242efb5227352c0e621b58c4927d6cc71d032381c8528b546bd10d",
+      "bytes": 1851,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.6.spec.ts": {
+      "sha256": "7d22a36130836d03e9aba8cc6ebdba89b760e13d7c66b481ca851d90dc4687f8",
+      "bytes": 1365,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "182b98bd41c0ce6ffdb777dfb8e26af43555edc9045bdfcfbb144c3a4fce94bc",
+      "bytes": 1014,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.8.spec.ts": {
+      "sha256": "752fbc2e0d3d86c905418b6aadb8a9f56d454372167fbe8734886565b8ebfba0",
+      "bytes": 1257,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-3.9.spec.ts": {
+      "sha256": "5c52f9a39319932407d9b4118e46dd6224a1bd49419375c3f714c1073c12fad6",
+      "bytes": 1698,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "4684a462d7cbe6b00d63f903793dc2a45b0293de9fc289b3b25ae632ca5722ac",
+      "bytes": 1458,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "3189109c3407ae855acc8447ebcd3817613f0c51cd002d43b9cd3acc073013d0",
+      "bytes": 1385,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "a8e0b1605b686a722dcbf405827a21d953d58d825ddfb2772c2e870ede7f7251",
+      "bytes": 1202,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "4f0480638b104689ab32e9ab82b72d541ab3ddaffec614722212ae401cb99947",
+      "bytes": 1158,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "18cab3e25a4b93da823b29e1ced59eb4e0d841b4b22a9cd17b9257c96d055e46",
+      "bytes": 1626,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "dd84d7b597b75b099bf2751596f6c903ea4a5d4bab6b13a340ed9a4cdcea9578",
+      "bytes": 1271,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "738e9853df00328dba31512555f06baa78b5580a284e7a1e4a8bac16f2012211",
+      "bytes": 1088,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "7b386cc3ce180aa7c6c7121879881685828b280ba084f9457f2af6944884794b",
+      "bytes": 1062,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "74a7a8b8c60c660f85ba7e7d345eb20b225a2a4459074c49ad4fc52216e21b0d",
+      "bytes": 1605,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "2c616d5c120936a497cae36a60bb5795eab7a01479b87e7fa73c43d8d5ca3e06",
+      "bytes": 1998,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.6.spec.ts": {
+      "sha256": "8208a662a03469e409acf554503c9e1796be9686be60683ecd74d0815a1221e4",
+      "bytes": 2023,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.7.spec.ts": {
+      "sha256": "e0937f959875fc1afe99ccffdeed593f8d7ef8d6c34093a479090f8e630f10d2",
+      "bytes": 1310,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.8.spec.ts": {
+      "sha256": "a1614708106ad916c0a0d99996a5fdc312a1dfea65e093379fdec01c5a933ce0",
+      "bytes": 1304,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-5.9.spec.ts": {
+      "sha256": "19f70d5389b02d12ff649e9e082b2d4b59666b76d21545adb32a86ebb5660f75",
+      "bytes": 1295,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "476c424ab587e3fe5b1b2e3a80081fefbb68a991edeeba4227723dd068d5e12b",
+      "bytes": 1921,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-6.2.spec.ts": {
+      "sha256": "aef114721add60722d75c4700e27b592338349cc1de527284fb855f271a04e6e",
+      "bytes": 1539,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-6.3.spec.ts": {
+      "sha256": "1697813cf4960e4d1a55a9a3037a47d7b1dece1503ceb993e0ec24bf6181371f",
+      "bytes": 1201,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-6.4.spec.ts": {
+      "sha256": "31b79ac9e586dcb7808198764a6c3811274f062e1e2cf35af29b7db55fb83c89",
+      "bytes": 969,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "49c62876d91594f95b02add6861888e95a6369c83ef2e577fc3f433402cc1f33",
+      "bytes": 1008,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.10.spec.ts": {
+      "sha256": "c8a440d4e87570670a4b9e79bb4fefbabd5eb65340131e2b4a66b16783e0ee93",
+      "bytes": 1198,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.11.spec.ts": {
+      "sha256": "06ba20bf72624f33b8726b201cfda7094d8ebe1c841b20ced7e5de9c7c683d42",
+      "bytes": 1252,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.2.spec.ts": {
+      "sha256": "77a1b2bd28efb3f8550576609bab1ee6d1e5ff64785c8f5034a0ed3e4cb1e678",
+      "bytes": 1699,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.3.spec.ts": {
+      "sha256": "ac0b6fecac229b6ca66a3d343e6ee24b3a5f10b5ba8f159fb2528f6dc748838f",
+      "bytes": 1669,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.4.spec.ts": {
+      "sha256": "42b485e7963c26ceeee3de504606c1cced25dda8b433e8ee6f07caaf5f440bc1",
+      "bytes": 1592,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.5.spec.ts": {
+      "sha256": "2a42b2ca17677c824eb76264b67c55b470bd14bb6b85bd8e4055aa7bbfde1638",
+      "bytes": 1439,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.6.spec.ts": {
+      "sha256": "fe4ae89cd0ca45a397c6b937f5446b9a9b07226189f066a8484a41fb25fad2bc",
+      "bytes": 1575,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.7.spec.ts": {
+      "sha256": "bb6ada75c428938691d718baf32554cf75664d6236b0a4b3e75190179fa50dfc",
+      "bytes": 1555,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.8.spec.ts": {
+      "sha256": "03efd548897732510aad1e287b296e3f1bb11e71dd6af143b679e0f6adb1742d",
+      "bytes": 1525,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/REQ-7.9.spec.ts": {
+      "sha256": "deefd5b0cbb6b73a410d7f319d65ae4f6e5dfb1a1b8eb5d1f710bbaeef18ade5",
+      "bytes": 1442,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--prestashop/acceptance/helpers.ts": {
+      "sha256": "e2058cb10c88a3cab4a3a4cf4513177bf5569f156af0d554bd2ab1dcb0698712",
+      "bytes": 9241,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--prestashop/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/task.json": {
+      "sha256": "3c57fac81c4322a8dbbf6f28ea62574bca6d996c831fea3235ffcfaa671d12ea",
+      "bytes": 383880,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--stackoverflow/input/requirements.yaml": {
+      "sha256": "feccc47c4a5bc2a4754b45eec82b3181a63a4a91e008283ba7add503904d9263",
+      "bytes": 187758,
+      "source_url": "https://arc-bench.com/api/competitions/arc-bench-web/requirements-download",
+      "kind": "official_input"
+    },
+    "tasks/arc-bench-web--stackoverflow/docs/prerequisites.md": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--stackoverflow/docs/requirements.md": {
+      "sha256": "aca3f34d19267974c88bdf668e71af7bbf47d6869f9f6b431f40101a32acff12",
+      "bytes": 178514,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow?catalog=competition",
+      "kind": "api_text_export"
+    },
+    "tasks/arc-bench-web--stackoverflow/tests.json": {
+      "sha256": "b3a4de60b879c26632c992f01f8907f9febd5643cfc2e4515fa2584811b1b9b6",
+      "bytes": 74722,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_response"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-1.1.spec.ts": {
+      "sha256": "95a6df8690d48a1217c886ea0f6e6ce1afa9462078613148ee7763d4e851a4ff",
+      "bytes": 1380,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-1.2.spec.ts": {
+      "sha256": "1d0f77474fe0e9ea35e68c361e35d7ba547206017d6525a546dcc2e544fe99da",
+      "bytes": 828,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-1.3.spec.ts": {
+      "sha256": "69db3cfc33cd6dd5ca69142e7de1d9e9dd8a799b91a27f2499b599bf3d1127ea",
+      "bytes": 701,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.1.spec.ts": {
+      "sha256": "fe07d585eb418924e3b561566c0142dca4e6b1ae82b72b2e6089aa0fd444f502",
+      "bytes": 2970,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.2.spec.ts": {
+      "sha256": "8c264a323ed5d4ab45df05dfe1976ed5073255e6c16d6d1c8dc3fea3f0bfba0d",
+      "bytes": 2016,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.3.spec.ts": {
+      "sha256": "b6435f27b80a2405eedfb1bf97c336f3b78cd28f4c929296b8f99272961376fb",
+      "bytes": 657,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.4.spec.ts": {
+      "sha256": "0d96223990941d805e5e0cd10778919f9487ac8ee0f6312a93cd182d964fa7dd",
+      "bytes": 1983,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.5.spec.ts": {
+      "sha256": "5bd8108defc2a957b17e054b21166933e15a7659e08ba3d468dd136f963690eb",
+      "bytes": 1006,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-2.6.spec.ts": {
+      "sha256": "c4500c311fc396ec8575fd46b1947d9da9bc235cb135b7708dfea2a27a694ff3",
+      "bytes": 1313,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.1.spec.ts": {
+      "sha256": "53c37351708169c1472da22a6d7704c5ab2f2dcedb3a2057eada3bacb9ac1146",
+      "bytes": 457,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.10.spec.ts": {
+      "sha256": "dd5751da21c8bda79b9804c2e0028e22cf706946c0d9d54747391d8f64ce64c4",
+      "bytes": 698,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.2.spec.ts": {
+      "sha256": "a599dc7c8b2eb8fdb43983e591a17613e2cb231340156db43bbca509151ae15a",
+      "bytes": 1549,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.3.spec.ts": {
+      "sha256": "d7609b1f17299804514d7e65ac7e33c72adfff7dd425f4e72bf5171567090a02",
+      "bytes": 3206,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.4.spec.ts": {
+      "sha256": "6b298c775686a64800a4ef647f0559d300a14a75bd5bbd6e7f96cccaa73a24d7",
+      "bytes": 1400,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.5.spec.ts": {
+      "sha256": "52481fdedfb26b1fc2c716da8c5ccab9a80eebe645d5ed935d14e1f33920c8ff",
+      "bytes": 1021,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.6.spec.ts": {
+      "sha256": "9934e88573d4a3739b4c0cf1fd4a979137eb1f5ca4737c5b7d1cf43e64940fdb",
+      "bytes": 1206,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.7.spec.ts": {
+      "sha256": "1e35d8f9b5ae67948d4881762baba5f348a2f4b41090aa6266e61a753af2b7db",
+      "bytes": 719,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.8.spec.ts": {
+      "sha256": "7696963410bb7e542e662957a472f3e5561449104ba981f44923a272604f97ca",
+      "bytes": 718,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-3.9.spec.ts": {
+      "sha256": "59fbaa286753fb3614bd6047a673c97f9816ad1f72b600d75dca06c44c6cdbc1",
+      "bytes": 1384,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.1.spec.ts": {
+      "sha256": "e662a25a57a23fa03838001c5369a82aab1a44003693465a0da2584f75441ac6",
+      "bytes": 869,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.10.spec.ts": {
+      "sha256": "69bb75c32471fd4e47108cdae6a2bd34bb914e43033d4515d6bdcb6dcfece48f",
+      "bytes": 1004,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.2.spec.ts": {
+      "sha256": "e6bfdcf3bbc5f671e3187d7ec7fbde82c164cfca394386720ebfdbb3b13bc661",
+      "bytes": 1262,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.3.spec.ts": {
+      "sha256": "0854310e22cb8c4bdaaa23d07267fd6fb1c0d64d251baea6c3398b586278e06e",
+      "bytes": 1556,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.4.spec.ts": {
+      "sha256": "405506d2a56f4adf7afacca0ceb1973fbc8432553263eb85fa1eb808ca06df2c",
+      "bytes": 868,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.5.spec.ts": {
+      "sha256": "7257b5ef3fd52520379e61c1eb9d24ae0e9b46ae5c3435d76400b87bc5faf4fb",
+      "bytes": 2480,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.6.spec.ts": {
+      "sha256": "313868c7d1f0461ea3f23999a25d6f02ef99023d7d79a542a841b68f1c1f38c1",
+      "bytes": 1586,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.7.spec.ts": {
+      "sha256": "e8f1e3d114f97c511bee12ab4c58662cfe900f47a2e3a6cbd91ee30d069b3bdd",
+      "bytes": 929,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.8.spec.ts": {
+      "sha256": "a2b911ce9afcb25c5278b16a6657d39329336e6bd346dcebb630a250963e1337",
+      "bytes": 1429,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-4.9.spec.ts": {
+      "sha256": "fb3280778f61690e52024b676cfad704015f43aa996f081ef34878b1ad79446b",
+      "bytes": 655,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.1.spec.ts": {
+      "sha256": "2d3e86eb931b3674a588a04f546f313771fb5d04844b5d44b687ee72c2b17f3f",
+      "bytes": 449,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.10.spec.ts": {
+      "sha256": "e9f17bfee9d5cc55a5ac40c090721f24d88098fffa90549efa8dea98e5875475",
+      "bytes": 1118,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.2.spec.ts": {
+      "sha256": "b4e5aacf70ca313368272833e066fe35495ce397e7fedce850116206499696a5",
+      "bytes": 679,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.3.spec.ts": {
+      "sha256": "a81d4009a68538062361c401680569baa845299dd135ef2c6ffbb2870dbbff8a",
+      "bytes": 878,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.4.spec.ts": {
+      "sha256": "f94d7a5310040146fad589d310183d0f0b2efcccf2c5a468eda0173498541da5",
+      "bytes": 801,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.5.spec.ts": {
+      "sha256": "4d384feba88eddbe4edd1edbed2ff0af3549860bbbee75cb373b74ebf2b52e8d",
+      "bytes": 754,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.6.spec.ts": {
+      "sha256": "81057fcc4ca1a0ae508334f4669906339d3303ded92816f35b14cfdf3b295aa9",
+      "bytes": 844,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.7.spec.ts": {
+      "sha256": "4feee0d50d469aa6b75d21ed0604519e4600ff5816fd65392528a82cd032a08c",
+      "bytes": 745,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.8.spec.ts": {
+      "sha256": "b0ef582f922df41404ebda1576721c9e6b409ac74f682abc8b849fd123c94356",
+      "bytes": 1057,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-5.9.spec.ts": {
+      "sha256": "366230a683e46705c6c72003113bd8be4c8805b30ac3e37a0a1e9689cd6251bf",
+      "bytes": 732,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.1.spec.ts": {
+      "sha256": "56f2b6048d75d75f1fc5d5764d2efd5c5990078738eb1313f1f84011f73337ce",
+      "bytes": 1711,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.2.spec.ts": {
+      "sha256": "7ca0f0e8d8ed42659253cd2a0fc18ed8b10ce5525d7c15d5b3a8d1e193613ad5",
+      "bytes": 1003,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.3.spec.ts": {
+      "sha256": "72d56bd7248f17de2f0913dfb52a8efdbececdc2981c5c60dbba539d45e80da2",
+      "bytes": 777,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.4.spec.ts": {
+      "sha256": "1cc8846739e9054bb7f8a90fdf22f31400eca3797d57327f57597c35e8eefb76",
+      "bytes": 755,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.5.spec.ts": {
+      "sha256": "825e9a63aafe6ee8dc75d4b07e1a4e31c5d385007082b0ba65c1b50e368a3a48",
+      "bytes": 2287,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.6.spec.ts": {
+      "sha256": "20a75cfbb14d08edaa1442f8712f15c8f4dec86c795e70d6ce349b6b5f8f4d4c",
+      "bytes": 755,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.7.spec.ts": {
+      "sha256": "7028d176e277f224920a2a335877db15cbf6cfd0fd613e1cb3f82b797a416cc4",
+      "bytes": 1328,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-6.8.spec.ts": {
+      "sha256": "98d49a27b1580501fb83b5c6a828c98492381adcc7bb020b276f45f7d331d7a9",
+      "bytes": 1213,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-7.1.spec.ts": {
+      "sha256": "367c64392d019df5b6f6bb6fa7c3aabe1e7287efa36f7a297434e1fca8a51582",
+      "bytes": 744,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-7.2.spec.ts": {
+      "sha256": "4ad77b444f890bdcfd58137fa6e9d6f3a7aa55f4cf5c57c46c1c36e588f2c720",
+      "bytes": 512,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-7.3.spec.ts": {
+      "sha256": "d8cbbc001c19139cba1361d7bdcd5489a1987576e5a16e229045271a634c2821",
+      "bytes": 883,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-7.4.spec.ts": {
+      "sha256": "3a3bf516cc978f67b83ed2024249fdaf9713454986a31384e4daa4bfd2f67a7a",
+      "bytes": 2690,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/REQ-7.5.spec.ts": {
+      "sha256": "74a223b2484a14fd924d9547e80cda61a41cf0682a9992ee6d5d6dbbf41f26e3",
+      "bytes": 659,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/fixtures/data.ts": {
+      "sha256": "911332e24388a7b5bf2ee7c5873398b2a10793843fe5527dd2ae27ea32bfbfd0",
+      "bytes": 2164,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "tasks/arc-bench-web--stackoverflow/acceptance/helpers.ts": {
+      "sha256": "e43a78ef0f8d259a784f462e96eb05481d337e4aa45ca74ba9c2f8bda534008d",
+      "bytes": 7771,
+      "source_url": "https://arc-bench.com/api/requirements/arc-bench-web--stackoverflow/tests?catalog=competition",
+      "kind": "official_test"
+    },
+    "archives/starter-blank-python.zip": {
+      "sha256": "665b84bdb8b549a3ac524cb4cbfcb6e8ec59c92ae18f161be88609501bf17b2c",
+      "bytes": 129281,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition/starter-agent?language=python&template=blank",
+      "kind": "official_archive"
+    },
+    "archives/starter-blank-javascript.zip": {
+      "sha256": "459f695df70fefc3b856d4d43b98bf7c36c3a937142b2b5b808e005353071629",
+      "bytes": 112032,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition/starter-agent?language=javascript&template=blank",
+      "kind": "official_archive"
+    },
+    "archives/starter-blank-typescript.zip": {
+      "sha256": "f3f65f9ce26898d60868707076e307136eec3a684b115a0c2da8c8e9e139daa9",
+      "bytes": 112431,
+      "source_url": "https://arc-bench.com/api/competitions/first-competition/starter-agent?language=typescript&template=blank",
+      "kind": "official_archive"
+    },
+    "archives/demo-agent.zip": {
+      "sha256": "81de18ddde9f24a0e9a461818d141e14504e65a907a902f54883c9c620097159",
+      "bytes": 1389711,
+      "source_url": "https://arc-bench.com/api/competitions/public/demo-agent",
+      "kind": "official_archive"
+    },
+    "archives/platform-client.js.gz": {
+      "sha256": "295acfffe6f540a7e5e12e00c6e6bd87ba24c9ab4b8adb1789e01f6521a5ba25",
+      "bytes": 997792,
+      "source_url": "https://arc-bench.com/assets/index-9y7S0jEa.js",
+      "kind": "compressed_public_client",
+      "uncompressed_sha256": "ac7ce6a1526b60b5a992f90cedba1e6a2c5912c91a6e50404c0dfa6c4f34e35d"
+    },
+    "portal/competitions.html": {
+      "sha256": "b3a5eef2efe9e8ac5469cc23b99fd937749cfeaf861fe5925a430b5dd6a7794f",
+      "bytes": 778,
+      "source_url": "https://arc-bench.com/competitions",
+      "kind": "public_client"
+    },
+    "portal/platform.css": {
+      "sha256": "8ebc5969bdd04a1e932f57cc39253a65fed02b43d7affebfd0acd50250673ff9",
+      "bytes": 366509,
+      "source_url": "https://arc-bench.com/assets/index-CATs7Nkm.css",
+      "kind": "public_client"
+    },
+    "portal/icon.png": {
+      "sha256": "03936269b6df58c4998301ea74b8c937f3bf49065b4c213142528b42a14992d9",
+      "bytes": 752583,
+      "source_url": "https://arc-bench.com/icon.png",
+      "kind": "public_client"
+    },
+    "guides/01-从-Blank-开始.md": {
+      "sha256": "9b586e54b6e2dbf8e5f7c673d628708bdabe78defc01a303ad01e73cb20080ec",
+      "bytes": 11967,
+      "source_url": "https://arc-bench.com/assets/index-9y7S0jEa.js",
+      "kind": "static_markdown_export"
+    },
+    "guides/02-Start-with-Blank.md": {
+      "sha256": "75ed18b6546a3e910c68803ea81d86d136138138d19ea11e49cb6882f293ca0a",
+      "bytes": 11432,
+      "source_url": "https://arc-bench.com/assets/index-9y7S0jEa.js",
+      "kind": "static_markdown_export"
+    },
+    "audits/public-test-collection.json": {
+      "sha256": "984e199d8b13df973eee31af25ec523cbd903ffece5e7a9c106829457ba1d081",
+      "bytes": 2576,
+      "source_url": null,
+      "kind": "local_collection_audit"
+    }
+  },
+  "gaps": [
+    {
+      "component": "Smoke acceptance source",
+      "status": "not_exposed",
+      "evidence": "Official UI omits test source for official competitions; GET first-competition--ticket-booking/tests returned 404. Published count is five."
+    },
+    {
+      "component": "Inherited initial projects",
+      "status": "not_applicable",
+      "evidence": "All three initial-projects-download endpoints returned 409: This competition does not inherit initial projects."
+    },
+    {
+      "component": "ARC starter source",
+      "status": "unavailable",
+      "evidence": "Lite/Web Python ARC starter endpoints returned 404. Public demo-agent ZIP was downloaded separately; it is not asserted equivalent to ARC."
+    },
+    {
+      "component": "Platform server and evaluator",
+      "status": "not_published",
+      "evidence": "No server source or evaluator download was exposed in the inspected client. Public /openapi.json returned SPA HTML; /api/openapi.json returned 404."
+    },
+    {
+      "component": "Execution image, server clock injection, test runtime settings, model proxy and scoring",
+      "status": "not_verified",
+      "evidence": "Public scaffold and task prose expose only partial contracts; no exact evaluation container, fixture/clock injection implementation or billing/scoring backend source was provided."
+    },
+    {
+      "component": "Stack Overflow public test counts",
+      "status": "count_mismatch",
+      "evidence": "Offline Playwright 1.64.1 collection finds Lite 27 vs published 28; full 66 vs published 67. All API files were preserved. Exact cause or any unpublished case is unknown; not scored as complete."
+    }
+  ],
+  "assertions_policy": "Official inputs and acceptance source preserved as bytes; fixtures contain published benchmark identities, not private session credentials.",
+  "model_calls": 0,
+  "tests_executed": false
+}

@@ -8,6 +8,7 @@
 | 开发、检查、诊断、仓库与本地产物维护   | `development.md`  |
 | 版本选择、ZIP 契约与网站操作           | `submission.md`   |
 | 运行结果、比较条件、未知用量和历史恢复 | `results.md`      |
+| 平台快照、公开测试工具与复刻限制       | `platform.md`     |
 | 完整运行配置协议、记录字段和历史索引   | `runs.md`         |
 | 由 run 推导的问题、方案与待验证效果    | `redesign.md`     |
 | 代码/当前文档不能解释的长期取舍        | `.agents/notes/`  |

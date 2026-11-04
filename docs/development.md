@@ -25,7 +25,7 @@ make format
 
 统一检查包含快照文件哈希、教师原测试、coding/平台/打包回归、Notes、Ruff、Prettier 和 Markdownlint。教师原测试使用独立解释器，清除真实模型配置并阻断外网；终端模拟使用 TERM=xterm。不得跳过原测试或将非 GREEN 报告记为成功。
 
-教师快照、根输入、固定验收、示例和 coding 模板不参与格式化。git-format-staged 处理暂存内容，CI 使用相同入口；Markdownlint 修正改变文件后需重新暂存。维护技能与检查来源记录在 `.agents/maintenance-source.json`。
+教师快照、根输入、固定验收、示例、coding 模板和 `benchmarks/arc-bench/` 官方快照不参与格式化。官方快照按manifest校验，档案使用LFS，取得与本地验证见[平台材料](platform.md)。git-format-staged 处理暂存内容，CI 使用相同入口；Markdownlint 修正改变文件后需重新暂存。维护技能与检查来源记录在 `.agents/maintenance-source.json`。
 
 重浏览器模拟需已准备的 Node 22 依赖和 Chromium，不调用真实模型：
 
@@ -112,7 +112,7 @@ git worktree remove work/parallel-change
 git branch -d feat/parallel-change
 ```
 
-新 run、审阅快照、diff、报告和绘图检查优先放仓库内 gitignored 的 `work/`，按版本、引擎和输入隔离，索引为 `work/README.md`；不进入 Git、源码导出或平台 ZIP。历史绝对路径保留在原始记录，兼容软链不视为新 run。
+新 run、审阅快照、diff、报告和绘图检查优先放仓库内 gitignored 的 `work/`，按版本、引擎和输入隔离，索引为 `work/README.md`；运行工件不进入 Git、源码导出或平台 ZIP。官方平台任务快照按用户要求单独存放在 `benchmarks/` 并参与Git/LFS；生成run仍只留本地。历史绝对路径保留在原始记录，兼容软链不视为新 run。
 
 清理前保存协议、源码、冻结测试、调用、报告、截图、数据库和哈希；可删除可重建依赖，不改失败或未知用量。`scripts/archive_runs.py` 不替代数据库/图片备份。`scripts/export_source.py --output-dir <新目录>` 与 Git bundle 用于源码恢复，旧分享包不随 main 自动更新。凭据仅来自环境或 gitignored `.env`，不写入文档、日志、清单或 ZIP。
 

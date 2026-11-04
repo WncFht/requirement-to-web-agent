@@ -23,9 +23,9 @@
 
 ## 平台任务材料快照
 
-`work/platform-materials-20261105/README.md` 索引当前下载的 Smoke、Lite、完整 Web Application 材料；官方 ZIP、逐任务 YAML/参考图、测试接口响应和文件哈希均在同目录。页面的 Smoke Competition 实际 ID 是 `first-competition`，不能用另一个 `smoke` 标识的访问结果判断它。Smoke 输入和图片可下载，但五条平台测试没有公开源码；Lite 与完整 Web 的 API 公开测试已单独保存。
+官方Smoke、Lite、完整Web材料现已按用户要求进入Git，二进制使用LFS，入口为[平台材料与本地验证](platform.md)。固定快照在 `benchmarks/arc-bench/2026-11-05/`，不是生成run；早期下载与网络诊断保留在 gitignored 的 `work/platform-materials-20261105/`，不再作为交付入口。
 
-每个任务的 `input/` 供生成器读取，`acceptance/` 仅供独立验收；不将后者复制进生成 context。材料快照不是一次生成或评测，不进入 run 成功率。平台 Smoke 的需求与根 `input/` 不同，现有本地十四条验收不能替代平台测试。每次真实运行仍需固定任务材料哈希、源码和预算，按新目录隔离。可得范围、HTTP限制和原始来源以本地 manifest 为准，不把缺失测试记录为空套件通过。
+通过 `scripts/platform_materials.py` 导出的 `input/` 供生成器读取，`acceptance/` 仅供独立验收。Smoke源码不可用和Stack Overflow计数差异不能用空套件或旧认证十四条替代。每次实际运行继续固定任务材料哈希、源码和预算，在新目录保存结果；公开用例收集不进入成功率。
 
 ## 每轮需要保存的 setting
 
