@@ -134,3 +134,17 @@ git branch -d feat/parallel-change
 账本关闭、usage 未知、截止时间到达或额度不足时拒绝后续请求；已知的上次输入加本次输出预算用于保守余量检查。原生 SDK 审计保留截断响应，输出全部消耗在 reasoning 时仍计入成本。不会在同一实验中提高额度或关闭 reasoning 替换失败。
 
 单次输出空间与整组总 token 分开配置：输出同时包含 reasoning 和最终代码，不再统一压到 12,000。默认允许 64,000 输出，并优先限制调用次数；额度上限不等于实际消耗。正常结束前不会自动续写截断响应。需要调整额度时建立新账本、新输出，保留旧失败；同一任务截断后不按原条件无效重试。
+
+## 组合已生成的页面进行回归
+
+`scripts/validate_composition.py` 在新目录将已有生成应用的后端、首页、登录页与一个通过单页门禁的新注册页组合，保存每个供体文件哈希。只替换完整页面子树，拒绝元素 ID 冲突和共享运行绑定的类型/初值冲突；保留其他页面的绑定定义。它是显式组合实验，不是历史阶段续跑或从头完整生成。
+
+```sh
+.venv/bin/python scripts/validate_composition.py \
+  --base work/compiler-iterations/round-01 \
+  --page-trial work/compiler-iterations/output-retest-20261105/page-registration \
+  --output work/new-composition/application --budget work/new-composition/budget.json \
+  --checkpoints work/new-composition/checkpoints
+```
+
+执行前创建全新的共享预算，准备 Node 22 和依赖，并确认真实调用授权。入口重新执行继承后端的类型、handler/SQLite、真实 HTTP 和构建检查；为全部页面按当前需求契约重新生成并冻结 UI 套件，重新执行阶段 10–12。交互设计与 E2E 新生成，不沿用旧 GREEN 或旧交互代码。每阶段开始保存新快照，结果为 `composition-result.json`；只有原生后端/UI/E2E 均通过后才执行开发与生产固定验收，成绩仍归组合实验。
