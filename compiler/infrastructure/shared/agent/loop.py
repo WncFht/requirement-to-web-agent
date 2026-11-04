@@ -1,5 +1,6 @@
 """Bounded JSON edit -> fixed acceptance check -> repair loop."""
 
+from infrastructure.shared.agent.frozen_tests import FrozenTestViolation, verify_frozen_tests
 from infrastructure.shared.agent.files import FileWorkspace
 from infrastructure.shared.agent.protocol import FILE_EDIT_RULES
 from infrastructure.shared.agent.proposals import RESPONSE_ERRORS, response_feedback
@@ -37,7 +38,12 @@ def run_file_agent(model, instructions: str, task: dict, files: FileWorkspace, g
                 raise ValueError("Create the target file in the first edit before running acceptance checks")
             console.show(f"{label} | Edit round {turn}/{max_turns}",
                 str([edit["path"] for edit in response["edits"]]))
-            return {"turns": turn, "checks": gate()}
+            verify_frozen_tests(files.output)
+            checks = gate()
+            verify_frozen_tests(files.output)
+            return {"turns": turn, "checks": checks}
+        except FrozenTestViolation:
+            raise
         except (*RESPONSE_ERRORS, RuntimeError) as error:
             message = str(error)
             console.show(f"{label} | Repair feedback", message)

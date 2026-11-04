@@ -200,6 +200,43 @@ class SubmissionPackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "archived"):
             self.build("legacy", name="invalid-current-legacy.zip")
 
+    def test_current_compiler_and_coding_packages_are_isolated(self):
+        self.write("runtime/output.py", "# platform output adapter\n")
+        self.write("runtime/processes.py", "# platform process ownership\n")
+        self.write("compiler.json", '{"revision":"pinned-fixture"}')
+        self.write("compiler/main.py", "# compiler CLI\n")
+        self.write("compiler/infrastructure/compiler.py", "# compiler compiler\n")
+        self.write(
+            "compiler/infrastructure/shared/project/templates/deploy.sh",
+            "#!/bin/sh\nexit 0\n",
+        )
+        for number in range(13):
+            self.write(f"compiler/{number:02d}_stage.py", f"STAGE = {number}\n")
+        self.write("compiler/tests/test_compiler.py", "# development only\n")
+        self.write("compiler/input/requirements.yaml", "private fixture\n")
+        self.write("coding_agent/support/shared/project/templates/package.json", "{}")
+        self.commit()
+        teacher = self.build("compiler", name="compiler.zip")
+        coding = self.build("coding", name="coding-current.zip")
+        with zipfile.ZipFile(teacher["zip_path"]) as archive:
+            names = archive.namelist()
+            self.assertIn("compiler/infrastructure/compiler.py", names)
+            self.assertIn("runtime/output.py", names)
+            self.assertNotIn("coding_agent/loop.py", names)
+            self.assertNotIn("compiler/tests/test_compiler.py", names)
+            self.assertNotIn("compiler/input/requirements.yaml", names)
+            self.assertNotIn("legacy/00_stage.py", names)
+        with zipfile.ZipFile(coding["zip_path"]) as archive:
+            names = archive.namelist()
+            self.assertIn("coding_agent/loop.py", names)
+            self.assertIn(
+                "coding_agent/support/shared/project/templates/package.json", names
+            )
+            self.assertNotIn("compiler/main.py", names)
+            self.assertNotIn("infrastructure/utils/cli.py", names)
+        with self.assertRaisesRegex(ValueError, "archived"):
+            self.build("legacy", name="invalid-current-legacy.zip")
+
 
 class SubmissionRunnerTests(unittest.TestCase):
     def setUp(self):
@@ -236,6 +273,22 @@ class SubmissionRunnerTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "Node 22"):
                 self.prepare()
+
+    def test_repository_output_is_confined_to_work(self):
+        with (
+            patch.object(run_submission, "ROOT", self.root),
+            patch.object(
+                run_submission.subprocess, "check_output", return_value="v22.23.2"
+            ),
+        ):
+            self.prepare(self.root / "work" / "round-01")
+            with self.assertRaisesRegex(ValueError, "gitignored work"):
+                self.prepare(self.root / "compiler" / "new-run")
+            (self.root / "work").symlink_to(self.root.parent, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "gitignored work"):
+                self.prepare(
+                    self.root / "work" / self.root.name / "compiler" / "new-run"
+                )
 
     def test_runner_uses_packaged_version_and_leaves_output_empty_for_generator(self):
         archive = self.root / "package.zip"

@@ -4,6 +4,9 @@ import json
 from contextlib import ExitStack
 from pathlib import Path
 
+from infrastructure.shared.agent.admission import validate_backend_test
+from infrastructure.shared.agent.frozen_tests import freeze_tests
+
 from infrastructure.shared.agent.context import SourceFiles
 from infrastructure.shared.project.entrypoints import selected_path
 from infrastructure.shared.agent.loop import run_file_agent
@@ -145,6 +148,7 @@ def implement_backend_tdd(arc_dir: Path, pause: bool = False, max_turns: int = 1
                         chosen = selected_path(output, "backend_test", aid) or relative
                         targets[aid] = chosen
                         files_by_api[aid] = [chosen]
+                        validate_backend_test((output / chosen).read_text(encoding="utf-8"))
                         generation_files = [targets[key] for key in [*accepted, aid]]
                         compiled = checks.typecheck(generation_files)
                         if compiled["returncode"]:
@@ -180,6 +184,7 @@ def implement_backend_tdd(arc_dir: Path, pause: bool = False, max_turns: int = 1
                         console.show(f"{aid} | RED: contract assertions fail against the test stub", result["output"])
                     finally:
                         save_bytes(output / TEST_BINDINGS_PATH, binding_source)
+                    freeze_tests(output, files_by_api[aid])
                     entry["status"] = "IMPLEMENTING"
                     api = contracts["apis"][aid]
                     console.show(f"{aid} | Implementation context", (

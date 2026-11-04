@@ -1,4 +1,4 @@
 {
     "gitignore": true,
-    "ignores": [".agents/notes/archived/**", "upstream/**"],
+    "ignores": [".agents/notes/archived/**", "compiler/**"],
 }

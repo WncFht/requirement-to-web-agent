@@ -106,7 +106,7 @@ def verify(package, output):
             raise ValueError(
                 "Legacy Stage 00 did not complete before the offline boundary"
             )
-    elif manifest["default_engine"] == "upstream":
+    elif manifest["default_engine"] in {"compiler", "upstream"}:
         state = json.loads((application / ".arc/compilation.json").read_text())
         stage_zero = (
             state["stages"].get("00_project_initialization", {}).get("status")

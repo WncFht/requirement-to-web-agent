@@ -6,6 +6,7 @@ from pathlib import Path
 from infrastructure.utils.presentation.console import show_panel
 from infrastructure.utils.presentation.logging import console_log
 from infrastructure.utils.files import save_json
+from infrastructure.shared.agent.frozen_tests import verify_frozen_tests
 
 
 class Compiler:
@@ -30,6 +31,7 @@ class Compiler:
                 model_log=self.model_log, debug_model_io=self.model_log):
             try:
                 result = getattr(import_module(module), function)(*arguments, **options)
+                verify_frozen_tests(self.output_dir)
             except BaseException as error:
                 self.report["status"] = "INTERRUPTED" if isinstance(error, KeyboardInterrupt) else "FAILED"
                 self.report["stages"][module] = {"status": self.report["status"], "error": str(error)}

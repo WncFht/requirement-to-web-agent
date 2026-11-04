@@ -1,4 +1,4 @@
-"""Platform adapter for the pinned upstream compiler or the independent coding agent."""
+"""Platform adapter for the pinned requirement compiler or the independent coding agent."""
 
 import argparse
 import json
@@ -28,10 +28,10 @@ def main(argv=None):
         parser.error("Output directory cannot be a symlink")
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535")
-    engine = os.getenv("ARC_AGENT_ENGINE", "upstream")
-    if engine not in {"upstream", "coding"}:
+    engine = os.getenv("ARC_AGENT_ENGINE", "compiler")
+    if engine not in {"compiler", "coding"}:
         parser.error(
-            "ARC_AGENT_ENGINE must be upstream or coding; historical legacy uses a fixed Git tag"
+            "ARC_AGENT_ENGINE must be compiler or coding; historical legacy requires a fixed commit SHA"
         )
     output = args.output_dir.expanduser().resolve()
     try:
@@ -66,7 +66,7 @@ def generate_application(source, inputs, output, port, engine, model_log=False):
         return
     command = [
         sys.executable,
-        str(source / "upstream/main.py"),
+        str(source / "compiler/main.py"),
         str(inputs),
         "--output-dir",
         str(output),
@@ -77,8 +77,8 @@ def generate_application(source, inputs, output, port, engine, model_log=False):
         command.append("--model-log")
     environment = dict(os.environ)
     environment["MODEL"] = environment.get("MODEL") or "deepseek-flash"
-    # Separate interpreters preserve upstream's original imports and coding's support modules.
-    process = start_process(command, cwd=source / "upstream", env=environment)
+    # Separate interpreters preserve compiler's original imports and coding's support modules.
+    process = start_process(command, cwd=source / "compiler", env=environment)
     try:
         code = process.wait()
     except BaseException:
@@ -86,17 +86,17 @@ def generate_application(source, inputs, output, port, engine, model_log=False):
         raise
     if code:
         raise subprocess.CalledProcessError(code, command)
-    # Upstream main returns 0 on some failures; the platform needs a real failure signal.
+    # Compiler main returns 0 on some failures; the platform needs a real failure signal.
     report = output / ".arc/compilation.json"
     if not report.is_file() or json.loads(report.read_text()).get("status") != "GREEN":
         raise RuntimeError(
-            "Upstream compilation was not GREEN; inspect .arc/compilation.json"
+            "Compiler compilation was not GREEN; inspect .arc/compilation.json"
         )
     if not all(
         (output / name).exists()
         for name in ("package.json", "deploy.sh", "frontend", "backend")
     ):
-        raise RuntimeError("Upstream application is missing required deployment files")
+        raise RuntimeError("Compiler application is missing required deployment files")
 
 
 if __name__ == "__main__":

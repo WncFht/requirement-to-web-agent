@@ -1,7 +1,7 @@
 {
     "repository": "https://github.com/code-philia/requirement-compilation-structure",
     "revision": "13e78ef4aa9f6a7035d740040783ea4ff416a83a",
-    "layout": "Tracked upstream snapshot under upstream/, with exactly the small fixes recorded in patches and upstream.patch; the platform adapter and coding engine are outside it.",
+    "layout": "Pinned teacher snapshot under compiler/, with round-one local fixes and additions recorded in patches and compiler.patch; the platform adapter and coding engine are outside it.",
     "files": [
         {
             "path": ".env.example",
@@ -570,16 +570,74 @@
     ],
     "patches": {
         "main.py": {
+            "original_sha256": "20387b0a3a1fb66f0fd8ec9eed8d3888ea322133d5eccc1ce4177b6e648c9b00",
             "sha256": "5b077a19503df0129553ff76fc09f55ac93fe80884e6872db69cb5790d3c1cbf",
             "reason": "Return failure for compiler exceptions and incomplete stages, as upstream tests already require."
         },
         "infrastructure/utils/presentation/model_io.py": {
+            "original_sha256": "ec7485b10705390999496d812edde746ac853b6ac6b191fa76a0bd0d4abfa209",
             "sha256": "d93b50bcf85f3ff93213a973165dadcc7f4f5a575c9b2b60c7b5810508c21244",
             "reason": "Pass a numeric timeout across both httpx and current OpenAI SDK httpx2 transports."
         },
         ".gitattributes": {
+            "original_sha256": "8579b65b1243e3cf5b629ab5583191c299bb54e2171ec182e3c98ee4c71fff61",
             "sha256": "3529ddc25fa4bec5bace1542a8f1b67b1e56bfac77619945e8cbf8ed8c68aee9",
             "reason": "Prevent Git clean filters from normalizing the pinned snapshot mixed line endings; no runtime behavior change."
+        },
+        "08_implement_backend_tdd.py": {
+            "original_sha256": "dcae3c858e761ba5798b39853bf704ec8dfc602314c7356b709a29b0e9162d11",
+            "sha256": "af1aabf08680b206e2b70bfb0afac129063251fc132b7a3a62f59afb62f64b76",
+            "reason": "Apply narrow contradiction admission to generated backend tests and seal accepted tests before implementation."
+        },
+        "infrastructure/shared/agent/admission.py": {
+            "original_sha256": null,
+            "sha256": "72d7bb333b663e24abca8ea124cc5124c629b2cb2ec4e0650581d58d66ca4330",
+            "reason": "Reject run-observed missing initial bindings, invalid radio contracts, contradictory JSON-string assertions and E2E presentation-fixture writes before test freeze."
+        },
+        "infrastructure/shared/agent/files.py": {
+            "original_sha256": "408c3cea87d677778403c4586fa7dcd7af6fb8aea3f0f35631ed3a7a638a69a2",
+            "sha256": "84f9c37d77dcf2649af118d7f4dfd66b7ab5c9ffc8bc0fb5558f2e603ab303df",
+            "reason": "Deny frozen-test edits even if included in writable scope; verify accepted suites before context publication and edits."
+        },
+        "infrastructure/shared/agent/frozen_tests.py": {
+            "original_sha256": null,
+            "sha256": "bfbb662ccc20f46979ca5b615e1e6f587c94965e937fbee8f3e0b51b9f24775b",
+            "reason": "Record generated-suite SHA-256 receipts, detect drift and preserve failed-task seals in archives; no trusted resume guarantee."
+        },
+        "infrastructure/shared/agent/loop.py": {
+            "original_sha256": "99773c4e02fef3a4b68ee5235f78ecf547a66ea7425921e21a667a5781c94ed7",
+            "sha256": "99f8ae05b40e213f9806ebbe879df267c1b11138f7f571625dfb22c80be5fafd",
+            "reason": "Verify frozen suites before and after every implementation acceptance gate."
+        },
+        "infrastructure/shared/agent/recovery.py": {
+            "original_sha256": "b556e7c8eded0845187507bba82b923b00859166f1b19bf3830a068c8d0ee5ab",
+            "sha256": "e28819b29d5c0a7177f6b34ebea7416ef24af1eb6db6b02fa91a91c68dfc932d",
+            "reason": "Archive newly frozen failed-task suites before restoring task baseline; retain prior accepted test seals."
+        },
+        "infrastructure/stages/frontend/triggers/implementation.py": {
+            "original_sha256": "51a0d90691946646585cdebaff518328c4b06e39c1a8e7fcb2f285808182a78e",
+            "sha256": "25e87232047a80c8f75357f7298011235850d1a782582e4f81a9663cb9fbe01f",
+            "reason": "Reject E2E presentation fixture assignment and seal accepted E2E suites before trigger implementation."
+        },
+        "infrastructure/stages/frontend/ui/design.py": {
+            "original_sha256": "c846ecac273f8631508be85a0d43fc7d2e926c925cb80e5eaa507d906286f6c7",
+            "sha256": "77ea192bee666a77481f22619947a620d1ef04b3f93f4825c04e53f8cc19a98e",
+            "reason": "Require defined initial bindings and explicit radio option values before generating deterministic tests."
+        },
+        "infrastructure/stages/frontend/ui/implementation.py": {
+            "original_sha256": "1f973fc0f514d0c57b3dcae56ca4ae9842de023687818cbf56e426ce5c782c9c",
+            "sha256": "4a49a7e18b76b97915c0add3e123ca0ded7924fe496f91dcf2fb833e07f30989",
+            "reason": "Require test IDs on real interactive nodes and seal generated UI tests before page implementation."
+        },
+        "infrastructure/stages/frontend/ui/testing.py": {
+            "original_sha256": "e06b9719c72be8da6ab4cd6570ec4169d9671560074edd125f0fbfb46d2fcb32",
+            "sha256": "8015aa1262324bdd27ac6e9deffbaac0b6f0b0541b1c4eb23efef4b947e77da3",
+            "reason": "Check native radio fixed option value separately from fixture-selected checked state, resolving baseline contradictory value assertions."
+        },
+        "infrastructure/compiler.py": {
+            "reason": "Verify all frozen suites after every compiler pass, including final regression and build.",
+            "original_sha256": "5c2b81bc1175c15081a655765e6f506299c14fe8dfe4b16852a1bff4169eb516",
+            "sha256": "0bebebb938467bd924849942296134b744796198e2ffab9a72f6af78606972ac"
         }
     }
 }

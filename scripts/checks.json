@@ -2,18 +2,31 @@
     "version": 1,
     "checks": [
         {
-            "id": "upstream-source",
-            "command": ["python3", "scripts/check_upstream.py"],
+            "id": "compiler-source",
+            "command": ["python3", "scripts/check_compiler.py"],
             "modes": ["ci", "test"],
             "needs": [],
             "timeout": 30,
             "allow_failure": false
         },
         {
-            "id": "upstream-tests",
-            "command": ["python3", "scripts/test_upstream.py"],
+            "id": "compiler-tests",
+            "command": ["python3", "scripts/test_compiler.py"],
             "modes": ["ci", "test"],
-            "needs": ["upstream-source"],
+            "needs": ["compiler-source"],
+            "timeout": 120,
+            "allow_failure": false
+        },
+        {
+            "id": "compiler-regressions",
+            "command": [
+                "python3",
+                "scripts/test_compiler.py",
+                "--suite",
+                "../tests/compiler"
+            ],
+            "modes": ["ci", "test"],
+            "needs": ["compiler-source"],
             "timeout": 120,
             "allow_failure": false
         },

@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 PYTHON ?= .venv/bin/python
 REF ?= HEAD
-ENGINE ?= upstream
+ENGINE ?= compiler
 INPUT ?= input
 OUT ?=
 PORT ?= 3000
@@ -11,11 +11,11 @@ ZIP ?=
 help:
 	@printf '%s\n' \
 	  'make versions                            List maintained version checkpoints' \
-	  'make package [REF=tag-or-SHA] [ENGINE=upstream|coding] [ZIP=path.zip]' \
+	  'make package [REF=tag-or-SHA] [ENGINE=compiler|coding] [ZIP=path.zip]' \
 	  'make package-check [same arguments]       Package and verify hashes/Python syntax; no model' \
-	  'make run OUT=../work/new-run [REF=HEAD] [ENGINE=upstream|coding] [INPUT=input] [PORT=3000]' \
+	  'make run OUT=work/new-run [REF=HEAD] [ENGINE=compiler|coding] [INPUT=input] [PORT=3000]' \
 	  '                                         REAL MODEL GENERATION; requires renewed authorization' \
-	  'make serve OUT=../work/existing-run [PORT=3000]  Start the generated app via deploy.sh' \
+	  'make serve OUT=work/existing-run [PORT=3000]  Start the generated app via deploy.sh' \
 	  'make check                               Offline tests, formatting and documentation checks' \
 	  'make format                              Apply project formatters'
 versions:

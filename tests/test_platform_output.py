@@ -173,7 +173,7 @@ class PlatformOutputTests(unittest.TestCase):
                     self.fail("Unsafe destination accepted")
 
     def test_real_main_routes_both_engines_through_platform_adapter(self):
-        for engine in ("upstream", "coding"):
+        for engine in ("compiler", "coding"):
             with self.subTest(engine=engine):
                 if self.output.exists():
                     shutil.rmtree(self.output)

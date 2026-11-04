@@ -1,4 +1,4 @@
-"""Verify the pinned upstream snapshot without network access or model credentials."""
+"""Verify the pinned compiler snapshot without network access or model credentials."""
 
 import hashlib
 import json
@@ -8,8 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def check(root=ROOT):
-    record = json.loads((root / "upstream.json").read_text())
-    directory = root / "upstream"
+    record = json.loads((root / "compiler.json").read_text())
+    directory = root / "compiler"
     actual = {
         path.relative_to(directory).as_posix(): hashlib.sha256(
             path.read_bytes()
@@ -22,6 +22,13 @@ def check(root=ROOT):
         )
     }
     expected = {item["path"]: item["sha256"] for item in record["files"]}
+    for name, change in record.get("patches", {}).items():
+        if change.get("original_sha256") != expected.get(name) or not change.get(
+            "reason"
+        ):
+            raise ValueError(
+                "Missing original hash or reason for compiler patch: " + name
+            )
     expected.update(
         {name: change["sha256"] for name, change in record.get("patches", {}).items()}
     )
@@ -31,9 +38,9 @@ def check(root=ROOT):
             for name in actual.keys() | expected.keys()
             if actual.get(name) != expected.get(name)
         )
-        raise ValueError("Pinned upstream files changed: " + ", ".join(changed))
+        raise ValueError("Pinned compiler files changed: " + ", ".join(changed))
     print(
-        f"Upstream {record['revision'][:12]}: {len(actual)} files verified, {len(record.get('patches', {}))} recorded fixes"
+        f"Compiler {record['revision'][:12]}: {len(actual)} files verified, {len(record.get('patches', {}))} recorded fixes"
     )
     return record
 

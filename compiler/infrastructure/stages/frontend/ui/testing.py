@@ -9,6 +9,7 @@ import socket
 import subprocess
 import tempfile
 
+from infrastructure.shared.agent.admission import validate_ui_controls
 from infrastructure.stages.frontend.ui.design import page_elements, visible
 from infrastructure.utils.processes import capture_process, npm_command
 
@@ -34,6 +35,7 @@ def test_path(pid: str) -> str:
 
 def existence_suite(design: dict, pid: str) -> str:
     """Render deterministic presence tests for key visible UI elements across the page's designed display fixtures."""
+    validate_ui_controls(design)
     page = design["pages"][pid]
     elements = page_elements(design, pid)
     defaults = {var: binding["initial"] for var, binding in design["bindings"].items()}
@@ -76,6 +78,10 @@ def existence_suite(design: dict, pid: str) -> str:
                     initial = values[node["data"][0]]
                     if kind == "checkbox" and isinstance(initial, bool):
                         lines.append(f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();")
+                    elif kind == "input" and prop.get("input_type") == "radio":
+                        option_value = prop["value"]
+                        lines.append(f'  await expect({locator}).toHaveValue({json.dumps(option_value)});')
+                        lines.append(f"  await expect({locator}){'' if initial == option_value else '.not'}.toBeChecked();")
                     elif kind in {"input", "select"} and isinstance(initial, (str, int, float)) and not isinstance(initial, bool):
                         lines.append(f'  await expect({locator}).toHaveValue({json.dumps(str(initial))});')
             if prop.get("text") and kind in {"heading", "text", "button", "link", "alert"}:

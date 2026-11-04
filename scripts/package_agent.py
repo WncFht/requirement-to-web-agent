@@ -12,14 +12,11 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_FORMAT = 3
 VERSIONS = (
-    ("HEAD", "Pinned upstream compiler (default) and independent coding agent"),
-    (
-        "coding-agent-candidate-2026-11-02",
-        "Sealed coding candidate; not a platform score",
-    ),
-    ("pre-upstream-migration-2026-11-02", "Archived local legacy and coding"),
-    ("teacher-contracts-2026-11-01", "Legacy with teacher contracts"),
-    ("optimized-verified-2026-11-01", "Earlier verified legacy checkpoint"),
+    ("HEAD", "Compiler (default) and independent coding agent"),
+    ("65220fd", "Sealed coding candidate; not a platform score"),
+    ("a58ebed", "Archived local legacy and coding"),
+    ("590dd8c", "Legacy with teacher contracts"),
+    ("e910eed", "Earlier verified legacy checkpoint"),
 )
 
 
@@ -45,23 +42,31 @@ def runtime_files(revision, engine, root=ROOT):
             mode, kind, identity = metadata.decode().split()
             records.append((name.decode(), identity, mode, kind))
     names = {row[0] for row in records}
-    modern = "upstream/main.py" in names and "upstream.json" in names
-    if engine == "upstream" and not modern:
-        raise ValueError("Revision does not contain the pinned upstream engine")
+    teacher = next(
+        (
+            name
+            for name in ("compiler", "upstream")
+            if f"{name}/main.py" in names and f"{name}.json" in names
+        ),
+        None,
+    )
+    modern = teacher is not None
+    if engine in {"compiler", "upstream"} and teacher != engine:
+        raise ValueError(f"Revision does not contain the pinned {engine} engine")
     if engine == "legacy" and modern:
         raise ValueError(
-            "legacy is archived; select a historical REF or ENGINE=upstream"
+            "legacy is archived; select a historical REF or ENGINE=compiler"
         )
     selected = []
     for name, identity, mode, kind in records:
         include = name in {"main.py", "requirements.txt"}
         if modern:
-            include |= name == "upstream.json" or name.startswith("runtime/")
-            if engine == "upstream":
+            include |= name == f"{teacher}.json" or name.startswith("runtime/")
+            if engine in {"compiler", "upstream"}:
                 include |= (
-                    name == "upstream/main.py"
-                    or name.startswith("upstream/infrastructure/")
-                    or bool(re.fullmatch(r"upstream/\d\d_[^/]+\.py", name))
+                    name == f"{teacher}/main.py"
+                    or name.startswith(f"{teacher}/infrastructure/")
+                    or bool(re.fullmatch(rf"{teacher}/\d\d_[^/]+\.py", name))
                 )
             elif engine == "coding":
                 include |= name.startswith("coding_agent/")
@@ -82,21 +87,21 @@ def runtime_files(revision, engine, root=ROOT):
         selected.append((name, identity, mode))
     required = {"main.py", "requirements.txt"}
     if modern:
-        required |= {"runtime/output.py", "runtime/processes.py", "upstream.json"}
+        required |= {"runtime/output.py", "runtime/processes.py", f"{teacher}.json"}
     else:
         required.add("infrastructure/utils/cli.py")
     if engine == "coding":
         required.add("coding_agent/loop.py")
-    elif engine == "upstream":
+    elif engine in {"compiler", "upstream"}:
         required |= {
-            "upstream/main.py",
-            "upstream/infrastructure/compiler.py",
-            "upstream/infrastructure/shared/project/templates/deploy.sh",
+            f"{teacher}/main.py",
+            f"{teacher}/infrastructure/compiler.py",
+            f"{teacher}/infrastructure/shared/project/templates/deploy.sh",
         }
     else:
         required.add("run_all.py")
-    for number in range(13) if engine in {"legacy", "upstream"} else ():
-        prefix = "upstream/" if engine == "upstream" else "(?:legacy/)?"
+    for number in range(13) if engine in {"legacy", "compiler", "upstream"} else ():
+        prefix = f"{teacher}/" if engine in {"compiler", "upstream"} else "(?:legacy/)?"
         if not any(
             re.fullmatch(rf"{prefix}{number:02d}_[^/]+\.py", row[0]) for row in selected
         ):
@@ -161,9 +166,11 @@ def inspect_package(output):
     return manifest
 
 
-def package(output=None, ref="HEAD", engine="upstream", *, root=ROOT):
-    if engine not in {"upstream", "legacy", "coding"}:
-        raise ValueError("Engine must be upstream, coding, or historical legacy")
+def package(output=None, ref="HEAD", engine="compiler", *, root=ROOT):
+    if engine not in {"compiler", "upstream", "legacy", "coding"}:
+        raise ValueError(
+            "Engine must be compiler, coding, or a historical upstream/legacy revision"
+        )
     revision = resolve_revision(ref, root)
     output = Path(output or default_output(revision, engine, root)).resolve()
     if output.suffix != ".zip":
@@ -232,6 +239,7 @@ def list_versions():
         engines = [
             name
             for name, path in (
+                ("compiler", "compiler/main.py"),
                 ("upstream", "upstream/main.py"),
                 ("legacy", "run_all.py"),
                 ("coding", "coding_agent/loop.py"),
@@ -246,7 +254,9 @@ if __name__ == "__main__":
     parser.add_argument("output", type=Path, nargs="?")
     parser.add_argument("--ref", default="HEAD")
     parser.add_argument(
-        "--engine", choices=("upstream", "coding", "legacy"), default="upstream"
+        "--engine",
+        choices=("compiler", "coding", "upstream", "legacy"),
+        default="compiler",
     )
     actions = parser.add_mutually_exclusive_group()
     actions.add_argument("--list", action="store_true")

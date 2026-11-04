@@ -7,14 +7,14 @@
 在源码仓库根目录执行：
 
 ```sh
-make package-check REF=HEAD ENGINE=upstream
+make package-check REF=HEAD ENGINE=compiler
 make package-check REF=HEAD ENGINE=coding
 # 历史复核使用提交 SHA，不恢复旧标签或旧入口：
 make package-check REF=a58ebed ENGINE=legacy
 make package-check REF=65220fd ENGINE=coding
 ```
 
-默认 upstream 固定教师 `13e78ef`；coding 是独立候选，不调用上游 Compiler。[架构](architecture.md)说明二者边界，[历史证据](results.md#历史证据)说明旧提交身份。**包只读取指定 Git 提交，未提交改动不进入包**；当前工作区调试与交付身份不能混用。
+默认 compiler 固定教师 `13e78ef`；coding 是独立候选，不调用上游 Compiler。[架构](architecture.md)说明二者边界，[历史证据](results.md#历史证据)说明旧提交身份。**包只读取指定 Git 提交，未提交改动不进入包**；当前工作区调试与交付身份不能混用。
 
 `make versions` 的实现仍引用已删除标签，目前不能完成列表，不作为版本选择入口；按上述 SHA 或 `git log --oneline` 选择。该限制不影响显式指定 REF 的打包路径。
 
@@ -22,12 +22,12 @@ make package-check REF=65220fd ENGINE=coding
 
 ## 包含和排除的内容
 
-| 内容                                              | upstream 包                    | coding 包                     |
+| 内容                                              | compiler 包                    | coding 包                     |
 | ------------------------------------------------- | ------------------------------ | ----------------------------- |
 | `main.py`、`_agent_main.py`                       | 固定引擎包装器、原平台入口     | 同左                          |
 | `requirements.txt`、`runtime/`                    | 依赖声明、目录与进程适配       | 同左                          |
-| `upstream.json`                                   | 教师来源记录                   | 同左                          |
-| `upstream/main.py`、00–12 脚本、`infrastructure/` | 固定教师运行源码、模板和提示词 | 不包含                        |
+| `compiler.json`                                   | 教师来源记录                   | 同左                          |
+| `compiler/main.py`、00–12 脚本、`infrastructure/` | 固定教师运行源码、模板和提示词 | 不包含                        |
 | `coding_agent/`                                   | 不包含                         | 独立循环、检查与 support 模板 |
 
 教师完整快照用于开发查阅；ZIP 排除其 input、tests、README、压力测试和配置示例。根 input/examples/acceptance、开发测试、文档、技能、`.env`、Key、`.git`、依赖、生成应用、数据库、日志和 `work/` 均不入包。

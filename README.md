@@ -4,10 +4,10 @@
 
 | 引擎             | 实现                                                                               |
 | ---------------- | ---------------------------------------------------------------------------------- |
-| `upstream`，默认 | 基于教师仓库固定提交 `13e78ef`，沿用其十三阶段、契约、triggers、模型配置和部署模板 |
+| `compiler`，默认 | 基于教师仓库固定提交 `13e78ef`，沿用其十三阶段、契约、triggers、模型配置和部署模板 |
 | `coding`         | 我们的单循环候选；先冻结测试，再由同一循环修改整个前后端                           |
 
-`upstream/` 保存完整上游快照，141 个文件中，2 个运行源码文件有明确的小修正：失败退出码和 SDK 超时类型；另有 Git 属性调整，保护快照的原始换行字节。来源及逐文件哈希见 `upstream.json`，差异见 `upstream.patch`。`coding_agent/support/` 保留候选原有检查与模板依赖，避免上游升级改变候选行为。
+`compiler/` 保存教师 `13e78ef` 的完整 141 文件基座，并登记第一轮修正和两个新增的测试准入/冻结模块。来源、原/新哈希及原因见 `compiler.json`，完整差异见 `compiler.patch`。默认引擎由 `upstream` 更名为 `compiler`；旧提交打包仍按原名称选择。`coding_agent/support/` 保留候选原有检查与模板依赖。
 
 真实模型 API 按用户要求停用；未经重新明确授权，仅进行本地整理与离线验证。两条路线的真实效果尚未完成同期比较，已有结果及限制见[结果摘要](docs/results.md)。
 
@@ -28,7 +28,7 @@ make check
 ## 打包
 
 ```sh
-make package-check ENGINE=upstream
+make package-check ENGINE=compiler
 make package-check ENGINE=coding
 ```
 
@@ -39,7 +39,7 @@ make package-check ENGINE=coding
 | 路径                                 | 职责                                                 |
 | ------------------------------------ | ---------------------------------------------------- |
 | `main.py`、`runtime/`                | 引擎选择、平台输出适配和所属进程治理                 |
-| `upstream/`                          | 固定版本的教师源码、模板和原测试                     |
+| `compiler/`                          | 固定版本的教师源码、模板和原测试                     |
 | `coding_agent/`                      | 独立循环、检查、工具和记录；support 是保留的检查依赖 |
 | `input/`、`examples/`、`acceptance/` | 原教师任务、扩展示例和固定独立验收                   |
 | `tests/`、`scripts/`                 | coding、适配层、打包、独立验收与维护检查             |

@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from infrastructure.shared.agent.frozen_tests import is_frozen, verify_frozen_tests
+
 from infrastructure.utils.files import read_source, save_bytes, save_text
 from infrastructure.utils.paths import check_path_case, relative_path
 from infrastructure.shared.project.entrypoints import FILE_ROOTS, remember_path, selected_path
@@ -95,18 +97,22 @@ class FileWorkspace:
 
     def state(self) -> dict:
         """Refresh all supplied contents before each model request."""
+        verify_frozen_tests(self.output)
         self.observed = {path: read_source(self.path(path)) if self.path(path).is_file() else None
             for path in sorted(self.files)}
-        return {path: {"content": content, "writable": path in self.writable}
+        return {path: {"content": content, "writable": path in self.writable and not is_frozen(self.output, path)}
             for path, content in self.observed.items()}
 
     def apply(self, response: dict) -> None:
         """Validate the complete batch before writing; restore original bytes on write failure."""
+        verify_frozen_tests(self.output)
         staged, originals = {}, {}
         created = None
         for number, edit in enumerate(response["edits"]):
             relative = edit["path"]
             target = self.path(relative)
+            if is_frozen(self.output, relative):
+                raise ValueError("Frozen test is not writable: " + relative)
             if relative == created:
                 staged[relative] = edit["content"]
                 continue

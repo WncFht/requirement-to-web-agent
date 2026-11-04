@@ -1,6 +1,6 @@
 # 从运行失败到 compiler 重构
 
-Status: 提案，尚未实施。更新日期：2026-11-04。当前代码仍是 upstream，compiler 是目标名称；真实模型生成和平台评测继续停用。
+Status: 第一轮实施与验证中。更新日期：2026-11-04。默认引擎已更名 compiler；用户明确授权本轮一次真实生成，后续轮次不自动执行。
 
 这个项目让智能体读取网站需求与参考图，生成 React 前端、Express 后端和 SQLite 数据库。模型负责提出设计、编写测试和代码；Python 编排器把工作分阶段执行，并调用 TypeScript、测试和构建工具检查结果。**我们已经能生成应用，但还没有稳定地交付满足完整验收的应用。** 重构从已经发生的运行失败出发：解释错误如何形成、为何局部通过仍会失败，再选择教师、同学和 legacy 中适用的实现。
 
@@ -214,15 +214,23 @@ radio 通过真实选择、切换、重置、提交和刷新验证；展示适�
 
 保留教师阶段式编译、按任务纠错和原生记录；应用拥有自己的路由、状态与事件接线，编译器拥有设计校验、编辑权限和检查。平台层只管理引擎选择、目录、进程和交付，不推断业务。coding 的循环、support 和模板继续独立，避免默认路线更新意外改变其依赖；本次不安排 coding 对照或逐来源消融。
 
-教师 `a0ad1a4` 的十一阶段、局部文件工具、共享约定和独立验收是候选结构，不是已验证效果。原样候选的离线测试尚未满足升级准入：先分类接口迁移、旧 mock、SDK 兼容和真实回归；必要修正登记原/新哈希及原因，原测试与固定断言不为转绿而降级。没有满足门禁的固定节点时保持当前默认，不为补旧测试重建旧驱动。来源与差异纪律见[当前架构](architecture.md#upstream固定教师实现)。[^compiler-code]
+教师 `a0ad1a4` 的十一阶段、局部文件工具、共享约定和独立验收是候选结构，不是已验证效果。原样候选的离线测试尚未满足升级准入：先分类接口迁移、旧 mock、SDK 兼容和真实回归；必要修正登记原/新哈希及原因，原测试与固定断言不为转绿而降级。没有满足门禁的固定节点时保持当前默认，不为补旧测试重建旧驱动。来源与差异纪律见[当前架构](architecture.md#compiler固定教师实现)。[^compiler-code]
 
-打包须适应新布局，并验证生成 `.git` 与平台已有 `.git` 的交付边界；这些是迁移约束，不是本轮业务失败原因。完整成功前不发布，旧输出拒绝覆盖，失败工件保留。`upstream` 改名 compiler 放在行为和检查稳定之后，单独同步入口、manifest、Makefile 与文档。
+打包须适应新布局，并验证生成 `.git` 与平台已有 `.git` 的交付边界；这些是迁移约束，不是本轮业务失败原因。完整成功前不发布，旧输出拒绝覆盖，失败工件保留。按本次明确要求，第一轮同时完成 `upstream` → `compiler` 更名，同步入口、manifest、Makefile、打包与文档；旧 run 与历史提交保持原名。
 
 <a id="iterations"></a>
 
 ## 阶段安排：三轮改进，一轮确认
 
-优先级是**测试与 UI 契约正确 → 完整请求链和根因修复 → 上下文与成本 → 原样复跑确认**。每轮继承前轮已经通过的改动，整合来源和自己的想法可以在同一轮合入，不为纯升级、纯改名或贡献归因单开真实 run。下表是后续重新明确授权后的安排，本次只完善计划。
+优先级是**测试与 UI 契约正确 → 完整请求链和根因修复 → 上下文与成本 → 原样复跑确认**。每轮继承前轮已经通过的改动，整合来源和自己的想法可以在同一轮合入，不为纯升级、纯改名或贡献归因单开真实 run。第一轮已获授权执行一次；其余轮次仍是后续安排。
+
+### 第一轮实际范围
+
+基座保持 `13e78ef` 的十三阶段；`a0ad1a4` 原样候选离线检查有 16 个失败、55 个错误、1 个跳过，尚不满足整体升级准入，因此本轮按旧结构实现所需语义，不声称已获得新版 HTTP、共享约定或独立验收能力。当前后端仍是 handler/SQLite 检查，完整请求链属于第二轮。
+
+本轮先修复 baseline 中已经观察到的 radio 错误约束；补齐绑定初值检查、已知 JSON 字符串矛盾准入、E2E 展示 fixture 写入拒绝，以及生成测试的哈希冻结和失败任务归档。参考代码落点见[当前架构](architecture.md#compiler固定教师实现)；完整补丁登记在根 `compiler.json` 和 `compiler.patch`。没有加入新的模型审阅调用，也没有改变模型 reasoning 条件。
+
+从固定提交打包，在 `work/compiler-iterations/round-01/` 全新生成一次。保持 Node 22.23.2，文本模型与 baseline 一致为 deepseek-flash、默认 low reasoning；有效配置在运行前核对并登记。设置 2,400 秒整轮墙钟上限，调用内仍沿用教师的 600 秒超时和 SDK 两次重试；总 token 本轮观察记录，尚未实现调用前全局 token 硬限，不把墙钟限制称为费用上限。启用原生模型审计，汇总请求、返回、错误和 usage 缺口。内部 GREEN 后执行开发/生产固定十四条；若未 GREEN，保留失败、不补跑、不手改产物转绿。
 
 ### 先完成离线准备，不消耗真实生成轮次
 
@@ -272,7 +280,7 @@ radio 通过真实选择、切换、重置、提交和刷新验证；展示适�
 
 [^baseline]: 我们的 baseline：`work/upstream-13e78ef-baseline-20261104/`。身份为同级 `.run.json`；终态见 `.arc/compilation.json`，后端调用方式见 `backend/tests/registerAccount.test.ts` 与 `backend/tests/support/apis.ts`。完整次数、用量与时间见[当前基线结果](results.md#当前上游基线)。
 
-[^radio]: 同一 run 的 `.arc/ui_design.json`、`frontend/tests/ui/registration.spec.ts:73,77,201`、`.arc/ui_checks.json`、`.arc/frontend_e2e.json`；`compiler.log:18706` 开始记录测试，`19175–19238` 记录注册页实现与 GREEN，`19681` 记录阶段完成。断言规则见[当前 UI 测试生成器](../upstream/infrastructure/stages/frontend/ui/testing.py)的 `existence_suite()`。摘录仅去边框、ANSI 和不相关内容，不补写模型回答。
+[^radio]: 同一 run 的 `.arc/ui_design.json`、`frontend/tests/ui/registration.spec.ts:73,77,201`、`.arc/ui_checks.json`、`.arc/frontend_e2e.json`；`compiler.log:18706` 开始记录测试，`19175–19238` 记录注册页实现与 GREEN，`19681` 记录阶段完成。断言规则见[当前 UI 测试生成器](../compiler/infrastructure/stages/frontend/ui/testing.py)的 `existence_suite()`。摘录仅去边框、ANSI 和不相关内容，不补写模型回答。
 
 [^test-mismatch]: 我们的 `work/factorial-2026-11-02/failure-diagnosis-v2-fixed-1.json` 及对应原始测试、失败运行；动作与测试期望不一致，整次用量不等于该断言单独成本。
 

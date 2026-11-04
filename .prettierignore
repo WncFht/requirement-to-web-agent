@@ -4,7 +4,7 @@ input/
 examples/
 acceptance/
 coding_agent/support/shared/project/templates/
-upstream/
+compiler/
 .agents/notes/archived/
 .agents/skills/
 .agents/references/

@@ -16,7 +16,7 @@ def git(*arguments):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-dir", type=Path, default=ROOT.parent)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "work/source-export")
     args = parser.parse_args()
     if git("status", "--porcelain").strip():
         parser.error("Commit source changes before exporting")
@@ -26,7 +26,7 @@ def main():
     patch = git(
         "diff",
         "--binary",
-        "teacher-baseline",
+        "bc4b83b",
         "HEAD",
         "--",
         "*.py",
@@ -35,7 +35,7 @@ def main():
         "uv.lock",
         ":(exclude)scripts/**",
     )
-    (output / "upstream.patch").write_bytes(patch)
+    (output / "teacher-relative.patch").write_bytes(patch)
     bundle = artifacts / "compiler-source.bundle"
     with tempfile.TemporaryDirectory(prefix="compiler-export-") as temporary:
         staged = Path(temporary) / bundle.name
@@ -51,10 +51,10 @@ def main():
         bundle.write_bytes(staged.read_bytes())
     manifest = {
         "source_revision": git("rev-parse", "HEAD").decode().strip(),
-        "baseline_revision": git("rev-parse", "teacher-baseline").decode().strip(),
+        "baseline_revision": git("rev-parse", "bc4b83b").decode().strip(),
         "bundle": "artifacts/compiler-source.bundle",
         "bundle_sha256": hashlib.sha256(bundle.read_bytes()).hexdigest(),
-        "patch": "upstream.patch",
+        "patch": "teacher-relative.patch",
         "patch_sha256": hashlib.sha256(patch).hexdigest(),
         "restore": "git clone artifacts/compiler-source.bundle source",
         "scope": "All committed refs; no environment, credentials or ignored run outputs",

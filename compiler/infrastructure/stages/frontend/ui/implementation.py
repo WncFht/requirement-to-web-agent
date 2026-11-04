@@ -7,6 +7,7 @@ included in its checks. Tests and compiler-owned wiring are supplied as read-onl
 import json
 from pathlib import Path
 
+from infrastructure.shared.agent.frozen_tests import freeze_tests
 from infrastructure.shared.agent.context import SourceFiles
 from infrastructure.shared.agent.loop import run_file_agent
 from infrastructure.shared.agent.recovery import implementation_task, final_checks, complete_report
@@ -28,6 +29,9 @@ strings; use installed React/ReactDOM without new dependencies. Reproduce visual
 references through real elements, not a screenshot background in place of controls.
 Put data-testid=ELEMENT_ID on each actual designed element, including the page root.
 Use associated labels, specified input types/options, and role="alert" for alert elements.
+Place each test ID on the real interactive node, not a hidden proxy. Preserve native
+input/select/button/anchor semantics. For radio, value is prop.value and checked state
+is data[selection] == prop.value; do not bind every option value to the selection.
 Respect prop.visible booleans or variable-equality rules and original visible text.
 
 Use defaultValue/defaultChecked for native editable controls. The host captures native
@@ -66,6 +70,7 @@ def implement_ui(arc_dir: Path, design: dict, model, console, report: dict, max_
         relative = test_path(pid)
         suite = existence_suite(design, pid)
         save_text(output / relative, suite)
+        freeze_tests(output, [relative])
         report["pages"][pid] = {"status": "TESTS_READY", "requirements": uses, "test_path": relative}
         save_json(arc_dir / "ui_checks.json", report)
         label = f"UI {number}/{len(design['pages'])} {pid}"

@@ -19,7 +19,7 @@ dependencies = [
 package = false
 
 [tool.ruff]
-extend-exclude = ["upstream"]
+extend-exclude = ["compiler"]
 
 [tool.ruff.lint]
 # This independent teacher-code repository keeps its unittest conventions.

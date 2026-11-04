@@ -5,6 +5,7 @@ import re
 from uuid import uuid4
 
 from infrastructure.shared.agent.files import EXCLUDED
+from infrastructure.shared.agent.frozen_tests import archive_failed_tests
 from infrastructure.utils.files import save_bytes, save_json
 
 
@@ -43,6 +44,7 @@ def implementation_task(output, entry, console, label):
             "deleted_files": sorted(changed - after.keys()),
             "archive": directory.relative_to(output).as_posix()}
         save_json(directory / "failure.json", failure)
+        archive_failed_tests(output, before, directory)
         for path in sorted(changed):
             if path in before:
                 save_bytes(output / path, before[path])

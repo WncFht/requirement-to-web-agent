@@ -31,8 +31,12 @@ def prepare(inputs, output, port, environment):
         raise ValueError("Run manifest already exists; choose a fresh directory")
     if output == inputs or output.is_relative_to(inputs):
         raise ValueError("OUT must be outside INPUT")
-    if output == ROOT or output.is_relative_to(ROOT):
-        raise ValueError("OUT must be outside the source repository")
+    if output == ROOT or (
+        output.is_relative_to(ROOT) and not output.is_relative_to(ROOT / "work")
+    ):
+        raise ValueError(
+            "OUT inside the source repository must be under gitignored work/"
+        )
     if not 1 <= port <= 65535:
         raise ValueError("PORT must be between 1 and 65535")
     if any(not environment.get(key) for key in ("OPENAI_API_KEY", "OPENAI_BASE_URL")):
@@ -47,7 +51,9 @@ def prepare(inputs, output, port, environment):
     return inputs, output
 
 
-def run(ref, engine, inputs, output, port):
+def run(ref, engine, inputs, output, port, model_log=False, max_seconds=None):
+    if max_seconds is not None and max_seconds <= 0:
+        raise ValueError("max_seconds must be positive")
     environment = {
         key: value
         for key, value in {**dotenv_values(ROOT / ".env"), **os.environ}.items()
@@ -56,11 +62,16 @@ def run(ref, engine, inputs, output, port):
     inputs, output = prepare(inputs, output, port, environment)
     manifest = package(ref=ref, engine=engine)
     output.mkdir(parents=True, exist_ok=False)
-    output.with_name(output.name + ".run.json").write_text(
+    record = output.with_name(output.name + ".run.json")
+    record.write_text(
         json.dumps(
             {
-                key: manifest[key]
-                for key in ("revision", "default_engine", "zip_sha256")
+                "max_seconds": max_seconds,
+                "model_log": model_log,
+                **{
+                    key: manifest[key]
+                    for key in ("revision", "default_engine", "zip_sha256")
+                },
             },
             indent=2,
         )
@@ -79,27 +90,53 @@ def run(ref, engine, inputs, output, port):
                 str(output),
                 "--port",
                 str(port),
-            ],
+            ]
+            + (["--model-log"] if model_log else []),
             cwd=source,
             env=environment,
         )
         try:
-            return process.wait()
+            code = (
+                process.wait()
+                if max_seconds is None
+                else process.wait(timeout=max_seconds)
+            )
+        except subprocess.TimeoutExpired:
+            stop_process(process)
+            code = 124
         except BaseException:
             stop_process(process)
             raise
+        data = json.loads(record.read_text())
+        data.update(
+            returncode=code, termination="deadline" if code == 124 else "completed"
+        )
+        record.write_text(json.dumps(data, indent=2) + "\n")
+        return code
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ref", default="HEAD")
-    parser.add_argument("--engine", choices=("upstream", "coding"), default="upstream")
+    parser.add_argument(
+        "--engine", choices=("compiler", "coding", "upstream"), default="compiler"
+    )
     parser.add_argument("--input", default="input")
     parser.add_argument("--output", required=True)
     parser.add_argument("--port", type=int, default=3000)
+    parser.add_argument("--model-log", action="store_true")
+    parser.add_argument("--max-seconds", type=int)
     args = parser.parse_args()
     try:
-        code = run(args.ref, args.engine, args.input, args.output, args.port)
+        code = run(
+            args.ref,
+            args.engine,
+            args.input,
+            args.output,
+            args.port,
+            args.model_log,
+            args.max_seconds,
+        )
     except (ValueError, OSError, subprocess.CalledProcessError) as error:
         parser.exit(1, str(error) + "\n")
     raise SystemExit(code)

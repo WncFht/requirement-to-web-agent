@@ -2,6 +2,8 @@
 
 from copy import deepcopy
 
+from infrastructure.shared.agent.admission import validate_ui_controls
+
 
 
 INSTRUCTIONS = """Design a complete UI and its frontend data for the current requirement.
@@ -36,6 +38,10 @@ data is an array of VARIABLE NAMES, not variable objects. prop contains static t
 label, placeholder, input_type, options, style, href, alt or heading level. Optional
 prop.visible is a boolean or {var:VARIABLE_NAME, equals:VALUE}. Express business
 behavior through triggers later, not expression strings embedded in props.
+
+For radio controls, prop.value is the explicit string option value, independent of
+the bound selection. Bind the group to one string variable; an empty selection means
+no option is checked, not that every option value becomes empty.
 
 pages maps PAGE IDs to {name, route, root, images, fixtures}. route is a URL path, root
 is an ELEMENT ID, images lists supplied image IDs. fixtures maps display-state names
@@ -144,4 +150,5 @@ def apply_proposal(design, proposal, rid, tree):
     updated["requirements"][rid] = proposal["requirement_ui"]
     updated["steps"].update(deepcopy(proposal["step_ui"]))
     normalize_design(updated, tree)
+    validate_ui_controls(updated)
     return updated

@@ -1,0 +1,412 @@
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -5,3 +5,6 @@
+ *.webp -text
+ *.gif -text
+ *.pdf -text
++
++# Preserve the pinned snapshot bytes, including mixed line endings.
++* -text
+--- a/08_implement_backend_tdd.py
++++ b/08_implement_backend_tdd.py
+@@ -3,6 +3,9 @@
+ import json
+ from contextlib import ExitStack
+ from pathlib import Path
++
++from infrastructure.shared.agent.admission import validate_backend_test
++from infrastructure.shared.agent.frozen_tests import freeze_tests
+ 
+ from infrastructure.shared.agent.context import SourceFiles
+ from infrastructure.shared.project.entrypoints import selected_path
+@@ -145,6 +148,7 @@
+                         chosen = selected_path(output, "backend_test", aid) or relative
+                         targets[aid] = chosen
+                         files_by_api[aid] = [chosen]
++                        validate_backend_test((output / chosen).read_text(encoding="utf-8"))
+                         generation_files = [targets[key] for key in [*accepted, aid]]
+                         compiled = checks.typecheck(generation_files)
+                         if compiled["returncode"]:
+@@ -180,6 +184,7 @@
+                         console.show(f"{aid} | RED: contract assertions fail against the test stub", result["output"])
+                     finally:
+                         save_bytes(output / TEST_BINDINGS_PATH, binding_source)
++                    freeze_tests(output, files_by_api[aid])
+                     entry["status"] = "IMPLEMENTING"
+                     api = contracts["apis"][aid]
+                     console.show(f"{aid} | Implementation context", (
+--- a/infrastructure/compiler.py
++++ b/infrastructure/compiler.py
+@@ -6,6 +6,7 @@
+ from infrastructure.utils.presentation.console import show_panel
+ from infrastructure.utils.presentation.logging import console_log
+ from infrastructure.utils.files import save_json
++from infrastructure.shared.agent.frozen_tests import verify_frozen_tests
+ 
+ 
+ class Compiler:
+@@ -30,6 +31,7 @@
+                 model_log=self.model_log, debug_model_io=self.model_log):
+             try:
+                 result = getattr(import_module(module), function)(*arguments, **options)
++                verify_frozen_tests(self.output_dir)
+             except BaseException as error:
+                 self.report["status"] = "INTERRUPTED" if isinstance(error, KeyboardInterrupt) else "FAILED"
+                 self.report["stages"][module] = {"status": self.report["status"], "error": str(error)}
+--- /dev/null
++++ b/infrastructure/shared/agent/admission.py
+@@ -0,0 +1,58 @@
++"""Reject specific contradictions observed in runs before tests are frozen."""
++
++import ast
++import json
++import re
++
++
++def validate_ui_controls(design):
++    """Require resolvable display values and explicit native radio option values."""
++    bindings = design["bindings"]
++    for uid, element in design["elements"].items():
++        variables = list(element.get("data", []))
++        prop = element.get("prop", {})
++        if isinstance(prop.get("visible"), dict):
++            variables.append(prop["visible"]["var"])
++        for variable in variables:
++            if variable not in bindings or "initial" not in bindings[variable]:
++                raise ValueError(f"{uid} references missing initial binding {variable}; define it before generating tests")
++        if element.get("type") == "input" and prop.get("input_type") == "radio":
++            if not isinstance(prop.get("value"), str):
++                raise ValueError(f"{uid}: radio prop.value must explicitly name its string option value")
++            if not element.get("data") or not isinstance(bindings[element["data"][0]]["initial"], str):
++                raise ValueError(f"{uid}: radio must bind a string selection; checked state is selection == prop.value")
++    for pid, page in design["pages"].items():
++        for name, fixture in page.get("fixtures", {}).items():
++            missing = set(fixture) - set(bindings)
++            if missing:
++                raise ValueError(f"{pid}/{name}: fixture references undefined bindings {sorted(missing)}")
++
++
++def validate_backend_test(source):
++    """Reject two known unsatisfiable JSON-string assertions, not arbitrary JS."""
++    literal = r'''(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')'''
++    stringify = r"JSON\.stringify\(\s*[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\)"
++    for pattern in (
++        rf"\bassert\.(?:equal|strictEqual)\(\s*({literal})\s*,\s*{stringify}\s*[,)]",
++        rf"\bassert\.(?:equal|strictEqual)\(\s*{stringify}\s*,\s*({literal})\s*[,)]",
++    ):
++        for match in re.finditer(pattern, source):
++            try:
++                value = ast.literal_eval(match.group(1))
++            except (ValueError, SyntaxError):
++                continue
++            try:
++                json.loads(value)
++            except ValueError as error:
++                raise ValueError("Contradictory test: JSON.stringify cannot equal a non-JSON string; check the intended response field") from error
++    helper = re.compile(r"function\s+(\w+)\s*\([^)]*\)\s*(?::[^{}]+)?\{\s*"
++        r"return\s+JSON\.stringify\(\s*\w+\s*\?\?\s*\{\s*\}\s*\)\s*;?\s*\}")
++    for match in helper.finditer(source):
++        if re.search(r"\bassert\.ok\(\s*!\s*" + re.escape(match.group(1)) + r"\s*\(", source):
++            raise ValueError("Contradictory test: JSON.stringify(value ?? {}) is nonempty; assert the required header absence directly")
++
++
++def validate_e2e_test(source):
++    """Presentation fixtures cannot establish business state in browser E2E."""
++    if re.search(r'''__ARC_UI_FIXTURE__(?:["']\])?\s*=''', source):
++        raise ValueError("E2E cannot assign __ARC_UI_FIXTURE__; establish Given state and drive real browser actions before freezing")
+--- a/infrastructure/shared/agent/files.py
++++ b/infrastructure/shared/agent/files.py
+@@ -1,6 +1,8 @@
+ """Scoped whole-file edits with model-selected paths for new target files."""
+ 
+ from pathlib import Path
++
++from infrastructure.shared.agent.frozen_tests import is_frozen, verify_frozen_tests
+ 
+ from infrastructure.utils.files import read_source, save_bytes, save_text
+ from infrastructure.utils.paths import check_path_case, relative_path
+@@ -95,18 +97,22 @@
+ 
+     def state(self) -> dict:
+         """Refresh all supplied contents before each model request."""
++        verify_frozen_tests(self.output)
+         self.observed = {path: read_source(self.path(path)) if self.path(path).is_file() else None
+             for path in sorted(self.files)}
+-        return {path: {"content": content, "writable": path in self.writable}
++        return {path: {"content": content, "writable": path in self.writable and not is_frozen(self.output, path)}
+             for path, content in self.observed.items()}
+ 
+     def apply(self, response: dict) -> None:
+         """Validate the complete batch before writing; restore original bytes on write failure."""
++        verify_frozen_tests(self.output)
+         staged, originals = {}, {}
+         created = None
+         for number, edit in enumerate(response["edits"]):
+             relative = edit["path"]
+             target = self.path(relative)
++            if is_frozen(self.output, relative):
++                raise ValueError("Frozen test is not writable: " + relative)
+             if relative == created:
+                 staged[relative] = edit["content"]
+                 continue
+--- /dev/null
++++ b/infrastructure/shared/agent/frozen_tests.py
+@@ -0,0 +1,78 @@
++"""Seal generated suites before implementation; never accept later test edits."""
++
++from hashlib import sha256
++import json
++from pathlib import Path, PurePosixPath
++
++from infrastructure.utils.files import save_json
++
++
++class FrozenTestViolation(ValueError):
++    """A frozen suite or its receipt changed; preserve the failed run."""
++
++
++_records = {}
++RECEIPT = ".arc/frozen_tests.json"
++
++
++def _state(output):
++    root = Path(output).resolve()
++    if root not in _records:
++        receipt = root / RECEIPT
++        _records[root] = json.loads(receipt.read_text()) if receipt.is_file() else {}
++    return root, _records[root]
++
++
++def _digest(root, relative):
++    path = PurePosixPath(relative)
++    if (path.is_absolute() or ".." in path.parts or str(path) != relative
++            or not relative.startswith(("backend/tests/", "frontend/tests/"))
++            or not relative.endswith((".test.ts", ".spec.ts"))):
++        raise FrozenTestViolation("Not a generated test suite: " + relative)
++    target = root / relative
++    if (not target.is_file() or not target.resolve().is_relative_to(root)
++            or any(part.is_symlink() for part in (target, *target.parents) if part != root)):
++        raise FrozenTestViolation("Frozen test missing or linked: " + relative)
++    return sha256(target.read_bytes()).hexdigest()
++
++
++def is_frozen(output, relative):
++    return relative in _state(output)[1]
++
++
++def verify_frozen_tests(output):
++    root, records = _state(output)
++    if records:
++        receipt = root / RECEIPT
++        if not receipt.is_file() or json.loads(receipt.read_text()) != records:
++            raise FrozenTestViolation("Frozen test receipt changed; use a new run directory")
++    for relative, expected in records.items():
++        if _digest(root, relative) != expected:
++            raise FrozenTestViolation("Frozen test changed: " + relative)
++
++
++def freeze_tests(output, paths):
++    """Extend the receipt without replacing or unsealing an accepted suite."""
++    root, records = _state(output)
++    verify_frozen_tests(root)
++    additions = {relative: _digest(root, relative) for relative in paths}
++    updated = {**records, **additions}
++    save_json(root / RECEIPT, updated)
++    _records[root] = updated
++    return dict(updated)
++
++
++def archive_failed_tests(output, baseline, directory):
++    """Retire only new failed-task suites after preserving their hashes and bytes."""
++    root, records = _state(output)
++    verify_frozen_tests(root)
++    retired = {path: digest for path, digest in records.items() if path not in baseline}
++    if retired:
++        save_json(directory / "frozen_tests.json", retired)
++        for path in retired:
++            destination = directory / "files" / path
++            destination.parent.mkdir(parents=True, exist_ok=True)
++            destination.write_bytes((root / path).read_bytes())
++        remaining = {path: digest for path, digest in records.items() if path in baseline}
++        save_json(root / RECEIPT, remaining)
++        _records[root] = remaining
+--- a/infrastructure/shared/agent/loop.py
++++ b/infrastructure/shared/agent/loop.py
+@@ -1,5 +1,6 @@
+ """Bounded JSON edit -> fixed acceptance check -> repair loop."""
+ 
++from infrastructure.shared.agent.frozen_tests import FrozenTestViolation, verify_frozen_tests
+ from infrastructure.shared.agent.files import FileWorkspace
+ from infrastructure.shared.agent.protocol import FILE_EDIT_RULES
+ from infrastructure.shared.agent.proposals import RESPONSE_ERRORS, response_feedback
+@@ -37,7 +38,12 @@
+                 raise ValueError("Create the target file in the first edit before running acceptance checks")
+             console.show(f"{label} | Edit round {turn}/{max_turns}",
+                 str([edit["path"] for edit in response["edits"]]))
+-            return {"turns": turn, "checks": gate()}
++            verify_frozen_tests(files.output)
++            checks = gate()
++            verify_frozen_tests(files.output)
++            return {"turns": turn, "checks": checks}
++        except FrozenTestViolation:
++            raise
+         except (*RESPONSE_ERRORS, RuntimeError) as error:
+             message = str(error)
+             console.show(f"{label} | Repair feedback", message)
+--- a/infrastructure/shared/agent/recovery.py
++++ b/infrastructure/shared/agent/recovery.py
+@@ -5,6 +5,7 @@
+ from uuid import uuid4
+ 
+ from infrastructure.shared.agent.files import EXCLUDED
++from infrastructure.shared.agent.frozen_tests import archive_failed_tests
+ from infrastructure.utils.files import save_bytes, save_json
+ 
+ 
+@@ -43,6 +44,7 @@
+             "deleted_files": sorted(changed - after.keys()),
+             "archive": directory.relative_to(output).as_posix()}
+         save_json(directory / "failure.json", failure)
++        archive_failed_tests(output, before, directory)
+         for path in sorted(changed):
+             if path in before:
+                 save_bytes(output / path, before[path])
+--- a/infrastructure/stages/frontend/triggers/implementation.py
++++ b/infrastructure/stages/frontend/triggers/implementation.py
+@@ -5,6 +5,9 @@
+ accepted functional smoke scenarios in regression checks."""
+ 
+ import json
++
++from infrastructure.shared.agent.admission import validate_e2e_test
++from infrastructure.shared.agent.frozen_tests import freeze_tests
+ 
+ from infrastructure.shared.agent.files import source_paths, editable_sources
+ from infrastructure.shared.agent.loop import run_file_agent
+@@ -186,6 +189,7 @@
+                 """Typecheck selected tests; test_gate also runs the real application."""
+                 nonlocal relative, regression_files
+                 relative = test_path(rid, output)
++                validate_e2e_test((output / relative).read_text(encoding="utf-8"))
+                 regression_files = [test_path(key, output) for key in [*accepted, rid]]
+                 return checks.typecheck(regression_files, full_source=False)
+ 
+@@ -212,6 +216,7 @@
+             report["requirements"][rid]["test_turns"] = agent["turns"]
+             report["requirements"][rid]["test_path"] = relative
+ 
++            freeze_tests(output, [relative])
+             workspace = None
+ 
+             def implementation_checks():
+--- a/infrastructure/stages/frontend/ui/design.py
++++ b/infrastructure/stages/frontend/ui/design.py
+@@ -1,6 +1,8 @@
+ """Canonical UI/data records and incremental design updates."""
+ 
+ from copy import deepcopy
++
++from infrastructure.shared.agent.admission import validate_ui_controls
+ 
+ 
+ 
+@@ -36,6 +38,10 @@
+ label, placeholder, input_type, options, style, href, alt or heading level. Optional
+ prop.visible is a boolean or {var:VARIABLE_NAME, equals:VALUE}. Express business
+ behavior through triggers later, not expression strings embedded in props.
++
++For radio controls, prop.value is the explicit string option value, independent of
++the bound selection. Bind the group to one string variable; an empty selection means
++no option is checked, not that every option value becomes empty.
+ 
+ pages maps PAGE IDs to {name, route, root, images, fixtures}. route is a URL path, root
+ is an ELEMENT ID, images lists supplied image IDs. fixtures maps display-state names
+@@ -144,4 +150,5 @@
+     updated["requirements"][rid] = proposal["requirement_ui"]
+     updated["steps"].update(deepcopy(proposal["step_ui"]))
+     normalize_design(updated, tree)
++    validate_ui_controls(updated)
+     return updated
+--- a/infrastructure/stages/frontend/ui/implementation.py
++++ b/infrastructure/stages/frontend/ui/implementation.py
+@@ -7,6 +7,7 @@
+ import json
+ from pathlib import Path
+ 
++from infrastructure.shared.agent.frozen_tests import freeze_tests
+ from infrastructure.shared.agent.context import SourceFiles
+ from infrastructure.shared.agent.loop import run_file_agent
+ from infrastructure.shared.agent.recovery import implementation_task, final_checks, complete_report
+@@ -28,6 +29,9 @@
+ references through real elements, not a screenshot background in place of controls.
+ Put data-testid=ELEMENT_ID on each actual designed element, including the page root.
+ Use associated labels, specified input types/options, and role="alert" for alert elements.
++Place each test ID on the real interactive node, not a hidden proxy. Preserve native
++input/select/button/anchor semantics. For radio, value is prop.value and checked state
++is data[selection] == prop.value; do not bind every option value to the selection.
+ Respect prop.visible booleans or variable-equality rules and original visible text.
+ 
+ Use defaultValue/defaultChecked for native editable controls. The host captures native
+@@ -66,6 +70,7 @@
+         relative = test_path(pid)
+         suite = existence_suite(design, pid)
+         save_text(output / relative, suite)
++        freeze_tests(output, [relative])
+         report["pages"][pid] = {"status": "TESTS_READY", "requirements": uses, "test_path": relative}
+         save_json(arc_dir / "ui_checks.json", report)
+         label = f"UI {number}/{len(design['pages'])} {pid}"
+--- a/infrastructure/stages/frontend/ui/testing.py
++++ b/infrastructure/stages/frontend/ui/testing.py
+@@ -9,6 +9,7 @@
+ import subprocess
+ import tempfile
+ 
++from infrastructure.shared.agent.admission import validate_ui_controls
+ from infrastructure.stages.frontend.ui.design import page_elements, visible
+ from infrastructure.utils.processes import capture_process, npm_command
+ 
+@@ -34,6 +35,7 @@
+ 
+ def existence_suite(design: dict, pid: str) -> str:
+     """Render deterministic presence tests for key visible UI elements across the page's designed display fixtures."""
++    validate_ui_controls(design)
+     page = design["pages"][pid]
+     elements = page_elements(design, pid)
+     defaults = {var: binding["initial"] for var, binding in design["bindings"].items()}
+@@ -76,6 +78,10 @@
+                     initial = values[node["data"][0]]
+                     if kind == "checkbox" and isinstance(initial, bool):
+                         lines.append(f"  await expect({locator}){'' if initial else '.not'}.toBeChecked();")
++                    elif kind == "input" and prop.get("input_type") == "radio":
++                        option_value = prop["value"]
++                        lines.append(f'  await expect({locator}).toHaveValue({json.dumps(option_value)});')
++                        lines.append(f"  await expect({locator}){'' if initial == option_value else '.not'}.toBeChecked();")
+                     elif kind in {"input", "select"} and isinstance(initial, (str, int, float)) and not isinstance(initial, bool):
+                         lines.append(f'  await expect({locator}).toHaveValue({json.dumps(str(initial))});')
+             if prop.get("text") and kind in {"heading", "text", "button", "link", "alert"}:
+--- a/infrastructure/utils/presentation/model_io.py
++++ b/infrastructure/utils/presentation/model_io.py
+@@ -101,7 +101,7 @@
+ def http_client() -> httpx.Client:
+     """Connect directly, retaining audit hooks and the SDK's transport limits."""
+     from openai import DefaultHttpxClient
+-    return DefaultHttpxClient(trust_env=False, timeout=httpx.Timeout(600),
++    return DefaultHttpxClient(trust_env=False, timeout=600,
+         event_hooks={"request": [_http_request], "response": [_http_response]})
+ 
+ 
+--- a/main.py
++++ b/main.py
+@@ -48,10 +48,10 @@
+         raise SystemExit(130)
+     except Exception as error:
+         print(f"Compilation failed at {compiler.current_stage or 'startup'}: {error}", file=sys.stderr)
+-        raise SystemExit(0)
++        raise SystemExit(1)
+     if compiler.report["status"] == "COMPLETED_WITH_FAILURES":
+         print(f"All passes completed. Report: {compiler.arc_dir / 'compilation.json'}", file=sys.stderr)
+-        raise SystemExit(0)
++        raise SystemExit(1)
+ 
+ 
+ if __name__ == "__main__":

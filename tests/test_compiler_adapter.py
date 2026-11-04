@@ -1,4 +1,4 @@
-"""The platform wrapper delegates to upstream and never accepts its failed report."""
+"""The platform wrapper delegates to compiler and never accepts its failed report."""
 
 import json
 import os
@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 import main
 
 
-class UpstreamAdapterTests(unittest.TestCase):
+class CompilerAdapterTests(unittest.TestCase):
     def setUp(self):
         self.temp = TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -30,7 +30,7 @@ class UpstreamAdapterTests(unittest.TestCase):
         for name in ("package.json", "deploy.sh"):
             (self.output / name).write_text("fixture")
 
-    def test_upstream_command_port_and_environment_do_not_modify_reasoning(self):
+    def test_compiler_command_port_and_environment_do_not_modify_reasoning(self):
         self.report("GREEN")
         with (
             patch.dict(
@@ -47,13 +47,13 @@ class UpstreamAdapterTests(unittest.TestCase):
             ) as start,
         ):
             main.generate_application(
-                self.root, self.inputs, self.output, 33000, "upstream", True
+                self.root, self.inputs, self.output, 33000, "compiler", True
             )
         self.assertEqual(
             start.call_args.args[0],
             [
                 main.sys.executable,
-                str(self.root / "upstream/main.py"),
+                str(self.root / "compiler/main.py"),
                 str(self.inputs),
                 "--output-dir",
                 str(self.output),
@@ -78,10 +78,10 @@ class UpstreamAdapterTests(unittest.TestCase):
                 ):
                     with self.assertRaisesRegex(RuntimeError, "not GREEN"):
                         main.generate_application(
-                            self.root, self.inputs, self.output, 3000, "upstream"
+                            self.root, self.inputs, self.output, 3000, "compiler"
                         )
 
-    def test_interrupt_cleans_only_the_owned_upstream_process(self):
+    def test_interrupt_cleans_only_the_owned_compiler_process(self):
         process = Mock(wait=Mock(side_effect=KeyboardInterrupt()))
         with (
             patch.object(main, "start_process", return_value=process),
@@ -89,17 +89,17 @@ class UpstreamAdapterTests(unittest.TestCase):
         ):
             with self.assertRaises(KeyboardInterrupt):
                 main.generate_application(
-                    self.root, self.inputs, self.output, 3000, "upstream"
+                    self.root, self.inputs, self.output, 3000, "compiler"
                 )
         stop.assert_called_once_with(process)
 
-    def test_default_main_selects_upstream_and_old_engine_is_not_an_alias(self):
+    def test_default_main_selects_compiler_and_old_engine_is_not_an_alias(self):
         with (
             patch.dict(os.environ, {}, clear=True),
             patch.object(main, "generate_application") as generate,
         ):
             main.main([str(self.inputs), "--output-dir", str(self.output)])
-        self.assertEqual(generate.call_args.args[4], "upstream")
+        self.assertEqual(generate.call_args.args[4], "compiler")
         with patch.dict(os.environ, {"ARC_AGENT_ENGINE": "legacy"}, clear=True):
             with self.assertRaises(SystemExit) as error:
                 main.main([str(self.inputs), "--output-dir", str(self.output)])

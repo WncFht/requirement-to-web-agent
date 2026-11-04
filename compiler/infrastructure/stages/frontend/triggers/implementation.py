@@ -6,6 +6,9 @@ accepted functional smoke scenarios in regression checks."""
 
 import json
 
+from infrastructure.shared.agent.admission import validate_e2e_test
+from infrastructure.shared.agent.frozen_tests import freeze_tests
+
 from infrastructure.shared.agent.files import source_paths, editable_sources
 from infrastructure.shared.agent.loop import run_file_agent
 from infrastructure.shared.agent.recovery import implementation_task, final_checks, complete_report
@@ -186,6 +189,7 @@ def run_trigger_tdd(arc_dir, tree, schema, backend, ui, design, images, contexts
                 """Typecheck selected tests; test_gate also runs the real application."""
                 nonlocal relative, regression_files
                 relative = test_path(rid, output)
+                validate_e2e_test((output / relative).read_text(encoding="utf-8"))
                 regression_files = [test_path(key, output) for key in [*accepted, rid]]
                 return checks.typecheck(regression_files, full_source=False)
 
@@ -212,6 +216,7 @@ def run_trigger_tdd(arc_dir, tree, schema, backend, ui, design, images, contexts
             report["requirements"][rid]["test_turns"] = agent["turns"]
             report["requirements"][rid]["test_path"] = relative
 
+            freeze_tests(output, [relative])
             workspace = None
 
             def implementation_checks():
