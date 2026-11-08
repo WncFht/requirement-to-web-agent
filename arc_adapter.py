@@ -360,8 +360,11 @@ def run_agent(
         arc_model_present=injected["ARC_MODEL"],
         platform_model_present=injected["MODEL"],
     )
-    # Keep upstream retry machinery, but avoid ten repeated expensive failed requests.
-    os.environ.setdefault("MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT", "2")
+    # Retry budget: failed attempts are typically unbilled (gateway errors return no usage)
+    # and losing a run costs all accumulated progress — so outlive gateway degradation
+    # episodes (t8 died after 2 attempts on a 180s gateway timeout). The platform runner's
+    # own patience is the real ceiling; override via env.
+    os.environ.setdefault("MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT", "100")
     request_timeout = float(os.environ.get("ARC_REQUEST_TIMEOUT", "600"))
     if request_timeout <= 0:
         raise ValueError("ARC_REQUEST_TIMEOUT must be positive")
