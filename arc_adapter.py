@@ -251,8 +251,8 @@ def build_task(checked: dict[str, Any], input_dir: Path) -> str:
         "Implement the requirements as a general application, including persistence and all specified UI behavior.",
         "Preserve exact requirement behavior, accessibility names/roles, scenarios and test constraints.",
         "Use the reference screenshots to implement the visual design. Do not hardcode a benchmark answer or change tests.",
-        "Do not read `.arc_adapter/` or `.arc/stdout.log` — audit logs for humans, not task input.",
-        "Servers: start with `nohup … > /tmp/srv.log 2>&1 & echo $! > /tmp/srv.pid`, wait `sleep 2`, verify with curl; stop by the PID file — never `pkill -f <pattern>` (it matches your own shell's command line).",
+        "Do not read `.arc_adapter/` (audit logs for humans) — the only exception is a `spills/…` path reported in a tool result: grep it to recover the full output.",
+        "Use `scripts/check.sh <command…>` for builds/tests (correct exit codes + full log) and `scripts/srv.sh start|stop|status|restart` for servers (PID file + health wait) — never `pkill -f <pattern>` (it matches your own shell's command line).",
         "The runner's preinstalled browser and Playwright version are recorded in `.arc/preflight.json`.",
         "",
         "FULL SOURCE requirements.yaml (verbatim; authoritative):",
@@ -386,9 +386,11 @@ def run_agent(
         format_error_template=upstream["model"]["format_error_template"],
     )
     model.calllog_dir = details  # per-attempt calls.jsonl + payload deltas
+    env = LoggedEnvironment(cwd=str(output_dir.resolve()), timeout=300)
+    env.calllog_dir = details  # spill files for large tool outputs
     agent = DefaultAgent(
         model,
-        LoggedEnvironment(cwd=str(output_dir.resolve()), timeout=300),
+        env,
         system_template=upstream["agent"]["system_template"],
         instance_template=UPSTREAM_INSTANCE_SKELETON,
         step_limit=max_steps,

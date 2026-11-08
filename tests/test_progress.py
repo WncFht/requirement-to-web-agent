@@ -162,3 +162,40 @@ def test_reasoning_transport_policy(monkeypatch):
     assert 'CANARY-REASONING' not in json.dumps(cleaned)
     assert history[1]['reasoning_content'] == 'CANARY-REASONING'
     assert cleaned[1]['function_call'] is None
+
+
+def test_bash_output_spill(tmp_path):
+    from progress import BashProgress
+
+    class StubEnv:
+        def execute(self, action, *args, **kwargs):
+            return {"output": "y" * 5000, "returncode": 0}
+
+    class P(BashProgress, StubEnv):
+        pass
+
+    bp = P()
+    bp.calllog_dir = tmp_path
+    res = bp.execute({"command": "dummy"})
+    assert res["returncode"] == 0
+    assert len(res["output"]) < 4000
+    assert "spills/exec-1.log" in res["output"]
+    spill = tmp_path / "spills" / "exec-1.log"
+    assert spill.read_text() == "y" * 5000
+
+
+def test_bash_small_output_not_spilled(tmp_path):
+    from progress import BashProgress
+
+    class StubEnv:
+        def execute(self, action, *args, **kwargs):
+            return {"output": "ok", "returncode": 0}
+
+    class P(BashProgress, StubEnv):
+        pass
+
+    bp = P()
+    bp.calllog_dir = tmp_path
+    res = bp.execute({"command": "dummy"})
+    assert res["output"] == "ok"
+    assert not (tmp_path / "spills").exists()

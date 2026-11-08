@@ -34,7 +34,7 @@ bash scripts/run_keep_baseline.sh <arc-bench克隆> <全新空输出目录>     
 模型优先级：`--model` > `ARC_MODEL` > `MODEL` > `deepseek-flash`。
 环境变量：`ARC_REQUEST_TIMEOUT`（秒，默认 600）、`MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT`（默认 100——网关错误通常不计费且失败即损失全部进度，最坏情形 ~6.6 小时重试直到平台/网关恢复）、`ARC_MAX_STEPS`（默认 250，沿用上游 swebench 配置）、`ARC_MAX_SECONDS`（3600）、`ARC_REASONING_EFFORT`（默认 `low`，传给端点的思考力度，设空省略该参数）、`ARC_TRANSPORT_REASONING`（`passthrough` 默认，按上游原样回传思考内容——DeepSeek 契约与重编码网关需要；`strip` 为显式剥离，仅在确认端点不需要且窗口/计费敏感时使用）、`ARC_LOG_IMAGES`（默认剥离审计产物中的图片 base64，`=1` 保留原图用于图片相关调试）。
 
-Prompt 架构：harness 契约逐字沿用上游 `config/benchmarks/swebench.yaml`（system、instance 骨架、输出截断、format error、`drop_params`/`parallel_tool_calls`、step_limit 250）与 `config/default.yaml` 的 shell 环境（`PAGER=cat` 等）；本仓库只承载任务域内容（YAML、参考图、禁区、提交标记）。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。
+Prompt 架构：harness 契约逐字沿用上游 `config/benchmarks/swebench.yaml`（system、instance 骨架、输出截断、format error、`drop_params`/`parallel_tool_calls`、step_limit 250）与 `config/default.yaml` 的 shell 环境（`PAGER=cat` 等）；本仓库只承载任务域内容（YAML、参考图、禁区、提交标记）。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。模板脚本：`scripts/check.sh`（构建/测试验证封装，退出码+日志）与 `scripts/srv.sh`（服务生命周期，PID 文件+探活）——shell-ism 类损耗（PIPESTATUS、pkill）由脚本吸收，prompt 只放指针。
 
 ## 日志（记在哪、有什么）
 
@@ -44,6 +44,7 @@ Prompt 架构：harness 契约逐字沿用上游 `config/benchmarks/swebench.yam
 | `<output>/.arc_adapter/calls.jsonl` | 每次 HTTP 尝试一行：耗时、finish_reason、完整 usage，或失败异常链 |
 | `<output>/.arc_adapter/payloads.jsonl` | append-only 增量日志（`prefix_len` + `append`），按序折叠可重建每次尝试发出的**字节级** payload（`scripts/reconstruct_payload.py`）；图片以 sha256 占位符剥离，可由 `.arc_requirements/` 原图确定性还原 |
 | `<output>/.arc_adapter/trajectory.json` | 上游完整消息历史：每个 prompt（含 base64 图片）、每个响应 dump（含 reasoning 思考原文）、每条 bash 命令与输出；每步落盘，run 结束后图片同样剥离 |
+| `<output>/.arc_adapter/spills/` | 超过 4K 字符的工具输出全量落盘；模型侧只见 head/tail+追读指针 |
 | `<output>/.arc_adapter/run_summary.json` | status、llm_calls（逻辑调用）、model_http_attempts、token 聚合（成功尝试）、错误链 |
 
 失败请求没有 usage（服务端未返回），token 聚合只覆盖成功尝试；`actual_api_cost_usd` 恒为 `null`（端点定价未知）。

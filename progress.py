@@ -187,6 +187,24 @@ class ModelProgress:
 
 
 class BashProgress:
+    # Cap model-facing output before the upstream observation template (10K) sees it —
+    # full text goes to a spill file whose path is reported (dsh-style truncation+pointer).
+    SPILL_THRESHOLD = 4000
+
+    def _spill(self, number: int, out: str) -> str:
+        """Write the full output to a spill file; return a head/tail excerpt with the path."""
+        spill_dir = (self.calllog_dir / "spills") if self.calllog_dir else Path(
+            "/tmp/arc-spills"
+        )
+        spill_dir.mkdir(parents=True, exist_ok=True)
+        path = spill_dir / f"exec-{number}.log"
+        path.write_text(out, encoding="utf-8", errors="replace")
+        marker = (
+            f"…[output truncated — full: {path} ({len(out)} chars; "
+            f"grep the file for details)]…"
+        )
+        return out[:1500] + "\n" + marker + "\n" + out[-1500:]
+
     def execute(self, action, *args, **kwargs):
         self._bash_number = getattr(self, "_bash_number", 0) + 1
         number = self._bash_number
@@ -209,11 +227,17 @@ class BashProgress:
             else:
                 failure("bash_error", exc, started, execution=number)
             raise
+        out = result.get("output")
+        spilled = False
+        if isinstance(out, str) and len(out) > self.SPILL_THRESHOLD:
+            result["output"] = self._spill(number, out)
+            spilled = True
         emit(
             "bash_end",
             execution=number,
             seconds=round(time.monotonic() - started, 3),
             returncode=result.get("returncode"),
+            spilled=spilled,
         )
         if result.get("exception_info"):
             emit("bash_error", execution=number, reason=result["exception_info"])
