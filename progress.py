@@ -4,8 +4,10 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import time
 from datetime import UTC, datetime
+from pathlib import Path
 
 IMAGE_DATA_URL = re.compile(r"data:image/[A-Za-z]+;base64,[A-Za-z0-9+/=]+")
 
@@ -213,6 +215,13 @@ class BashProgress:
         emit(
             "bash_start", execution=number, command_chars=len(action.get("command", ""))
         )
+        # The environment's shell=True is POSIX sh, where bash-isms (PIPESTATUS,
+        # [[ ]], process substitution) fail — t9 burned 7 steps on one. Run every
+        # command under bash instead; copy-on-write keeps the audited action pristine.
+        action = {
+            **action,
+            "command": f"bash -c {shlex.quote(action.get('command', ''))}",
+        }
         try:
             result = super().execute(action, *args, **kwargs)
         except BaseException as exc:

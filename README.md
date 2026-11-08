@@ -42,7 +42,7 @@ bash scripts/run_keep_baseline.sh <arc-bench克隆> <全新空输出目录>     
 - **Harness 契约**：system、instance 骨架、输出截断、format error、`drop_params`/`parallel_tool_calls`、step_limit——逐字沿用上游 `config/benchmarks/swebench.yaml`；shell 环境沿用 `config/default.yaml`（`PAGER=cat` 等）
 - **任务域**（本仓库唯一承载的 prompt 内容）：YAML 逐字、参考图（自动缩至 ≤1280px、JPEG/PNG 择小）、禁区与提交标记、runner 事实三行
 - **验证管线**（workflow 步 4）：提交前逐场景对照运行中的应用，核对 exact roles/accessible names；自测脚本只是需求的代理，冲突时以需求为准
-- **模板脚本**：`scripts/check.sh`（构建/测试验证封装）与 `scripts/srv.sh`（服务生命周期，PID 文件+探活）——shell-ism 类损耗由脚本吸收，prompt 只放指针
+- **命令执行**：所有 agent 命令经 `bash -c` 包装（环境 shell 是 POSIX sh，PIPESTATUS 等 bash-isms 在解释器层根治）；**模板脚本** `scripts/srv.sh`（服务生命周期，PID 文件 + 探活）——进程类损耗由脚本吸收，prompt 只放指针
 
 机制细节、依据与运行档案：[docs/design.md](docs/design.md)。
 

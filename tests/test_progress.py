@@ -199,3 +199,27 @@ def test_bash_small_output_not_spilled(tmp_path):
     res = bp.execute({"command": "dummy"})
     assert res["output"] == "ok"
     assert not (tmp_path / "spills").exists()
+
+
+def test_execute_wraps_commands_in_bash(tmp_path):
+    import shlex
+
+    from progress import BashProgress
+
+    captured = {}
+
+    class StubEnv:
+        def execute(self, action, *args, **kwargs):
+            captured["command"] = action["command"]
+            return {"output": "ok", "returncode": 0}
+
+    class P(BashProgress, StubEnv):
+        pass
+
+    bp = P()
+    bp.calllog_dir = tmp_path
+    res = bp.execute({"command": "echo hello world"})
+    assert res["returncode"] == 0
+    assert captured["command"] == "bash -c " + shlex.quote("echo hello world")
+    # round-trip: unwrapping recovers the model's original command
+    assert shlex.split(captured["command"])[2] == "echo hello world"

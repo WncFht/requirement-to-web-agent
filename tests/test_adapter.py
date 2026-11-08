@@ -274,20 +274,9 @@ def test_template_rejects_escape(sample, tmp_path):
 def test_template_scripts_syntax():
     import subprocess
 
-    for name in ("check.sh", "srv.sh"):
-        p = subprocess.run(
-            ["bash", "-n", str(ROOT / "web_template" / "scripts" / name)],
-            capture_output=True,
-            text=True,
-        )
-        assert p.returncode == 0, p.stderr
-
-
-def test_check_sh_exit_codes():
-    import subprocess
-
-    script = ROOT / "web_template" / "scripts" / "check.sh"
-    ok = subprocess.run(["bash", str(script), "true"], capture_output=True, text=True)
-    assert ok.returncode == 0 and "CHECK OK" in ok.stdout
-    fail = subprocess.run(["bash", str(script), "false"], capture_output=True, text=True)
-    assert fail.returncode == 1 and "CHECK FAIL (1)" in fail.stdout
+    p = subprocess.run(
+        ["bash", "-n", str(ROOT / "web_template" / "scripts" / "srv.sh")],
+        capture_output=True,
+        text=True,
+    )
+    assert p.returncode == 0, p.stderr

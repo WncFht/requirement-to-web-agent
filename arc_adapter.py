@@ -252,7 +252,7 @@ def build_task(checked: dict[str, Any], input_dir: Path) -> str:
         "Preserve exact requirement behavior, accessibility names/roles, scenarios and test constraints.",
         "Use the reference screenshots to implement the visual design. Do not hardcode a benchmark answer or change tests.",
         "Do not read `.arc_adapter/` (audit logs for humans) — the only exception is a `spills/…` path reported in a tool result: grep it to recover the full output.",
-        "Use `scripts/check.sh <command…>` for builds/tests (correct exit codes + full log) and `scripts/srv.sh start|stop|status|restart` for servers (PID file + health wait) — never `pkill -f <pattern>` (it matches your own shell's command line).",
+        "For servers use `scripts/srv.sh start|stop|status|restart|logs` (PID file + built-in health wait) — never `pkill -f <pattern>` (it matches your own shell's command line).",
         "The runner's preinstalled browser and Playwright version are recorded in `.arc/preflight.json`.",
         "",
         "FULL SOURCE requirements.yaml (verbatim; authoritative):",
