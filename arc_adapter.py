@@ -184,14 +184,14 @@ For each response:
 ## Important Boundaries
 
 - MODIFY: application source files in the current directory (this is the working directory for all your subsequent commands)
-- DO NOT MODIFY: `deploy.sh`, the tests, or anything under `.arc_requirements/`
+- DO NOT MODIFY: `deploy.sh`, `scripts/verify.mjs`, supplied evaluation tests, or anything under `.arc_requirements/`. You may create and modify your own tests; keep browser verification under `verification/`
 
 ## Recommended Workflow
 
 1. Analyze the template and the task specification by finding and reading relevant files. For each scenario, combine ancestor and local descriptions, relevant requirement references, and all steps (including Then-only continuations); identify its initial data, UI contracts, and expected outcomes
-2. Implement the required application code
-3. Verify by building (`npm run build`) and exercising the app (`npm run test:backend`)
-4. Before submitting, verify every scenario in requirements.yaml against the running application: establish Given, perform When, and assert every Then outcome using the specified UI scope, roles, accessible names, placeholders, and states. Check absence, cancellation, permissions, persistence after refresh/reopening, and entity isolation where required. Keep a brief checklist by scenario ID and expected outcomes; mark an outcome verified only after its assertions pass. Text counts or console logs do not prove a required role, exact name, or state transition. Your own test scripts are proxies for requirements.yaml — when they disagree, the requirement wins. Fix failures and re-verify; never weaken a check while its requirement is still unmet
+2. Implement and verify shared public entry flows first, then implement and verify each module against its requirements
+3. Create `verification/ui.mjs` as an executable browser-check entry with assertions linked to scenario IDs. It must restart the built app with `scripts/srv.sh`, use a fresh isolated self-test database per run, and stop its test server afterward. Ensure package.json maps `verify` to `node scripts/verify.mjs`. Run `npm run verify` (build followed by this entry); missing checks or nonzero exits are failures. Backend tests may supplement these UI checks
+4. Before submitting, verify every scenario in requirements.yaml against the running application: establish Given, perform When, and assert every Then outcome using the specified UI scope, roles, accessible names, placeholders, and states. Follow the declared public entry path; use direct URLs only where the scenario allows them. Check absence, cancellation, permissions, persistence after refresh/reopening, and entity isolation where required. Keep a brief checklist by scenario ID and expected outcomes; mark an outcome verified only after its assertions pass. Text counts or console logs do not prove a required role, exact name, or state transition. Your own test scripts are proxies for requirements.yaml — when they disagree, the requirement wins. Fix failures and re-verify; never weaken a check while its requirement is still unmet
 
 ## Command Execution Rules
 
@@ -238,8 +238,10 @@ When you've completed your work, you MUST finish with this EXACT command, standa
 echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
 ```
 
+The adapter reruns `npm run verify` before accepting submission. If verification fails or times out, fix the failures and retry submission in this same session.
+
 <CRITICAL>
-After this command you cannot continue working (reading, editing, testing) on this task in any way.
+Once submission is accepted you cannot continue working (reading, editing, testing) on this task in any way.
 </CRITICAL>
 </instructions>"""
 
@@ -320,6 +322,54 @@ def _upstream_config(name: str) -> dict[str, Any]:
     return yaml.safe_load(resource.read_text(encoding="utf-8"))
 
 
+class SubmissionVerification:
+    """Accept the upstream submission marker only after fresh application checks."""
+
+    verification_deadline: float | None = None
+    _verifying = False
+
+    def _check_finished(self, output: dict) -> None:
+        # Verification output is an observation, even if a check prints the marker.
+        if self._verifying:
+            return
+        lines = output.get("output", "").lstrip().splitlines()
+        if not (
+            lines
+            and lines[0].strip() == "COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+            and output.get("returncode") == 0
+        ):
+            return super()._check_finished(output)
+
+        started = time.monotonic()
+        timeout = self.config.timeout
+        if self.verification_deadline is not None:
+            timeout = min(timeout, self.verification_deadline - started)
+        emit("verification_start", timeout_seconds=max(0, timeout))
+        self._verifying = True
+        try:
+            if timeout <= 0:
+                result = {"returncode": -1, "output": "The run time budget is exhausted."}
+            else:
+                result = self.execute(
+                    {"command": "npm run verify"}, cwd=self.config.cwd, timeout=timeout
+                )
+        finally:
+            self._verifying = False
+        emit(
+            "verification_end",
+            seconds=round(time.monotonic() - started, 3),
+            returncode=result.get("returncode"),
+        )
+        if result.get("returncode") != 0:
+            output.update(
+                returncode=1,
+                output="Submission blocked: npm run verify failed or timed out. "
+                "Fix the checks and application, then retry submission.\n" + result.get("output", ""),
+            )
+            return
+        return super()._check_finished(output)
+
+
 def run_agent(
     checked: dict[str, Any],
     input_dir: Path,
@@ -349,7 +399,7 @@ def run_agent(
     class LoggedModel(ModelProgress, LitellmModel):
         pass
 
-    class LoggedEnvironment(BashProgress, LocalEnvironment):
+    class LoggedEnvironment(SubmissionVerification, BashProgress, LocalEnvironment):
         pass
 
     injected = variable_presence()
@@ -389,6 +439,7 @@ def run_agent(
     model.calllog_dir = details  # per-attempt calls.jsonl + payload deltas
     env = LoggedEnvironment(cwd=str(output_dir.resolve()), timeout=300)
     env.calllog_dir = details  # spill files for large tool outputs
+    env.verification_deadline = time.monotonic() + max_seconds
     agent = DefaultAgent(
         model,
         env,

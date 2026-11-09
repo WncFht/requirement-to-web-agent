@@ -11,7 +11,7 @@ function discover(directory) {
   });
 }
 const files = discover(join(root, "backend/tests")).sort();
-if (!files.length) throw new Error("No API tests found; run step 08 first.");
+if (!files.length) throw new Error("No API tests found. Add your own backend/tests/**/*.test.ts tests before running test:backend.");
 const result = spawnSync(process.execPath, ["--import", "tsx", "--test", "--test-reporter=tap", ...files], { cwd: root, stdio: "inherit" });
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 1;

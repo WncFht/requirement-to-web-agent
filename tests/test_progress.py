@@ -11,8 +11,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
-@pytest.mark.parametrize('disconnect', [False, True])
-def test_entry_live_progress(tmp_path, disconnect):
+@pytest.mark.parametrize('disconnect, verify_fails_once', [(False, False), (False, True), (True, False)])
+def test_entry_live_progress(tmp_path, disconnect, verify_fails_once):
     """A piped CLI must publish request-start before the local server responds."""
     released = threading.Event()
     received = []
@@ -26,6 +26,8 @@ def test_entry_live_progress(tmp_path, disconnect):
             'command': command})}}]}}],
             'usage': {'prompt_tokens': 1, 'completion_tokens': 1, 'total_tokens': 2}}
     responses = [response('local-1', 'ls -la'), response('local-2', 'echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT')]
+    if verify_fails_once:
+        responses.append(response('local-3', 'echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT'))
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
             pass
@@ -49,10 +51,23 @@ def test_entry_live_progress(tmp_path, disconnect):
     (src/'reference').mkdir()
     (src/'reference'/'home.png').write_bytes(base64.b64decode(
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=='))
+    # This test mocks model/command boundaries, not application generation or checks.
+    tools = tmp_path / 'bin'
+    tools.mkdir()
+    npm = tools / 'npm'
+    npm.write_text(
+        '#!/bin/sh\n'
+        + (f'if [ ! -e "{tmp_path}/verified-once" ]; then\n'
+           f'  touch "{tmp_path}/verified-once"\n'
+           '  echo MOCK_VERIFY_FAILED; exit 1\nfi\n' if verify_fails_once else '')
+        + 'echo MOCK_VERIFY_OK\n'
+    )
+    npm.chmod(0o755)
     env = dict(os.environ, OPENAI_API_KEY='CANARY_SECRET_123',
                OPENAI_BASE_URL=f'http://127.0.0.1:{server.server_port}/v1',
                MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT='2', ARC_REQUEST_TIMEOUT='3',
-               MSWEA_GLOBAL_CONFIG_DIR=str(tmp_path/'config'))
+               MSWEA_GLOBAL_CONFIG_DIR=str(tmp_path/'config'),
+               PATH=f"{tools}:{os.environ['PATH']}")
     process = subprocess.Popen([sys.executable,str(ROOT/'main.py'),str(src),
         '--output-dir',str(tmp_path/'output'),'--model','local'],env=env,
         stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
@@ -98,13 +113,20 @@ def test_entry_live_progress(tmp_path, disconnect):
             assert 'model_request_end' in events
             assert 'bash_start' in events
             assert 'bash_submitted' in events
+            assert 'verification_start' in events and 'verification_end' in events
+            assert events.index('verification_end') < events.index('bash_submitted')
+            expected_calls = 3 if verify_fails_once else 2
+            if verify_fails_once:
+                assert events.count('verification_end') == 2
+                assert 'Submission blocked' in json.dumps(received[2])
+                assert 'MOCK_VERIFY_FAILED' in json.dumps(received[2])
             # Successful attempts: token usage on stdout and in the per-attempt log.
             end = next(item for item in events_data if item['event'] == 'model_request_end')
             assert end['usage']['prompt_tokens'] == 1 and end['usage']['completion_tokens'] == 1
-            assert calls[0]['usage'] == end['usage'] and len(calls) == 2
+            assert calls[0]['usage'] == end['usage'] and len(calls) == expected_calls
             # Append-only delta log: fold of appends reconstructs each exact payload.
             deltas = [json.loads(line) for line in (arc / 'payloads.jsonl').read_text().splitlines()]
-            assert len(deltas) == 2
+            assert len(deltas) == expected_calls
             assert deltas[0]['prefix_len'] == 0 and [m['role'] for m in deltas[0]['append']] == ['system', 'user']
             assert deltas[1]['prefix_len'] == 2 and len(deltas[1]['append']) == 2
             # Image data URLs are elided from audit artifacts by default (verifiable placeholders).
@@ -116,8 +138,8 @@ def test_entry_live_progress(tmp_path, disconnect):
             assert 'CANARY-REASONING' in (arc.parent / '.arc_adapter' / 'trajectory.json').read_text()
             assert any('CANARY-REASONING' in json.dumps(req) for req in received[1:])
             summary = json.loads((arc / 'run_summary.json').read_text())
-            assert summary['input_tokens'] == 2 and summary['output_tokens'] == 2
-            assert summary['model_http_attempts'] == 2
+            assert summary['input_tokens'] == expected_calls and summary['output_tokens'] == expected_calls
+            assert summary['model_http_attempts'] == expected_calls
         assert received
     finally:
         timer.cancel()

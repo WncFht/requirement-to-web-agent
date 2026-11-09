@@ -7,6 +7,7 @@
   "allowScripts": { "better-sqlite3": true, "esbuild": true },
   "scripts": {
     "build": "npm run build -w @arc/frontend && npm run build -w @arc/backend",
+    "verify": "node scripts/verify.mjs",
     "start": "npm run start -w @arc/backend",
     "dev:backend": "npm run dev -w @arc/backend",
     "dev:frontend": "npm run dev -w @arc/frontend",
