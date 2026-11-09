@@ -188,10 +188,10 @@ For each response:
 
 ## Recommended Workflow
 
-1. Analyze the template and the task specification by finding and reading relevant files
+1. Analyze the template and the task specification by finding and reading relevant files. For each scenario, combine ancestor and local descriptions, relevant requirement references, and all steps (including Then-only continuations); identify its initial data, UI contracts, and expected outcomes
 2. Implement the required application code
 3. Verify by building (`npm run build`) and exercising the app (`npm run test:backend`)
-4. Before submitting, verify every scenario in requirements.yaml against the running application, checking the exact roles and accessible names it specifies. Your own test scripts are proxies for requirements.yaml — when they disagree, the requirement wins. Fix failures and re-verify; never weaken a check while its requirement is still unmet
+4. Before submitting, verify every scenario in requirements.yaml against the running application: establish Given, perform When, and assert every Then outcome using the specified UI scope, roles, accessible names, placeholders, and states. Check absence, cancellation, permissions, persistence after refresh/reopening, and entity isolation where required. Keep a brief checklist by scenario ID and expected outcomes; mark an outcome verified only after its assertions pass. Text counts or console logs do not prove a required role, exact name, or state transition. Your own test scripts are proxies for requirements.yaml — when they disagree, the requirement wins. Fix failures and re-verify; never weaken a check while its requirement is still unmet
 
 ## Command Execution Rules
 
@@ -249,6 +249,7 @@ def build_task(checked: dict[str, Any], input_dir: Path) -> str:
     lines = [
         "Implement the complete web application specified in the supplied requirements.yaml.",
         "Implement the requirements as a general application, including persistence and all specified UI behavior.",
+        "Provide the declared initial data and relationships; establish interaction state through public user actions and compute derived results from runtime inputs rather than preloading scenario outcomes.",
         "Preserve exact requirement behavior, accessibility names/roles, scenarios and test constraints.",
         "Use the reference screenshots to implement the visual design. Do not hardcode a benchmark answer or change tests.",
         "Do not read `.arc_adapter/` (audit logs for humans) — the only exception is a `spills/…` path reported in a tool result: grep it to recover the full output.",
