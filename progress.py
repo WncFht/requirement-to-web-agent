@@ -217,10 +217,11 @@ class BashProgress:
         )
         # The environment's shell=True is POSIX sh, where bash-isms (PIPESTATUS,
         # [[ ]], process substitution) fail — t9 burned 7 steps on one. Run every
-        # command under bash instead; copy-on-write keeps the audited action pristine.
+        # command under bash with pipefail so a trailing head/tail cannot hide failures;
+        # copy-on-write keeps the audited action pristine.
         action = {
             **action,
-            "command": f"bash -c {shlex.quote(action.get('command', ''))}",
+            "command": f"bash -o pipefail -c {shlex.quote(action.get('command', ''))}",
         }
         try:
             result = super().execute(action, *args, **kwargs)

@@ -220,6 +220,27 @@ def test_execute_wraps_commands_in_bash(tmp_path):
     bp.calllog_dir = tmp_path
     res = bp.execute({"command": "echo hello world"})
     assert res["returncode"] == 0
-    assert captured["command"] == "bash -c " + shlex.quote("echo hello world")
+    assert captured["command"] == "bash -o pipefail -c " + shlex.quote("echo hello world")
     # round-trip: unwrapping recovers the model's original command
-    assert shlex.split(captured["command"])[2] == "echo hello world"
+    assert shlex.split(captured["command"])[-1] == "echo hello world"
+
+
+@pytest.mark.parametrize("command, expected", [("false | cat", 1), ("printf ok | cat", 0)])
+def test_execute_preserves_pipeline_exit_status(command, expected):
+    import shlex
+    import subprocess
+
+    from progress import BashProgress
+
+    class ShellEnv:
+        def execute(self, action, *args, **kwargs):
+            result = subprocess.run(shlex.split(action["command"]), capture_output=True, text=True)
+            return {"output": result.stdout, "returncode": result.returncode}
+
+    class P(BashProgress, ShellEnv):
+        pass
+
+    action = {"command": command}
+    result = P().execute(action)
+    assert result["returncode"] == expected
+    assert action == {"command": command}
