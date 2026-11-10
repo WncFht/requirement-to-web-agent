@@ -68,6 +68,8 @@ def test_entry_live_progress(tmp_path, disconnect):
                 item = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            if not isinstance(item, dict):
+                continue
             event = item.get('event')
             if event:
                 events.append(event)
@@ -116,6 +118,9 @@ def test_entry_live_progress(tmp_path, disconnect):
             assert 'CANARY-REASONING' in (arc.parent / '.arc_adapter' / 'trajectory.json').read_text()
             assert any('CANARY-REASONING' in json.dumps(req) for req in received[1:])
             summary = json.loads((arc / 'run_summary.json').read_text())
+            build = json.loads((arc / 'build_info.json').read_text())
+            assert summary['build_info']['source_sha256'] == build['source_sha256']
+            assert 'build_info' in events
             assert summary['input_tokens'] == 2 and summary['output_tokens'] == 2
             assert summary['model_http_attempts'] == 2
         assert received

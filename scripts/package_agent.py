@@ -1,30 +1,30 @@
-"""Build a submission ZIP from an explicit source allowlist."""
+"""Build a submission ZIP with a frozen source manifest."""
 
+import json
+import sys
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 root = Path(__file__).resolve().parents[1]
-output = root / "dist/mini_swe_arcbench_adapter.zip"
-output.parent.mkdir(exist_ok=True)
-with ZipFile(output, "w", ZIP_DEFLATED) as archive:
-    for name in [
-        "main.py",
-        "arc_adapter.py",
-        "progress.py",
-        "requirements.txt",
-        "pytest.ini",
-        ".env.example",
-        "README.md",
-        "scripts",
-        "tests",
-        "web_template",
-    ]:
-        entry = root / name
-        for path in [entry] if entry.is_file() else sorted(entry.rglob("*")):
-            if not path.is_file() or any(
-                part in {".env", ".DS_Store", "__pycache__", "node_modules", "dist"}
-                for part in path.relative_to(root).parts
-            ):
-                continue
-            archive.write(path, path.relative_to(root))
-print(output)
+sys.path.insert(0, str(root))
+from build_info import create_build_info, source_files
+
+
+def package(root: Path, output: Path) -> dict:
+    files = source_files(root)
+    info = create_build_info(root, files)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with ZipFile(output, "w", ZIP_DEFLATED) as archive:
+        for name, data in files.items():
+            entry = ZipInfo.from_file(root / name, name)
+            entry.compress_type = ZIP_DEFLATED
+            archive.writestr(entry, data)
+        archive.writestr("build_info.json", json.dumps(info, ensure_ascii=False, indent=2) + "\n")
+    return info
+
+
+if __name__ == "__main__":
+    output = root / "dist/mini_swe_arcbench_adapter.zip"
+    info = package(root, output)
+    print(json.dumps({"output": str(output), "commit": info["commit"], "tags": info["tags"],
+                      "dirty": info["dirty"], "source_sha256": info["source_sha256"]}))

@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from arc_adapter import build_task, prepare_output, run_agent
+from build_info import write_run_build_info
 from progress import emit, failure, redact, variable_presence
 
 
@@ -72,6 +73,16 @@ def main(argv: list[str] | None = None) -> int:
                 "Set OPENAI_BASE_URL and OPENAI_API_KEY before running the model"
             )
         checked = prepare_output(args.requirement_path, args.output_dir)
+        build = write_run_build_info(
+            Path(__file__).resolve().parent, args.output_dir,
+            configuration={"model": args.model,
+                           "reasoning_effort_override": os.environ.get("ARC_REASONING_EFFORT"),
+                           "max_steps": args.max_steps, "max_seconds": args.max_seconds},
+        )
+        emit("build_info", **{key: build.get(key) for key in (
+            "commit", "tags", "dirty", "source_sha256", "origin", "matches_build",
+            "runtime_source_sha256", "changed_files", "run_configuration",
+        )})
         info = {
             "input": str(args.requirement_path.resolve()),
             "output": str(args.output_dir.resolve()),
@@ -96,6 +107,13 @@ def main(argv: list[str] | None = None) -> int:
             args.model,
             args.max_steps,
             args.max_seconds,
+        )
+        result["build_info"] = {key: build.get(key) for key in (
+            "commit", "tags", "dirty", "source_sha256", "origin", "matches_build",
+            "runtime_source_sha256",
+        )}
+        (args.output_dir / ".arc_adapter/run_summary.json").write_text(
+            json.dumps(result, indent=2), encoding="utf-8"
         )
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result["status"] == "Submitted" else 1
