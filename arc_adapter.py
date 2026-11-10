@@ -184,14 +184,110 @@ For each response:
 ## Important Boundaries
 
 - MODIFY: application source files in the current directory (this is the working directory for all your subsequent commands)
-- DO NOT MODIFY: `deploy.sh`, the tests, or anything under `.arc_requirements/`
+- DO NOT MODIFY: `deploy.sh`, supplied tests/assertions or their harness, or anything under `.arc_requirements/`
+- Use application source, supplied public requirements/assets and ordinary dependency documentation.
+  Do not search for or read external evaluator tests, platform submission internals, or hidden
+  benchmark answers. Existing tests inside this application are available for verification.
 
 ## Recommended Workflow
 
-1. Analyze the template and the task specification by finding and reading relevant files
-2. Implement the required application code
-3. Verify by building (`npm run build`) and exercising the app (`npm run test:backend`)
-4. Before submitting, verify every scenario in requirements.yaml against the running application, checking the exact roles and accessible names it specifies. Your own test scripts are proxies for requirements.yaml — when they disagree, the requirement wins. Fix failures and re-verify; never weaken a check while its requirement is still unmet
+### Read requirements as a contract
+
+- Read the supplied YAML hierarchy and reference images. Preserve requirement IDs and
+  applicable parent constraints when interpreting child features. Cover every scenario,
+  including alternatives, validation, permissions, empty states and persistence.
+- Treat specified starting pages, identities, labels, messages, defaults and accessible
+  roles/names as observable behavior. Use screenshots for visual guidance alongside the
+  written behavior. If a detail is unspecified, choose a simple implementation consistent
+  with the application; do not replace explicit requirements with familiar product habits.
+- Make a compact working checklist by requirement ID: implementation, actual check and
+  remaining gap. Keep it in brief reasoning or a small local note; do not produce a long
+  requirements report or repeatedly copy the YAML. A checklist is not proof of acceptance.
+
+### Inspect, then implement complete paths
+
+- Inspect package scripts, relevant routes, components, API handlers and storage before
+  editing. Preserve working application code and use the template's existing stack.
+- Order work by actual dependencies and shared implementation resources. Establish the
+  essential navigation, identity and data flow first, then complete related features in
+  bounded groups. Track independent features too, so early polishing does not consume
+  all opportunities to implement later requirements. Do not redesign the whole project.
+- For each feature, implement the full path: specified starting page and identity ->
+  visible entry -> interaction -> correct result -> reload/reopen persistence where required.
+  A schema, endpoint, static page, placeholder or success toast alone is not completion.
+- Complete relevant UI, business logic and storage together before expanding the next
+  group. Reuse shared validation/state paths; enforce required permissions on backend
+  reads and writes as well as the UI. Do not hardcode scenario answers or special cases
+  keyed to known fixture values.
+- Provide the records and relationships explicitly assumed by GIVEN conditions through
+  normal initialization or migration code. Initialization must be idempotent and must
+  not overwrite user changes on restart. Preserve existing records and stable IDs;
+  never reset a working database just to obtain a passing demonstration.
+
+### Keep reads, writes and visible state consistent
+
+- Compare frontend field names and object IDs with actual write requests, server storage
+  and GET responses. Verify that reloading reconstructs the same state; an optimistic
+  UI update cannot compensate for a missing write or incompatible response shape.
+- Await the relevant write before claiming durable success. Display failed saves honestly.
+  Prevent older asynchronous responses or queued writes from overwriting newer edits or
+  navigating away from the user's current context. Keep related state changes consistent.
+- Use the persistence mechanism required by the task. For persisted features, exercise
+  refresh/reopen and a subsequent ordinary edit; when restart persistence is required,
+  also restart the application. Do not substitute browser-only state for required shared
+  or account-specific backend data.
+- Give controls the specified visible labels and accessible semantics. Associate form
+  labels with inputs, use buttons/links for their intended actions, and expose selection,
+  errors and disabled states correctly. Required messages must be visible in the app;
+  native browser validation alone does not implement a specified application error flow.
+
+### Verify behavior with evidence
+
+- Run the supplied build (`npm run build`) and backend checks (`npm run test:backend`).
+  These establish build/API health, not coverage of all application requirements.
+- Inspect `.arc/preflight.json` once if present for available browser/Playwright details.
+  Use the installed browser tooling to exercise real user paths. Check the actual module
+  and browser launch before declaring the browser unavailable; do not assume a missing
+  global executable means an installed package is unusable.
+- Verify scenarios from their specified GIVEN page, identity and data. Click the real
+  entry and controls, perform WHEN, and inspect THEN, including required failures and
+  state after reload. Direct URLs, API calls or hand-edited database values may help
+  diagnose a failure but do not verify a missing UI entry or user interaction.
+- Add focused self-checks when useful, using the public requirements as their source.
+  Include negative cases and cross-feature paths, not just existence or happy-path checks.
+  Own checks are proxies: if they disagree with the requirement, fix the implementation
+  or correct the mistaken proxy; never weaken an assertion while its requirement is unmet.
+- After a shared navigation, authentication or storage change, recheck affected working
+  paths. Before submission, review every requirement ID and exercise any unchecked
+  scenarios where possible. Verify visual structure against the reference images too.
+- Distinguish implemented-but-unverified, actually verified, failed and environment-blocked
+  work. Record what ran and what it showed; never describe an unexecuted or skipped check
+  as passing. If tools are unavailable, use feasible lower-level checks and state the
+  remaining limitation rather than inventing browser evidence.
+
+### Use tools and the remaining budget deliberately
+
+- Search for relevant symbols, then read bounded source ranges. Reuse unchanged content
+  already in context instead of dumping all specifications or rereading whole files.
+  Batch independent reads; finish a manageable edit and inspect its result before expanding.
+- Commands run in fresh subshells; include the working directory and needed environment
+  each time. For pipelines used as checks, explicitly use `bash -o pipefail -c '...'`
+  or otherwise preserve and inspect the actual failing command's exit status. Output
+  from `tee`, `tail` or a final successful command is not evidence the check passed.
+- Use non-interactive commands and timeouts supported by the actual tool. Split long
+  setup/build/check work into bounded commands and inspect exit status and relevant logs.
+  Do not repeatedly reinstall unchanged dependencies or rerun an unchanged failure.
+- Start development servers with redirected logs and a recorded PID, poll readiness with
+  a bounded deadline, then inspect the log if startup fails. A fixed sleep alone is not
+  readiness evidence. Stop only processes you started by their recorded PIDs; avoid broad
+  `pkill -f` patterns. Keep development-server ports separate from final deployment.
+- Diagnose the concrete failing path and backend/browser error before broad rewrites.
+  Fix a shared blocker once, then recheck dependent paths; do not keep polishing a single
+  feature while unrelated required functionality remains absent.
+- Reserve remaining steps/time for integration, checks and small repairs. Near the limit,
+  stabilize current changes, avoid large refactors and report unfinished requirement IDs.
+  Before submitting, run the final build and relevant checks after the last source edit,
+  and briefly summarize actual evidence, remaining gaps and environmental blockers.
 
 ## Command Execution Rules
 
@@ -252,8 +348,8 @@ def build_task(checked: dict[str, Any], input_dir: Path) -> str:
         "Preserve exact requirement behavior, accessibility names/roles, scenarios and test constraints.",
         "Use the reference screenshots to implement the visual design. Do not hardcode a benchmark answer or change tests.",
         "Do not read `.arc_adapter/` or `.arc/stdout.log` — audit logs for humans, not task input.",
-        "Servers: start with `nohup … > /tmp/srv.log 2>&1 & echo $! > /tmp/srv.pid`, wait `sleep 2`, verify with curl; stop by the PID file — never `pkill -f <pattern>` (it matches your own shell's command line).",
-        "The runner's preinstalled browser and Playwright version are recorded in `.arc/preflight.json`.",
+        "Servers: use redirected logs and recorded PIDs, poll HTTP readiness with a bounded deadline, and stop only your own processes. Inspect startup logs instead of assuming a fixed sleep proves readiness.",
+        "If available, `.arc/preflight.json` records the runner's preinstalled browser and Playwright version; it is environment information, not acceptance evidence.",
         "",
         "FULL SOURCE requirements.yaml (verbatim; authoritative):",
         "```yaml",

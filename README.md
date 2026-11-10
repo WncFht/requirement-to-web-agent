@@ -5,6 +5,14 @@
 - ARC-Bench: https://github.com/code-philia/arc-bench；Runner 约定：`python main.py <requirements目录> --output-dir <应用目录>`，ZIP 根含 `main.py` + `requirements.txt`
 - 历史诊断与变更记录：[docs/history.md](docs/history.md)
 
+## mini6 详细 prompt 实验
+
+分支 `experiment/mini6-detailed-prompt` 从 `mini6`（`17a7e97`）创建，回移版本溯源提交 `749f8a5`，再扩展 `arc_adapter.py` 的任务指导。执行引擎、工具、模板、默认模型参数、重试策略和 step/time 预算沿用 mini6；没有引入 mini8/mini9 的运行环境修改或提交前自动验证机制。
+
+详细 prompt 要求按需求 ID 和父级约束组织工作，完成规定入口到持久化结果的用户路径，检查前后端读写一致性，并区分已实现与已验证。工具指导包括检查管道退出码、轮询服务就绪、按依赖完成相关功能以及预留集成验证时间。这些是模型执行指导，实际验证仍由 agent 调用现有工具完成；没有新增 `checkpoint` 或 `run_acceptance` 工具，也不保证所有指导都会被遵守。
+
+打包和运行时记录 commit、tag、源码指纹与配置，详见 [版本溯源](docs/versioning.md)。运行成绩尚未验证；应与原 mini6 使用相同任务、模型参数和预算进行多次对照，同时比较功能通过率、token、step、重复操作及真实验证行为。
+
 ## 状态
 
 入口、模板启动、离线传输与回归测试已验证（16 passed）。完整 Keep baseline 未跑通：模型端点在长输出阶段断连（httpx `RemoteProtocolError`），诊断见 docs/history.md。得分 N/A / 33（未运行）。
