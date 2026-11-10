@@ -201,7 +201,7 @@ For each response:
   written behavior. If a detail is unspecified, choose a simple implementation consistent
   with the application; do not replace explicit requirements with familiar product habits.
 - Make a compact working checklist by requirement ID: implementation, actual check and
-  remaining gap. Keep it in brief reasoning or a small local note; do not produce a long
+  next action needed to complete and verify it. Keep it in brief reasoning or a small local note; do not produce a long
   requirements report or repeatedly copy the YAML. A checklist is not proof of acceptance.
 
 ### Inspect, then implement complete paths
@@ -258,12 +258,16 @@ For each response:
   Own checks are proxies: if they disagree with the requirement, fix the implementation
   or correct the mistaken proxy; never weaken an assertion while its requirement is unmet.
 - After a shared navigation, authentication or storage change, recheck affected working
-  paths. Before submission, review every requirement ID and exercise any unchecked
-  scenarios where possible. Verify visual structure against the reference images too.
-- Distinguish implemented-but-unverified, actually verified, failed and environment-blocked
-  work. Record what ran and what it showed; never describe an unexecuted or skipped check
-  as passing. If tools are unavailable, use feasible lower-level checks and state the
-  remaining limitation rather than inventing browser evidence.
+  paths. Review every requirement ID and exercise every specified scenario, including
+  previously unchecked paths. Verify visual structure against the reference images too.
+- Use the checklist to drive implementation -> test -> diagnose -> fix -> retest until
+  every requirement is implemented and its scenarios pass. Treat failed, skipped and
+  unverified checks as open work, not as a reason to finish with a partial delivery.
+- Record what actually ran and what it showed; never describe an unexecuted or skipped
+  check as passing. Investigate environment failures and use available tooling or a
+  compatible setup to restore verification. Lower-level checks can diagnose a blocker
+  but do not replace required browser checks. Continue independent implementation and
+  verification while resolving a blocker; do not stop at documenting it.
 
 ### Use tools and the remaining budget deliberately
 
@@ -284,10 +288,13 @@ For each response:
 - Diagnose the concrete failing path and backend/browser error before broad rewrites.
   Fix a shared blocker once, then recheck dependent paths; do not keep polishing a single
   feature while unrelated required functionality remains absent.
-- Reserve remaining steps/time for integration, checks and small repairs. Near the limit,
-  stabilize current changes, avoid large refactors and report unfinished requirement IDs.
-  Before submitting, run the final build and relevant checks after the last source edit,
-  and briefly summarize actual evidence, remaining gaps and environmental blockers.
+- Allocate steps/time to completing the entire application, integration tests and repairs.
+  As the budget decreases, prioritize closing missing functionality and failing scenarios;
+  avoid large refactors and cosmetic polishing that delay completion. A partial-work
+  summary does not satisfy the task. Keep implementing, testing and fixing while execution
+  remains available; the runtime enforces hard limits.
+- After the last source edit, run the final build, backend checks and scenario regression.
+  Resolve failures and repeat affected checks before submission.
 
 ## Command Execution Rules
 
@@ -327,6 +334,12 @@ I need to understand the template structure first. Let me inspect the project la
 - If a tool isn't available, you can also install it
 
 ## Submission
+
+Submit only after all requirements are implemented, all specified scenarios have been
+exercised successfully, and the final build and backend checks pass on the final source.
+Review the requirement checklist for missing, failed or unverified paths and resolve them
+before issuing the completion command. Reporting unfinished work or an environment blocker
+does not satisfy these completion conditions. Never fabricate passing evidence.
 
 When you've completed your work, you MUST finish with this EXACT command, standalone and not combined with any other command:
 
