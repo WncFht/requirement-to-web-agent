@@ -186,25 +186,26 @@ Keep that working directory unless a specific command needs a subdirectory. Orde
 navigation, identity and shared data flow, then implement related features in manageable groups.
 Complete each group's UI, business rules and persistence together while covering the whole app.
 
-Keep a compact local map using this format:
-`scenario ID | test file/case | not_run/failed/passed | check record or next repair`.
-Use a requirement ID plus a short case name if scenario IDs are absent. Each test must retain
-the scenario's GIVEN identity/data, public entry, WHEN actions, THEN results and required
-negative/persistence checks. Track scenarios, not pages or components: one broad passing test
-does not certify unexecuted alternatives. Update the map after each feature group and link
-passed entries to actual check records; dependent cases need their own executed assertions.
+Before implementation, create a compact local map:
+`scenario ID | test file/case | not_run/blocked/failed/passed | check ID or next repair`.
+Use requirement ID plus case name when scenario IDs are absent. Retain each scenario's GIVEN
+identity/data, public entry, WHEN actions and THEN results, including negative/persistence
+checks. Update the map after each group, not retrospectively at submission. A broad test
+certifies only the scenarios whose assertions actually executed.
 
-### 2. Implement and verify each group
+### 2. Implement, check shared prerequisites, then finish appearance
 
-Implement each scenario's full path: specified page and identity -> visible entry -> interaction
--> observable result -> required persistence. Use the check standards below to write small,
-requirement-derived tests as you implement. Reuse installed tooling, existing application tests
-and small interaction helpers; retain meaningful self-tests for reruns.
+Implement related UI, business rules and persistence together. Before running a dependent
+browser group, check its shared navigation, session and form roles/labels with condition-based
+assertions. If a shared prerequisite fails, report affected cases as blocked and repair it
+once instead of paying the same timeout in every case. Continue independent cases; blocked
+cases are not passes and must execute after repair. Do not shorten waits to conceal slow or
+incorrect behavior.
 
-During development, run focused checks and affected regressions. Check shared entry points early;
-when authentication, navigation, forms or storage change, rerun their affected groups. Execute
-downstream assertions after repairing a prerequisite. Inspect layout against reference images
-alongside behavior. Reserve time for integration, testing and repair across the entire application.
+Run focused checks and affected regressions during development. Then compare layout with the
+references and complete required visual corrections before final full acceptance. After that,
+change only identified requirement gaps or defects; rerun affected checks and final acceptance
+for each application edit. Reserve time for integration and repair, not optional polishing.
 
 ### 3. Diagnose failures and choose the next action
 
@@ -275,8 +276,7 @@ Validate public table names, column headers, row identities and scoped controls 
 roles/names, not only CSS selectors. Keep business identifiers independently readable as text;
 separate adjacent values so text extraction does not join an identifier to the next word.
 Check repeated controls with popups open as well as closed. Error feedback must be associated
-with its relevant form/region. CSS selectors and direct URLs are useful diagnostics, but do
-not substitute for the required semantic assertions or public navigation in acceptance tests.
+with its relevant form/region. CSS selectors may diagnose layout; acceptance must still verify the declared public semantics.
 
 For specified roles/names use `getByRole(role, { name, exact: true })`, scoped to the relevant
 record/container/dialog. Wait for the expected state, then check visibility and uniqueness within that scope when one
@@ -313,14 +313,14 @@ failures, continue independent cases and finish with a nonzero exit if any faile
 must propagate failure or set `process.exitCode = 1`. Cases after an early abort remain not_run.
 For a custom assertion harness, confirm a temporary failing probe exits nonzero, then remove it.
 
-Run build, backend tests and browser checks through the supplied check runner, for example:
-`python3 scripts/run_check.py --case build --log .agent/checks/build.log -- npm run build` or
-`python3 scripts/run_check.py --case SCN-ID --log .agent/checks/browser.log -- node tests/check.cjs`.
-Repeat `--case` for the IDs exercised by a grouped command. The runner appends command-level
-evidence to `.agent/checks.jsonl`: declared IDs, timestamps, working directory, command,
-log path and exit status. IDs are declarations, not proof of coverage: retain per-scenario
-assertions/results in the test output and link the coverage map to both. Use a distinct log
-path for each execution so later reruns do not overwrite earlier evidence.
+Run build, backend tests and browser checks through the supplied check runner:
+`python3 scripts/run_check.py --case build -- npm run build` or
+`python3 scripts/run_check.py --case SCN-ID -- node tests/check.cjs`.
+Repeat `--case` for IDs actually exercised by a grouped command. Each invocation creates a
+unique log under `.agent/checks/` and appends started/completed records with the same check ID
+to `.agent/checks.jsonl`. A started record without completion means interrupted/unknown, never
+passed. The runner prints its final record; link the map to its check ID and per-scenario
+assertion output. Declared IDs alone do not prove coverage. Do not alter the check runner.
 Issue each runner invocation as its own tool call, optionally preceded by `cd ... &&`;
 do not append echo, log printing or `|| true`. The runner prints captured output and exits
 with the check's status. Use separate calls for separate checks. Tool commands use Bash with

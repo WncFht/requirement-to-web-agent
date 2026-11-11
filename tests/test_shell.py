@@ -31,14 +31,17 @@ def test_bash_syntax_pipeline_and_quoting(tmp_path):
 
 @pytest.mark.parametrize('code', [0, 7])
 def test_runner_log_status_and_spaces(tmp_path, code):
-    log = tmp_path / 'logs with spaces/check.log'
     child = f'import sys; print("stdout"); print("stderr", file=sys.stderr); sys.exit({code})'
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(log), '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', sys.executable, '-c', child])
     result = execute(tmp_path, command)
     assert result['returncode'] == code
     assert 'stdout' in result['output'] and 'stderr' in result['output']
-    assert log.read_text() == result['output']
-    record = json.loads((tmp_path / '.agent/checks.jsonl').read_text())
+    started, record = [json.loads(line) for line in (tmp_path / '.agent/checks.jsonl').read_text().splitlines()]
+    assert started['status'] == 'started' and 'exit_code' not in started
+    assert started['check_id'] == record['check_id']
+    log = Path(record['log'])
+    assert result['output'].startswith(log.read_text())
+    assert record['status'] == ('passed' if code == 0 else 'failed')
     assert record['exit_code'] == code
     assert record['cases'] == ['REQ-example']
     assert record['command'] == [sys.executable, '-c', child]
@@ -48,7 +51,7 @@ def test_runner_log_status_and_spaces(tmp_path, code):
 
 
 def test_runner_preserves_failed_pipeline(tmp_path):
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(tmp_path / 'check.log'), '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
     assert execute(tmp_path, command)['returncode'] == 9
 
 
@@ -56,12 +59,14 @@ def test_runner_appends_grouped_checks_and_records_launch_failure(tmp_path):
     for command in ([sys.executable, '-c', 'print("ok")'], ['missing-check-executable']):
         result = execute(tmp_path, shlex.join([
             sys.executable, str(RUNNER), '--case', 'REQ-a', '--case', 'REQ-b',
-            '--log', str(tmp_path / ('success.log' if len(command) > 1 else 'missing.log')),
             '--', *command,
         ]))
     assert result['returncode'] == 127
     records = [json.loads(line) for line in (tmp_path / '.agent/checks.jsonl').read_text().splitlines()]
-    assert [record['exit_code'] for record in records] == [0, 127]
+    assert [record['status'] for record in records] == ['started', 'passed', 'started', 'failed']
+    assert [record['exit_code'] for record in records if 'exit_code' in record] == [0, 127]
+    assert records[0]['log'] != records[2]['log']
+    assert Path(records[0]['log']).read_text() == 'ok\n'
     assert all(record['cases'] == ['REQ-a', 'REQ-b'] for record in records)
     assert 'Unable to start check' in Path(records[-1]['log']).read_text()
 
@@ -80,12 +85,15 @@ def test_submission_marker_still_works(tmp_path):
 def test_timeout_kills_runner_and_descendants(tmp_path):
     sentinel = tmp_path / 'orphan-survived'
     child = 'import time; from pathlib import Path; time.sleep(1.5); Path(' + repr(str(sentinel)) + ').write_text("alive")'
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(tmp_path / 'timeout.log'), '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', sys.executable, '-c', child])
     result = execute(tmp_path, command, timeout=1)
     assert result['returncode'] == -1
     assert result['extra']['exception_type'] == 'TimeoutExpired'
     time.sleep(0.8)
     assert not sentinel.exists()
+    records = [json.loads(line) for line in (tmp_path / '.agent/checks.jsonl').read_text().splitlines()]
+    assert len(records) == 1 and records[0]['status'] == 'started'
+    assert 'exit_code' not in records[0]
 
 
 @pytest.mark.skipif(os.name != 'posix', reason='POSIX background processes')
