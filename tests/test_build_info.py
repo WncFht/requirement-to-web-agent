@@ -86,6 +86,9 @@ def test_repository_package_runs_without_git_and_writes_identity(tmp_path):
     deployed = tmp_path / "deployed"
     with ZipFile(archive_path) as archive:
         assert "build_info.py" in archive.namelist()
+        assert "vendor/mini-swe-agent/src/minisweagent/environments/local.py" in archive.namelist()
+        assert "vendor/mini-swe-agent/LICENSE.md" in archive.namelist()
+        assert not any(".egg-info/" in name or "/.ruff_cache/" in name for name in archive.namelist())
         assert not any(name.startswith("results/") or name == ".env" for name in archive.namelist())
         archive.extractall(deployed)
     requirement = tmp_path / "task"

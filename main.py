@@ -1,4 +1,4 @@
-"""ARC-Bench-compatible entry for an unchanged mini-SWE-agent engine."""
+"""ARC-Bench-compatible entry for the bundled bash-only mini-SWE-agent."""
 
 from __future__ import annotations
 

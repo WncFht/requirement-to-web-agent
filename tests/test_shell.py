@@ -7,18 +7,13 @@ from pathlib import Path
 import pytest
 from minisweagent.environments.local import LocalEnvironment
 from minisweagent.exceptions import Submitted
-from progress import BashShell
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / 'web_template/scripts/run_check.py'
 
 
-class Environment(BashShell, LocalEnvironment):
-    pass
-
-
 def execute(tmp_path, command, **kwargs):
-    return Environment(cwd=str(tmp_path)).execute({'command': command}, **kwargs)
+    return LocalEnvironment(cwd=str(tmp_path)).execute({'command': command}, **kwargs)
 
 
 def test_bash_syntax_pipeline_and_quoting(tmp_path):
@@ -69,3 +64,43 @@ def test_timeout_kills_runner_and_descendants(tmp_path):
     assert result['extra']['exception_type'] == 'TimeoutExpired'
     time.sleep(0.8)
     assert not sentinel.exists()
+
+
+@pytest.mark.skipif(os.name != 'posix', reason='POSIX background processes')
+def test_background_output_handle_does_not_delay_shell_result(tmp_path):
+    import signal
+
+    started = time.monotonic()
+    result = execute(tmp_path, 'sleep 30 & echo $! > child.pid; echo ready', timeout=2)
+    child = int((tmp_path / 'child.pid').read_text())
+    try:
+        assert result['returncode'] == 0
+        assert result['output'] == 'ready\n'
+        assert time.monotonic() - started < 1.5
+        # Normal completion does not terminate a deliberately backgrounded service.
+        os.kill(child, 0)
+    finally:
+        try:
+            os.kill(child, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def test_output_is_bounded_but_full_log_is_retained(tmp_path):
+    env = LocalEnvironment(cwd=str(tmp_path), output_limit=128)
+    code = 'import sys; sys.stdout.write("a" * 1000000 + "TAIL")'
+    result = env.execute({'command': shlex.join([sys.executable, '-c', code])})
+    assert result['returncode'] == 0
+    assert len(result['output'].encode()) == 128
+    assert result['output'].endswith('TAIL')
+    assert result['output_truncated'] is True
+    assert result['output_bytes'] == 1000004
+    assert Path(result['log_path']).read_text() == 'a' * 1000000 + 'TAIL'
+
+
+def test_shell_calls_start_in_project_root_without_persistent_state(tmp_path):
+    env = LocalEnvironment(cwd=str(tmp_path))
+    (tmp_path / 'nested').mkdir()
+    assert env.execute({'command': 'cd nested; export ONLY_THIS_CALL=value'})['returncode'] == 0
+    result = env.execute({'command': 'pwd; printf "%s" "${ONLY_THIS_CALL-unset}"'})
+    assert result['output'].splitlines() == [str(tmp_path.resolve()), 'unset']

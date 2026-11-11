@@ -5,6 +5,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from engine_source import select_engine_source
+
+select_engine_source()
 
 
 def run_entry(args, env_overrides=None, timeout=120):

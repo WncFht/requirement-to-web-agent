@@ -1,28 +1,22 @@
 # mini-SWE-agent → ARC-Bench adapter
 
-围绕**未改动的 [mini-SWE-agent](https://github.com/SWE-agent/mini-swe-agent) v2.4.6**（PyPI 安装，不 vendor 源码）做的 ARC-Bench 提交适配层：逐字读取 `requirements.yaml` 与参考图片，多模态注入 prompt，从 `web_template/` 阶段化 React/Vite + Express + SQLite 起始项目，由上游 agent 用 bash 工具实现应用。
+基于仓内 [mini-swe-agent v2.4.6](vendor/mini-swe-agent/README.md)，使用唯一的 bash 工具实现 ARC-Bench 应用。adapter 读取原始 YAML 与参考图片、准备 React/Vite + Express + SQLite 项目，并保存版本、请求和轨迹；模型调用与工具协议沿用该版本，引擎源码随仓库和 ZIP 分发。
 
-- ARC-Bench: https://github.com/code-philia/arc-bench；Runner 约定：`python main.py <requirements目录> --output-dir <应用目录>`，ZIP 根含 `main.py` + `requirements.txt`
-- 历史诊断与变更记录：[docs/history.md](docs/history.md)
+- ARC-Bench: https://github.com/code-philia/arc-bench；Runner 入口：`python main.py <requirements目录> --output-dir <应用目录>`。
+- 当前开发分支：`experiment/mini6-bash`，起点 `4dcaa54`。原生 read/write/edit 工具实验保留在另一个分支。
+- 上游来源、许可证与修改范围：[UPSTREAM.json](vendor/mini-swe-agent/UPSTREAM.json)、[LICENSE.md](vendor/mini-swe-agent/LICENSE.md)。
 
-## mini6 详细 prompt 实验
+## 执行与验证
 
-分支 `experiment/mini6-detailed-prompt` 从 `mini6`（`17a7e97`）创建，回移版本溯源提交 `749f8a5`，再扩展 `arc_adapter.py` 的任务指导。执行引擎、默认模型参数、重试策略和 step/time 预算沿用 mini6；没有引入 mini8/mini9 的运行环境修改或提交前自动验证机制。
+`main.py → arc_adapter.py → 仓内 DefaultAgent/LitellmModel → LocalEnvironment → Bash`。入口显式选择 `vendor/mini-swe-agent/src`，避免环境里另一个已安装版本覆盖本仓修改；requirements 安装同一份本地源码。模型参数、重试策略和 step/time 配置沿用 bash 基线，默认 reasoning effort 为 `low`。
 
-当前 prompt 分为执行流程、检查标准和工具约束。执行流程按“建立覆盖 → 分组实现与验证 → 诊断修复”推进；覆盖表只记录场景 ID、测试位置、状态和执行证据或下一项修复，GIVEN／WHEN／THEN 写入测试。开发过程中运行局部检查和受影响的回归，最终在交付源码上执行完整场景验证。重复失败时重新检查数据、运行版本、异步状态和定位范围；修改自测前先依据原始需求判断是实现错误还是测试错误。
+命令通过 `bash --noprofile --norc -o pipefail -c` 直接执行，每次从应用根目录开始，stdin 断开。stdout/stderr 写入应用目录 `.agent/commands/`，等待直接 shell 退出后返回有限输出，完整日志路径进入 observation。后台进程继承输出句柄不会使正常命令一直等待 EOF。超时或异常中断会终止该命令的进程组，并有界等待直接子进程；正常返回保留显式启动的后台服务，不提供服务归属登记或最终自动清理。后台服务必须独立 session、重定向日志、记录启动组并检查 HTTP readiness；主动脱离命令组的进程不在命令超时清理范围内。
 
-检查标准集中说明业务状态与持久化、真实入口与可访问性语义、断言与失败退出。明确的 role/name 使用精确定位，并按业务记录或容器限定范围；有重复控件时验证其业务身份。时序探测用于存在异步风险的路径。任务文本继续只注入原始需求和参考图，执行指导集中在 instance prompt 中。
+`pipefail` 保留管道失败；`false; echo done` 仍返回最后命令的状态。构建、后端和浏览器检查各自用独立调用执行 `scripts/run_check.py`，检查脚本本身必须将断言失败转换为非零退出。
 
-这次重构参考了六个 bench 的历史失败：状态通知缺少 accessible name、脚本打印失败但返回成功、直达 URL 绕过入口、初始加载覆盖新写入，以及多步业务状态缺少完整验证。通用规则覆盖取消与确认、草稿与发布、数量/价格/库存一致性、账户隔离、刷新/重开和请求交错；具体业务约束仍从当前 REQ 获取，不注入历史测试、固定样例答案或产品专属补丁。
+prompt 保留完整需求、真实入口、精确语义、拒绝分支、状态转换、账户隔离与持久化验证；增加固定项目目录、优先复用 Playwright、批量读写和带唯一匹配检查的局部修改指导。局部检查随实现推进，最终源码执行完整回归。测试错误须依据 REQ 修正，保留等价断言；完成标记仍为独立 bash 命令。源码引入和离线回归不代表已在真实 bench 验证提分或降本。
 
-执行引擎和预算保持 mini6 基线，工具与模板的检查入口修改见下文，默认 reasoning effort 仍为 `low`。没有新增自动分组调度或代码层面的提交拦截；检查执行器只负责日志捕获与退出码传递，覆盖记录、自测脚本和失败退出仍由 agent 按 prompt 执行。打包和日志继续记录 commit、源码指纹与配置，详见 [版本溯源](docs/versioning.md)。本次重构尚无真实 bench 成绩，应与 `16cef24`、`8237a00`、`854ea00` 在相同任务、模型参数和预算下多次对照。
-
-
-基于 `44adae1` 的工具修复：命令统一经 `bash --noprofile --norc -o pipefail -c` 执行，超时与进程组清理由上游保留。模板新增 `scripts/run_check.py`，捕获检查日志后返回原始退出码；prompt 要求 build、后端和浏览器检查各用一次独立工具调用执行该入口。pipefail 无法阻止后续成功命令覆盖状态；自测脚本仍须自行将断言失败转为非零退出。模型、reasoning effort 和预算不变。
-
-## 状态
-
-入口、模板启动、离线传输与回归测试已验证（16 passed）。完整 Keep baseline 未跑通：模型端点在长输出阶段断连（httpx `RemoteProtocolError`），诊断见 docs/history.md。得分 N/A / 33（未运行）。
+历史诊断见 [docs/history.md](docs/history.md)。版本溯源见 [docs/versioning.md](docs/versioning.md)。
 
 ## 安装
 
@@ -31,7 +25,7 @@ unzip mini_swe_arcbench_adapter.zip -d mini_swe_arcbench_adapter
 cd mini_swe_arcbench_adapter
 python3 -m venv .venv && source .venv/bin/activate
 python -m pip install -r requirements.txt
-mini --help   # 上游 CLI 仍可用
+mini --help   # 安装的 CLI 使用仓内源码
 ```
 
 Python 3.11+（3.13 实测），Node.js 22.12+，Windows 用 WSL2。端点须支持 tool calling + 图片输入（LiteLLM `openai/<model>` provider）。
@@ -49,7 +43,7 @@ bash scripts/run_keep_baseline.sh <arc-bench克隆> <全新空输出目录>     
 模型优先级：`--model` > `ARC_MODEL` > `MODEL` > `deepseek-flash`。
 环境变量：`ARC_REQUEST_TIMEOUT`（秒，默认 600）、`MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT`（默认 100——网关错误通常不计费且失败即损失全部进度，最坏情形 ~6.6 小时重试直到平台/网关恢复）、`ARC_MAX_STEPS`（默认 250，沿用上游 swebench 配置）、`ARC_MAX_SECONDS`（3600）、`ARC_REASONING_EFFORT`（默认 `low`，传给端点的思考力度，设空省略该参数）、`ARC_TRANSPORT_REASONING`（`passthrough` 默认，按上游原样回传思考内容——DeepSeek 契约与重编码网关需要；`strip` 为显式剥离，仅在确认端点不需要且窗口/计费敏感时使用）、`ARC_LOG_IMAGES`（默认剥离审计产物中的图片 base64，`=1` 保留原图用于图片相关调试）。
 
-Prompt 架构：system、输出截断、format error、`drop_params`/`parallel_tool_calls` 和默认 step_limit 250 沿用上游 `config/benchmarks/swebench.yaml`，shell 环境（`PAGER=cat` 等）沿用 `config/default.yaml`。instance prompt 保留工具交互与完成标记契约，任务工作流由本仓库维护；YAML 和参考图通过任务文本注入。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。
+Prompt 架构：system、format error、`drop_params`/`parallel_tool_calls` 和默认 step_limit 250 沿用上游 `config/benchmarks/swebench.yaml`，命令输出在引擎中限量，benchmark observation 同时保留日志路径；shell 环境（`PAGER=cat` 等）沿用 `config/default.yaml`。instance prompt 保留工具交互与完成标记契约，任务工作流由本仓库维护；YAML 和参考图通过任务文本注入。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。
 
 ## 日志（记在哪、有什么）
 
@@ -58,7 +52,7 @@ Prompt 架构：system、输出截断、format error、`drop_params`/`parallel_t
 | stdout 单行 JSON（实时 flush） | 阶段事件：导入、初始化、任务准备、每次请求 `model_request_start/end`（耗时、finish_reason、**usage**）、bash 元数据、脱敏异常链 |
 | `<output>/.arc_adapter/calls.jsonl` | 每次 HTTP 尝试一行：耗时、finish_reason、完整 usage，或失败异常链 |
 | `<output>/.arc_adapter/payloads.jsonl` | append-only 增量日志（`prefix_len` + `append`），按序折叠可重建每次尝试发出的**字节级** payload（`scripts/reconstruct_payload.py`）；图片以 sha256 占位符剥离，可由 `.arc_requirements/` 原图确定性还原 |
-| `<output>/.arc_adapter/trajectory.json` | 上游完整消息历史：每个 prompt（含 base64 图片）、每个响应 dump（含 reasoning 思考原文）、每条 bash 命令与输出；每步落盘，run 结束后图片同样剥离 |
+| `<output>/.arc_adapter/trajectory.json` | 上游完整消息历史：每个 prompt（含 base64 图片）、每个响应 dump（含 reasoning 思考原文）、每条 bash 命令与有限输出；每步落盘，run 结束后图片同样剥离 |
 | `<output>/.arc_adapter/run_summary.json` | status、llm_calls（逻辑调用）、model_http_attempts、token 聚合（成功尝试）、错误链 |
 
 失败请求没有 usage（服务端未返回），token 聚合只覆盖成功尝试；`actual_api_cost_usd` 恒为 `null`（端点定价未知）。
@@ -76,4 +70,4 @@ python -m pytest -q   # 本地回环 HTTP mock：CLI 成功/断连、calls.jsonl
 
 ## 安全
 
-上游 bash 工具会在输出目录执行模型生成的任意 shell 命令；请在隔离的可信工作区运行。
+仓内 bash 工具会在输出目录执行模型生成的任意 shell 命令；请在隔离的可信工作区运行。

@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/SWE-agent/mini-swe-agent",
+  "tag": "v2.4.6",
+  "commit": "a83fcae82d2a08f0ee0c688f9d137b3566c097f8",
+  "imported_paths": [
+    "src",
+    "tests",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "source_modified": true,
+  "local_changes": [
+    "Local Bash executes argv directly with pipefail, file-backed bounded output, command logs and bounded timeout cleanup; no additional model tools.",
+    "Benchmark observations include the full-log path.",
+    "Bash schema description documents fresh-shell cwd, pipefail and output logs."
+  ]
+}

@@ -9,11 +9,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 PACKAGE_ENTRIES = (
-    "main.py", "arc_adapter.py", "progress.py", "build_info.py",
+    "main.py", "arc_adapter.py", "progress.py", "build_info.py", "engine_source.py",
     "requirements.txt", "pytest.ini", ".env.example", "README.md",
-    "scripts", "tests", "web_template",
+    "scripts", "tests", "web_template", "vendor",
 )
-EXCLUDED = {".env", ".DS_Store", "__pycache__", "node_modules", "dist", ".git"}
+EXCLUDED = {".env", ".DS_Store", "__pycache__", "node_modules", "dist", ".git", ".pytest_cache", ".ruff_cache", "build"}
 
 
 def source_files(root: Path) -> dict[str, bytes]:
@@ -22,7 +22,8 @@ def source_files(root: Path) -> dict[str, bytes]:
     for name in PACKAGE_ENTRIES:
         entry = root / name
         for path in [entry] if entry.is_file() else sorted(entry.rglob("*")):
-            if not path.is_file() or EXCLUDED.intersection(path.relative_to(root).parts):
+            if (not path.is_file() or EXCLUDED.intersection(path.relative_to(root).parts)
+                    or any(part.endswith(".egg-info") for part in path.relative_to(root).parts)):
                 continue
             if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                 raise ValueError(f"Package source must be a regular local file: {path}")

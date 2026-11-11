@@ -1,5 +1,5 @@
-# mini-SWE-agent v2 is the unchanged execution engine; this ZIP contains only an adapter.
-mini-swe-agent==2.4.6
+# Install the repository-owned mini-SWE-agent v2.4.6 fork.
+./vendor/mini-swe-agent
 PyYAML>=6.0,<7
 python-dotenv>=1,<2
 Pillow>=10,<12

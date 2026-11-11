@@ -1,9 +1,4 @@
-"""ARC-Bench file/CLI adapter for upstream mini-swe-agent v2.4.6.
-
-Uses upstream DefaultAgent, LitellmModel and LocalEnvironment, with local task
-guidance, progress logging and Bash command wrapping. Upstream handles timeouts,
-process cleanup and the tool-calling contract.
-"""
+"""ARC-Bench adaptation and audit for the bundled bash-only mini-swe-agent."""
 
 from __future__ import annotations
 
@@ -19,9 +14,9 @@ from typing import Any
 
 import yaml
 
+from engine_source import engine_identity, select_engine_source
 from progress import (
     BashProgress,
-    BashShell,
     ModelProgress,
     elide_images,
     emit,
@@ -29,6 +24,8 @@ from progress import (
     redact,
     variable_presence,
 )
+
+select_engine_source()
 
 # Keep stdout a pure JSON event stream: no upstream banner, no litellm provider list.
 os.environ.setdefault("MSWEA_SILENT_STARTUP", "1")
@@ -159,9 +156,7 @@ def _image_part(payload: bytes, media: str) -> str:
     )
 
 
-# Harness contract, adapted from the shipped tool-calling benchmark config
-# (minisweagent 2.4.6 config/benchmarks/swebench.yaml): only the Overview, Boundaries,
-# Workflow and Submission sections carry ARC-Bench wording; everything else is upstream text.
+# ARC workflow over the bundled engine's bash and submission contracts.
 UPSTREAM_INSTANCE_SKELETON = """<requirements>
 Consider the following task specification:
 {{task}}
@@ -186,7 +181,8 @@ Retain original IDs and include every scenario, negative case and alternative. E
 roles, names, defaults, identities and starting contexts are contracts. References guide appearance.
 Choose simple, consistent behavior for unspecified details without adding unrelated scope.
 
-Inspect package scripts, UI, routes, API and storage. Order work by dependencies: establish
+All commands start in the project root `{{cwd}}`. Inspect its package scripts, UI, routes, API and storage.
+Keep that working directory unless a specific command needs a subdirectory. Order work by dependencies: establish
 navigation, identity and shared data flow, then implement related features in manageable groups.
 Complete each group's UI, business rules and persistence together while covering the whole app.
 
@@ -221,6 +217,7 @@ completion, locator scope and shared causes. Gather evidence that distinguishes 
 avoid repeatedly rerunning the same command or weakening assertions to obtain a pass.
 
 For environment failures, inspect `.arc/preflight.json` if present and actual import/launch errors.
+Try `node -e "require('/opt/arcbench/node_modules/playwright')"` before searching or installing browsers.
 A missing global command does not prove the package is absent: try a compatible import/require
 and available browser binaries before reinstalling. Continue independent implementation or
 checks while restoring the environment. Lower-level checks do not certify an unexecuted browser
@@ -266,13 +263,14 @@ CSS-generated text must not alter a required accessible name. A visible notifica
 automatically have a status role or a name matching its text.
 
 For specified roles/names use `getByRole(role, { name, exact: true })`, scoped to the relevant
-record/container/dialog. Check visibility and uniqueness within that scope when one match is
-required, then state and behavior. For a required status named "Saved", for example:
+record/container/dialog. Wait for the expected state, then check visibility and uniqueness within that scope when one
+match is required. For native password inputs, verify their label, type and explicit role rather
+than assuming that a role query agrees with browser accessibility mapping. For a required status named "Saved", for example:
 
 ```javascript
 const saved = page.getByRole('status', { name: 'Saved', exact: true });
-await expect(saved).toHaveCount(1);
 await expect(saved).toBeVisible();
+await expect(saved).toHaveCount(1);
 ```
 
 Repeated controls are valid when their records distinguish them. Index selection is appropriate
@@ -318,11 +316,16 @@ earlier failure. A script that catches errors must itself return nonzero.
   other runs. Implement general behavior without scenario-title/account/fixture special cases.
 - `.arc_adapter/` and `.arc/stdout.log` are audit artifacts, not task input. Preflight describes
   environment capabilities, not acceptance evidence.
+- Use quoted heredocs for new files and full rewrites. For targeted Python replacements, assert
+  that each old block occurs exactly once before writing; create parent directories first.
+  Batch independent file reads and related writes instead of requiring one model turn per file.
 - Search relevant symbols and bounded source ranges. Batch independent reads; keep dependent
   edits and checks sequential. Use manageable writes and inspect results. Reuse unchanged
   context and dependencies rather than repeatedly dumping files or reinstalling packages.
-- Start servers with redirected logs, recorded PIDs and bounded HTTP readiness checks. Read
-  startup logs on failure. Stop only your recorded processes; avoid broad `pkill -f`. Keep
+- Launch test servers in a separate session (Python `subprocess.Popen` with `start_new_session=True`,
+  `stdin=DEVNULL` and stdout/stderr redirected to a project log). Record the process group you
+  started and check HTTP readiness with a deadline; a returned PID alone does not prove readiness.
+  Stop only that group, then wait for port release before reusing it; avoid broad `pkill -f`. Keep
   disposable test ports separate from final deployment and release them when finished.
 - Retain application data, meaningful tests and final results. Remove temporary probes and
   unrelated investigation debris. Use non-interactive commands and supported tool timeouts.
@@ -338,15 +341,15 @@ You are operating in an environment where
 
 Each response should include:
 
-1. **Reasoning text** where you explain your analysis and plan
-2. At least one tool call with your command
+1. Brief reasoning only when it explains a non-obvious decision or failure
+2. At least one bash tool call
 
 **CRITICAL REQUIREMENTS:**
 
-- Your response SHOULD include reasoning text explaining what you're doing
+- Keep commentary concise; do not repeat the workflow or describe obvious tool actions.
 - Your response MUST include AT LEAST ONE bash tool call. You can make MULTIPLE tool calls in a single response when the commands are independent (e.g., searching multiple files, reading different parts of the codebase).
 - Directory or environment variable changes are not persistent. Every action is executed in a new subshell.
-- However, you can prefix any action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir && ...` or write/load environment variables from files
+- Use `cd /path && COMMAND` for a subdirectory and `NAME=value COMMAND` for command-local variables.
 
 Example of a CORRECT response:
 <example_response>
@@ -480,12 +483,12 @@ def run_agent(
     ):
         os.environ.setdefault(name, value)
 
-    emit("engine_import_end", seconds=round(time.monotonic() - importing, 3))
+    emit("engine_import_end", seconds=round(time.monotonic() - importing, 3), **engine_identity())
 
     class LoggedModel(ModelProgress, LitellmModel):
         pass
 
-    class LoggedEnvironment(BashProgress, BashShell, LocalEnvironment):
+    class LoggedEnvironment(BashProgress, LocalEnvironment):
         pass
 
     injected = variable_presence()

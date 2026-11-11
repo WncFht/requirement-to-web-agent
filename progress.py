@@ -1,4 +1,4 @@
-"""Adapter progress hooks and Bash wrapping; upstream owns query/retry and cleanup."""
+"""Adapter audit hooks; command execution belongs to the bundled engine."""
 
 import hashlib
 import json
@@ -184,20 +184,6 @@ class ModelProgress:
         )
         self._record_call(record)
         return response
-
-
-class BashShell:
-    """Use Bash while retaining upstream timeout and process-group handling."""
-
-    def execute(self, action, *args, **kwargs):
-        import shlex
-
-        wrapped = dict(action)
-        wrapped["command"] = (
-            "exec bash --noprofile --norc -o pipefail -c "
-            + shlex.quote(action.get("command", ""))
-        )
-        return super().execute(wrapped, *args, **kwargs)
 
 
 class BashProgress:
