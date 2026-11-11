@@ -190,8 +190,11 @@ Before implementation, create a compact local map:
 `scenario ID | test file/case | not_run/blocked/failed/passed | check ID or next repair`.
 Use requirement ID plus case name when scenario IDs are absent. Retain each scenario's GIVEN
 identity/data, public entry, WHEN actions and THEN results, including negative/persistence
-checks. Update the map after each group, not retrospectively at submission. A broad test
-certifies only the scenarios whose assertions actually executed.
+checks. Before implementing each group, write its acceptance cases from the requirements:
+public entry and identity, actions, and observable assertions. Then implement against those cases;
+do not derive their expectations from the generated UI. Update the map after each group, not
+retrospectively at submission. Use `.agent/coverage.json` for execution status; do not bulk-fill
+passed from the requirement list or a suite's exit code.
 
 ### 2. Implement, check shared prerequisites, then finish appearance
 
@@ -221,6 +224,9 @@ original requirement, without inventing additional acceptance constraints.
 If a failure repeats, reassess fixture/session state, the running build/server, asynchronous
 completion, locator scope and shared causes. Gather evidence that distinguishes these causes;
 avoid repeatedly rerunning the same command or weakening assertions to obtain a pass.
+When setup fails, distinguish existing/contaminated business data from an application defect
+using a clean disposable database copy when needed. An isolated pass does not certify the
+original blocked journey; preserve uniqueness and other business rules.
 
 For environment failures, inspect `.arc/preflight.json` if present and actual import/launch errors.
 Try `node -e "require('/opt/arcbench/node_modules/playwright')"` before searching or installing browsers.
@@ -249,6 +255,9 @@ Continue while execution is available; the runtime enforces hard limits.
 - Model required states and transitions explicitly, including draft/published, unpaid/paid,
   cancelled and archived/deleted. Confirm commits once; cancel/decline preserves prior state.
   Verify the final record and required backward/reopen behavior in multi-step journeys.
+  Exercise required persistence after normal public navigation as well as the immediate
+  post-action redirect: entering the same view by a different route must not lose the required
+  record, category or selection on reload. Do not replace navigation with a convenient deep link.
 - Keep entity/variant, quantity, price, totals and availability consistent. Validate before
   side effects; rejected operations must not partially change records, stock or balances.
   Enforce ownership on backend reads/writes as well as UI controls. Check anonymous/second-user
@@ -313,14 +322,32 @@ failures, continue independent cases and finish with a nonzero exit if any faile
 must propagate failure or set `process.exitCode = 1`. Cases after an early abort remain not_run.
 For a custom assertion harness, confirm a temporary failing probe exits nonzero, then remove it.
 
-Run build, backend tests and browser checks through the supplied check runner:
-`python3 scripts/run_check.py --case build -- npm run build` or
-`python3 scripts/run_check.py --case SCN-ID -- node tests/check.cjs`.
-Repeat `--case` for IDs actually exercised by a grouped command. Each invocation creates a
-unique log under `.agent/checks/` and appends started/completed records with the same check ID
-to `.agent/checks.jsonl`. A started record without completion means interrupted/unknown, never
-passed. The runner prints its final record; link the map to its check ID and per-scenario
-assertion output. Declared IDs alone do not prove coverage. Do not alter the check runner.
+Run build/backend commands with `python3 scripts/run_check.py --check build -- npm run build`
+or `--check backend -- npm run test:backend`. These check commands, not browser scenarios.
+Run browser cases with `python3 scripts/run_check.py --case SCN-ID -- node tests/check.cjs`;
+repeat `--case` for all expected IDs in a group. Use the supplied helper inside the test:
+
+```javascript
+const { scenario } = require('../scripts/scenario.cjs');
+// Inside an awaited async test entry point; use the installed assertion library.
+await scenario('SCN-ID', async () => {
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('status', { name: 'Saved', exact: true })).toBeVisible();
+}, async () => {
+  // Optional setup: establish the specified identity/data and navigate from the GIVEN entry.
+});
+```
+
+Keep required WHEN actions and THEN assertions in the main callback; setup errors are blocked,
+assertion errors failed. Await every scenario and assertion. Use unique IDs for independent
+cases; continue independent cases after failures, without assuming a blocked prerequisite ran.
+The helper emits started/result events to `ARC_CHECK_RESULTS`; printed PASS is not evidence.
+The runner rejects missing, malformed, undeclared or duplicate case events, retains unique logs
+and events in `.agent/checks/`, appends `.agent/checks.jsonl`, and derives `.agent/coverage.json`
+from the latest executions. An interrupted retry invalidates its previous passing status.
+Each passed case certifies only its executed assertions, not an entire requirement subtree.
+Keep the requirements map for not-yet-declared cases; absence from coverage is not_run.
+Do not alter the supplied runner or scenario helper.
 Issue each runner invocation as its own tool call, optionally preceded by `cd ... &&`;
 do not append echo, log printing or `|| true`. The runner prints captured output and exits
 with the check's status. Use separate calls for separate checks. Tool commands use Bash with

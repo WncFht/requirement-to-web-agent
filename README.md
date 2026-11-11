@@ -14,6 +14,8 @@
 
 `pipefail` 保留管道失败；`false; echo done` 仍返回最后命令的状态。构建、后端和浏览器检查各自用独立调用执行 `scripts/run_check.py`，检查脚本本身必须将断言失败转换为非零退出。
 
+构建和后端命令使用 `python3 scripts/run_check.py --check build -- npm run build`、`--check backend -- npm run test:backend`。浏览器验收使用 `--case SCN-ID -- node tests/check.cjs`，分组时重复 `--case`；测试通过 `scripts/scenario.cjs` 的 `await scenario(id, assertions, setup)` 逐条记录开始和结果，可选的准备回调失败记为 `blocked`，断言失败记为 `failed`。缺失或非法事件会使检查失败，命令成功不能代替场景执行证据。`.agent/checks.jsonl` 保留命令和场景结果，`.agent/coverage.json` 按最新执行生成覆盖状态，重新运行会先撤销该场景旧的通过状态；尚未声明的需求场景仍须在需求映射里保留为 `not_run`。迁移旧测试时，将构建等命令的 `--case` 改为 `--check`，浏览器断言放入辅助函数，保留原始入口、操作和结果约束。
+
 prompt 保留完整需求、真实入口、精确语义、拒绝分支、状态转换、账户隔离与持久化验证；增加固定项目目录、优先复用 Playwright、批量读写和带唯一匹配检查的局部修改指导。局部检查随实现推进，最终源码执行完整回归。测试错误须依据 REQ 修正，保留等价断言；完成标记仍为独立 bash 命令。源码引入和离线回归不代表已在真实 bench 验证提分或降本。
 
 历史诊断见 [docs/history.md](docs/history.md)。版本溯源见 [docs/versioning.md](docs/versioning.md)。

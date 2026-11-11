@@ -32,7 +32,7 @@ def test_bash_syntax_pipeline_and_quoting(tmp_path):
 @pytest.mark.parametrize('code', [0, 7])
 def test_runner_log_status_and_spaces(tmp_path, code):
     child = f'import sys; print("stdout"); print("stderr", file=sys.stderr); sys.exit({code})'
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--check', 'build', '--', sys.executable, '-c', child])
     result = execute(tmp_path, command)
     assert result['returncode'] == code
     assert 'stdout' in result['output'] and 'stderr' in result['output']
@@ -43,7 +43,8 @@ def test_runner_log_status_and_spaces(tmp_path, code):
     assert result['output'].startswith(log.read_text())
     assert record['status'] == ('passed' if code == 0 else 'failed')
     assert record['exit_code'] == code
-    assert record['cases'] == ['REQ-example']
+    assert record['check'] == 'build'
+    assert record['case_results'] == {}
     assert record['command'] == [sys.executable, '-c', child]
     assert record['cwd'] == str(tmp_path.resolve())
     assert record['log'] == str(log.resolve())
@@ -51,14 +52,14 @@ def test_runner_log_status_and_spaces(tmp_path, code):
 
 
 def test_runner_preserves_failed_pipeline(tmp_path):
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
+    command = shlex.join([sys.executable, str(RUNNER), '--check', 'build', '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
     assert execute(tmp_path, command)['returncode'] == 9
 
 
-def test_runner_appends_grouped_checks_and_records_launch_failure(tmp_path):
+def test_runner_appends_checks_and_records_launch_failure(tmp_path):
     for command in ([sys.executable, '-c', 'print("ok")'], ['missing-check-executable']):
         result = execute(tmp_path, shlex.join([
-            sys.executable, str(RUNNER), '--case', 'REQ-a', '--case', 'REQ-b',
+            sys.executable, str(RUNNER), '--check', 'backend',
             '--', *command,
         ]))
     assert result['returncode'] == 127
@@ -67,7 +68,8 @@ def test_runner_appends_grouped_checks_and_records_launch_failure(tmp_path):
     assert [record['exit_code'] for record in records if 'exit_code' in record] == [0, 127]
     assert records[0]['log'] != records[2]['log']
     assert Path(records[0]['log']).read_text() == 'ok\n'
-    assert all(record['cases'] == ['REQ-a', 'REQ-b'] for record in records)
+    assert all(record['case_results'] == {} for record in records)
+    assert json.loads((tmp_path / '.agent/coverage.json').read_text()) == {}
     assert 'Unable to start check' in Path(records[-1]['log']).read_text()
 
 
@@ -85,7 +87,7 @@ def test_submission_marker_still_works(tmp_path):
 def test_timeout_kills_runner_and_descendants(tmp_path):
     sentinel = tmp_path / 'orphan-survived'
     child = 'import time; from pathlib import Path; time.sleep(1.5); Path(' + repr(str(sentinel)) + ').write_text("alive")'
-    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--check', 'build', '--', sys.executable, '-c', child])
     result = execute(tmp_path, command, timeout=1)
     assert result['returncode'] == -1
     assert result['extra']['exception_type'] == 'TimeoutExpired'
