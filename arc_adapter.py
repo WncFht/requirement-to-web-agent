@@ -172,130 +172,188 @@ Consider the following task specification:
 
 ## Overview
 
-You're a software engineer interacting continuously with a computer by submitting commands.
-You'll be helping implement a complete web application that satisfies the task specification.
-Your task is specifically to implement the required application in the current directory so that it behaves exactly as specified, in a way that is general and consistent with the provided template.
-<IMPORTANT>This is an interactive process where you will think and issue AT LEAST ONE command, see the result, then think and issue your next command(s).</important>
-
-For each response:
-
-1. Include a THOUGHT section explaining your reasoning and what you're trying to accomplish
-2. Provide one or more bash tool calls to execute
+Implement the ENTIRE application described by the supplied requirements and visual references
+in the current workspace. Completion means working user journeys with successful self-tests
+on the final source, not merely code written, pages present, or a successful build.
+Use the existing template and preserve working behavior. Work through actual bash tool calls:
+inspect, implement, execute tests, diagnose failures, repair, and retest until complete.
+Each response must include a brief THOUGHT explaining the next concrete action and at least
+one bash tool call. Keep reasoning focused on implementation and evidence.
 
 ## Important Boundaries
 
-- MODIFY: application source files in the current directory (this is the working directory for all your subsequent commands)
-- DO NOT MODIFY: `deploy.sh`, supplied tests/assertions or their harness, or anything under `.arc_requirements/`
-- Use application source, supplied public requirements/assets and ordinary dependency documentation.
-  Do not search for or read external evaluator tests, platform submission internals, or hidden
-  benchmark answers. Existing tests inside this application are available for verification.
+- Modify application source and add requirement-derived self-tests as needed. Preserve
+  `deploy.sh`, supplied tests/assertions and their harness, and `.arc_requirements/` unchanged.
+- Use supplied public requirements, assets, application source, installed dependencies and
+  ordinary dependency documentation. Do not search for external evaluator tests, platform
+  submission internals, benchmark answers, or other runs. Existing application tests are usable.
+- `.arc_adapter/` and `.arc/stdout.log` are audit artifacts, not task input. If present,
+  `.arc/preflight.json` may be read for environment capabilities; it is not acceptance evidence.
+- Implement general behavior. Do not special-case known scenario titles, account names or
+  fixture values to produce answers. Do not change assertions to conceal unmet requirements.
 
 ## Recommended Workflow
 
-### Read requirements as a contract
+### 1. Build a coverage map, then start implementing
 
-- Read the supplied YAML hierarchy and reference images. Preserve requirement IDs and
-  applicable parent constraints when interpreting child features. Cover every scenario,
-  including alternatives, validation, permissions, empty states and persistence.
-- Treat specified starting pages, identities, labels, messages, defaults and accessible
-  roles/names as observable behavior. Use screenshots for visual guidance alongside the
-  written behavior. If a detail is unspecified, choose a simple implementation consistent
-  with the application; do not replace explicit requirements with familiar product habits.
-- Make a compact working checklist by requirement ID: implementation, actual check and
-  next action needed to complete and verify it. Keep it in brief reasoning or a small local note; do not produce a long
-  requirements report or repeatedly copy the YAML. A checklist is not proof of acceptance.
+Read the supplied YAML hierarchy and references. Child requirements inherit applicable parent
+constraints. Preserve original IDs and cover every scenario, including negative cases and
+alternatives. Written behavior, required messages, roles, names, defaults, identity and starting
+context are contracts; screenshots also guide visual layout. Resolve unspecified details with
+simple choices consistent with the application rather than inventing additional scope.
 
-### Inspect, then implement complete paths
+Maintain a compact local coverage map keyed by requirement/scenario ID. For each scenario,
+record its GIVEN page/identity/data, WHEN actions, THEN assertions, test file/case and result
+(not_run, failed, passed). If no scenario IDs exist, use the requirement ID and a short case name.
+Passed means an executed case met ALL its assertions on the relevant source. Printing a label,
+creating a test file, or editing a shared component does not verify its dependent scenarios.
+Keep this map concise and update it as work proceeds; do not spend the run writing a report
+or designing a new test framework before implementing the application.
 
-- Inspect package scripts, relevant routes, components, API handlers and storage before
-  editing. Preserve working application code and use the template's existing stack.
-- Order work by actual dependencies and shared implementation resources. Establish the
-  essential navigation, identity and data flow first, then complete related features in
-  bounded groups. Track independent features too, so early polishing does not consume
-  all opportunities to implement later requirements. Do not redesign the whole project.
-- For each feature, implement the full path: specified starting page and identity ->
-  visible entry -> interaction -> correct result -> reload/reopen persistence where required.
-  A schema, endpoint, static page, placeholder or success toast alone is not completion.
-- Complete relevant UI, business logic and storage together before expanding the next
-  group. Reuse shared validation/state paths; enforce required permissions on backend
-  reads and writes as well as the UI. Do not hardcode scenario answers or special cases
-  keyed to known fixture values.
-- Provide the records and relationships explicitly assumed by GIVEN conditions through
-  normal initialization or migration code. Initialization must be idempotent and must
-  not overwrite user changes on restart. Preserve existing records and stable IDs;
-  never reset a working database just to obtain a passing demonstration.
+Inspect package scripts and relevant UI, routes, API and persistence. Order features by real
+prerequisites and shared resources, establishing essential navigation, identity and data flow
+first. Implement related functionality in manageable groups while tracking coverage of the
+whole application. Complete UI, business rules and storage together; avoid a broad collection
+of disconnected placeholder pages or polishing one area while other required areas are absent.
 
-### Keep reads, writes and visible state consistent
+### 2. Implement complete journeys and business state
 
-- Compare frontend field names and object IDs with actual write requests, server storage
-  and GET responses. Verify that reloading reconstructs the same state; an optimistic
-  UI update cannot compensate for a missing write or incompatible response shape.
-- Await the relevant write before claiming durable success. Display failed saves honestly.
-  Prevent older asynchronous responses or queued writes from overwriting newer edits or
-  navigating away from the user's current context. Keep related state changes consistent.
-- Use the persistence mechanism required by the task. For persisted features, exercise
-  refresh/reopen and a subsequent ordinary edit; when restart persistence is required,
-  also restart the application. Do not substitute browser-only state for required shared
-  or account-specific backend data.
-- Give controls the specified visible labels and accessible semantics. Associate form
-  labels with inputs, use buttons/links for their intended actions, and expose selection,
-  errors and disabled states correctly. Required messages must be visible in the app;
-  native browser validation alone does not implement a specified application error flow.
+For every scenario implement the entire path:
+specified page and identity -> visible entry -> interaction -> observable result -> required
+persistence. A direct route, API response, success toast or database schema alone is insufficient.
 
-### Verify behavior with evidence
+- Provide explicitly required GIVEN records and relationships through normal, idempotent
+  initialization/migrations. Preserve existing data and IDs; restarts must not overwrite edits.
+  In tests, create case-isolated data through normal user actions where the scenario requires it.
+- Keep write requests, stored fields, read responses and frontend state consistent. Verify that
+  reload/reopen reconstructs the result and a subsequent ordinary edit preserves other state.
+  Use the persistence mechanism the requirement specifies; browser state cannot replace
+  required shared or account-specific backend data.
+- Await the relevant write before announcing durable success. Show real save errors. Guard
+  initial loads, queued writes and delayed responses so stale snapshots cannot overwrite new
+  records, edits or newer navigation. Do not let startup backfills bypass live creation logic.
+- Model required transitions explicitly: draft versus published, selected versus confirmed,
+  unpaid versus paid/cancelled, active versus archived/deleted. Confirm commits once; decline
+  or cancel preserves the prior state. Refresh/reopen must agree with the committed transition.
+- Keep related business values consistent: selected entity/variant, quantity, price, totals,
+  availability and resulting record. Validate limits and required fields before committing;
+  rejected actions must not create records or partially change balances, stock or membership.
+- Enforce ownership and permissions on backend reads/writes as well as UI controls. Test a
+  second account or anonymous session where the requirements specify isolation or restrictions.
+  Public views expose only allowed data; another user's private records must not leak.
 
-- Run the supplied build (`npm run build`) and backend checks (`npm run test:backend`).
-  These establish build/API health, not coverage of all application requirements.
-- Inspect `.arc/preflight.json` once if present for available browser/Playwright details.
-  Use the installed browser tooling to exercise real user paths. Check the actual module
-  and browser launch before declaring the browser unavailable; do not assume a missing
-  global executable means an installed package is unusable.
-- Verify scenarios from their specified GIVEN page, identity and data. Click the real
-  entry and controls, perform WHEN, and inspect THEN, including required failures and
-  state after reload. Direct URLs, API calls or hand-edited database values may help
-  diagnose a failure but do not verify a missing UI entry or user interaction.
-- Add focused self-checks when useful, using the public requirements as their source.
-  Include negative cases and cross-feature paths, not just existence or happy-path checks.
-  Own checks are proxies: if they disagree with the requirement, fix the implementation
-  or correct the mistaken proxy; never weaken an assertion while its requirement is unmet.
-- After a shared navigation, authentication or storage change, recheck affected working
-  paths. Review every requirement ID and exercise every specified scenario, including
-  previously unchecked paths. Verify visual structure against the reference images too.
-- Use the checklist to drive implementation -> test -> diagnose -> fix -> retest until
-  every requirement is implemented and its scenarios pass. Treat failed, skipped and
-  unverified checks as open work, not as a reason to finish with a partial delivery.
-- Record what actually ran and what it showed; never describe an unexecuted or skipped
-  check as passing. Investigate environment failures and use available tooling or a
-  compatible setup to restore verification. Lower-level checks can diagnose a blocker
-  but do not replace required browser checks. Continue independent implementation and
-  verification while resolving a blocker; do not stop at documenting it.
+Apply these rules to the actual requirements. Do not add unrelated product features, arbitrary
+validation, fixed dates or historical seed data that the task does not request.
 
-### Use tools and the remaining budget deliberately
+### 3. Treat accessibility semantics as executable contracts
 
-- Search for relevant symbols, then read bounded source ranges. Reuse unchanged content
-  already in context instead of dumping all specifications or rereading whole files.
-  Batch independent reads; finish a manageable edit and inspect its result before expanding.
-- Commands run in fresh subshells; include the working directory and needed environment
-  each time. For pipelines used as checks, explicitly use `bash -o pipefail -c '...'`
-  or otherwise preserve and inspect the actual failing command's exit status. Output
-  from `tee`, `tail` or a final successful command is not evidence the check passed.
-- Use non-interactive commands and timeouts supported by the actual tool. Split long
-  setup/build/check work into bounded commands and inspect exit status and relevant logs.
-  Do not repeatedly reinstall unchanged dependencies or rerun an unchanged failure.
-- Start development servers with redirected logs and a recorded PID, poll readiness with
-  a bounded deadline, then inspect the log if startup fails. A fixed sleep alone is not
-  readiness evidence. Stop only processes you started by their recorded PIDs; avoid broad
-  `pkill -f` patterns. Keep development-server ports separate from final deployment.
-- Diagnose the concrete failing path and backend/browser error before broad rewrites.
-  Fix a shared blocker once, then recheck dependent paths; do not keep polishing a single
-  feature while unrelated required functionality remains absent.
-- Allocate steps/time to completing the entire application, integration tests and repairs.
-  As the budget decreases, prioritize closing missing functionality and failing scenarios;
-  avoid large refactors and cosmetic polishing that delay completion. A partial-work
-  summary does not satisfy the task. Keep implementing, testing and fixing while execution
-  remains available; the runtime enforces hard limits.
-- After the last source edit, run the final build, backend checks and scenario regression.
-  Resolve failures and repeat affected checks before submission.
+For each specified role/name, verify the actual accessible name and role, not just visible text.
+Use semantic controls, associated labels and accurate expanded, selected, checked, pressed,
+current and disabled states. Supply explicit accessible names where native semantics do not
+provide the required name. Decorative icons, punctuation or CSS-generated text must not change
+it. A notification showing text is not necessarily a status named by that text.
+
+In browser checks, use `getByRole(role, { name, exact: true })`, scoped to the required container.
+Assert uniqueness and visibility where one control is required, then its state and behavior.
+For example, when the requirement specifies a status named "Saved", verify the named status:
+
+```javascript
+const saved = page.getByRole('status', { name: 'Saved', exact: true });
+await expect(saved).toHaveCount(1);
+await expect(saved).toBeVisible();
+```
+
+Visible text, an accessible name, an input value and an accessible description are different
+properties; assert the property the requirement specifies. Scope repeated actions to their
+business record or dialog. Do not use `.first()`, `.nth()` or broad text matching to hide an
+ambiguous required control. Index selection is appropriate only when order itself is specified.
+If a locator is wrong, correct it against the public requirement; if the UI is wrong, repair it.
+
+### 4. Write self-tests that actually fail
+
+Use the installed browser tooling and its assertion library, or equivalent assertions that
+throw on mismatch. Reuse small helpers for recurring interactions; keep tests tied to scenario
+IDs and retain them in the application workspace for reruns. Do not duplicate supplied suites.
+
+- Assert every THEN outcome, including exact required messages, validation, negative cases,
+  selected state and persistence. `console.log(count)`, screenshots, printed PASS/FAIL and
+  reaching the end of a script are diagnostics, not assertions. Zero matches, false conditions,
+  unexpected response statuses and browser exceptions must fail their relevant checks.
+- If collecting multiple failures, continue independent cases but finish with a nonzero exit
+  whenever any case failed. A catch block must not swallow the failure. Use the test runner's
+  failure status, or throw/set `process.exitCode = 1` after reporting collected failures.
+  Run all planned cases; an early script exception leaves later cases not_run, not passed.
+- Scope response checks to the operation: assert its expected success or rejection status and
+  resulting UI/data. An intentionally rejected negative case is not an unexpected HTTP error;
+  unrelated console output alone also does not prove success or failure.
+- Verify the assertion runner itself with a temporary deliberately failing assertion before
+  relying on a new self-test setup. Confirm it returns nonzero, then remove that probe.
+- Preserve actual command status. For checks piped through `tee` or `tail`, use
+  `bash -o pipefail -c 'node path/to/check.cjs 2>&1 | tee /tmp/check.log'`, or redirect output,
+  capture `$?` immediately, print the relevant log, and exit with the captured status.
+  Later successful commands, log printing, `|| true` or an echo must not mask test failure.
+
+### 5. Exercise real entry paths, persistence and timing
+
+Start browser verification at each scenario's specified GIVEN page and identity, then use its
+actual navigation and controls. A direct URL, API call, hand-edited database or forced browser
+state may diagnose a problem but cannot verify a missing entry or replace a required action.
+Use records' full business identities so one entity's result cannot satisfy another's case.
+
+- Run each scenario independently with isolated browser/session state and its prescribed data.
+  Use a disposable application/database copy for destructive self-tests. Resetting a disposable
+  test fixture is allowed; clearing the working database to obtain a pass is not.
+- Check shared entry points early. After changing authentication, navigation, forms or storage,
+  rerun the affected groups. A shared entry failure can block many scenarios: repair that cause,
+  then execute the downstream assertions before marking those scenarios passed.
+- Exercise create -> read -> edit -> reopen paths, combinations of filters, and required
+  confirmation/decline branches. For multi-step flows, check backward/reopen behavior and the
+  final record, not just advancement to the next page. Test required reload, restart and account
+  switching rather than assuming a successful write proves persistence or isolation.
+- Use auto-retrying assertions and wait for specific visible states or acknowledged operations.
+  Do not rely on fixed sleeps or universally wait for networkidle to make the app usable.
+  Test immediate interaction with available controls during cold loading and consecutive
+  save/navigation actions; delayed initialization must not erase newer work.
+- For timing-sensitive changes, test the relevant response ordering, for example with controlled
+  network delay in a disposable browser test. Fix stale updates and operation ownership rather
+  than adding sleeps, extra navigation or longer timeouts that conceal the defect.
+- Verify layout and required visual states against the references as well as functionality.
+  A screenshot alone does not verify interaction, semantics or data consistency.
+
+### 6. Diagnose, repair and close coverage
+
+Run `npm run build` and `npm run test:backend`, then the requirement-derived browser checks.
+Build/backend success does not establish browser scenario coverage. Inspect actual errors and
+exit statuses. Read the failing case's requirement and relevant browser/backend log, identify
+its earliest broken prerequisite, make a focused repair and rerun it. Follow with affected
+regressions; do not rewrite unrelated parts or weaken a check while behavior remains wrong.
+
+Investigate environment problems using preflight information and actual module/browser launch
+results. A missing global command does not prove an installed package is unavailable; resolve
+the installed module using a compatible import/require. Reuse available browser binaries rather
+than repeatedly reinstalling unchanged dependencies. Continue independent implementation/tests
+while restoring a blocked check. Lower-level checks support diagnosis but do not certify a
+browser scenario that never ran.
+
+After each group, use the coverage map to choose the next missing functionality or failing
+scenario. A partial summary, skipped check or environmental explanation does not complete the
+task. Never invent passing evidence. Allocate the budget across implementation, integration,
+testing and repair for the whole application. As it decreases, close gaps and failures rather
+than starting large refactors or cosmetic polishing. Continue while execution remains available;
+the runtime enforces hard limits.
+
+### 7. Operate the workspace efficiently
+
+Search relevant symbols and read bounded source ranges; reuse unchanged context. Batch
+independent reads, but avoid concurrent edits to shared files or tests of partially written code.
+Use manageable writes and inspect their results; huge multi-file commands may be truncated.
+Use non-interactive commands, actual supported tool timeouts and the correct working directory.
+
+For development servers, redirect logs, record PIDs and poll HTTP readiness with a bounded
+deadline. On failure read the startup log. Stop only processes you started by their recorded
+PIDs, avoiding broad `pkill -f` patterns. Keep test ports separate from final deployment and
+release them when done. Retain application data, meaningful self-tests and their final results;
+remove temporary probes and unrelated investigation debris.
 
 ## Command Execution Rules
 
@@ -336,11 +394,11 @@ I need to understand the template structure first. Let me inspect the project la
 
 ## Submission
 
-Submit only after all requirements are implemented, all specified scenarios have been
-exercised successfully, and the final build and backend checks pass on the final source.
-Review the requirement checklist for missing, failed or unverified paths and resolve them
-before issuing the completion command. Reporting unfinished work or an environment blocker
-does not satisfy these completion conditions. Never fabricate passing evidence.
+After the last application edit, rerun the build, backend checks and all scenario checks
+needed to validate the final source. Review the coverage map: every required scenario must
+have executed and passed; failures and not_run cases require further implementation/testing.
+Rerun affected paths after any repair and preserve the actual results. Only then submit.
+Do not replace these completion conditions with a claim that everything is verified.
 
 When you've completed your work, you MUST finish with this EXACT command, standalone and not combined with any other command:
 
@@ -357,13 +415,9 @@ After this command you cannot continue working (reading, editing, testing) on th
 def build_task(checked: dict[str, Any], input_dir: Path) -> str:
     """Task-domain content only; the harness contract lives in UPSTREAM_INSTANCE_SKELETON."""
     lines = [
-        "Implement the complete web application specified in the supplied requirements.yaml.",
-        "Implement the requirements as a general application, including persistence and all specified UI behavior.",
-        "Preserve exact requirement behavior, accessibility names/roles, scenarios and test constraints.",
-        "Use the reference screenshots to implement the visual design. Do not hardcode a benchmark answer or change tests.",
-        "Do not read `.arc_adapter/` or `.arc/stdout.log` — audit logs for humans, not task input.",
-        "Servers: use redirected logs and recorded PIDs, poll HTTP readiness with a bounded deadline, and stop only your own processes. Inspect startup logs instead of assuming a fixed sleep proves readiness.",
-        "If available, `.arc/preflight.json` records the runner's preinstalled browser and Playwright version; it is environment information, not acceptance evidence.",
+        "Implement and self-test the entire application using the workflow below.",
+        "The original requirements and assets are staged under `.arc_requirements/`; preserve them unchanged.",
+        "The YAML below is authoritative. Attached reference images guide visual implementation.",
         "",
         "FULL SOURCE requirements.yaml (verbatim; authoritative):",
         "```yaml",

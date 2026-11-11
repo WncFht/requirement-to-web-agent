@@ -9,9 +9,11 @@
 
 分支 `experiment/mini6-detailed-prompt` 从 `mini6`（`17a7e97`）创建，回移版本溯源提交 `749f8a5`，再扩展 `arc_adapter.py` 的任务指导。执行引擎、工具、模板、默认模型参数、重试策略和 step/time 预算沿用 mini6；没有引入 mini8/mini9 的运行环境修改或提交前自动验证机制。
 
-详细 prompt 要求按需求 ID 和父级约束组织工作，完成规定入口到持久化结果的用户路径，检查前后端读写一致性，并区分已实现与已验证。工具指导包括检查管道退出码、轮询服务就绪、按依赖完成相关功能以及预留集成验证时间。这些是模型执行指导，实际验证仍由 agent 调用现有工具完成；没有新增 `checkpoint` 或 `run_acceptance` 工具，也不保证所有指导都会被遵守。
+当前 prompt 按“需求覆盖 → 完整业务路径 → 可访问性契约 → 断言式自测 → 真实入口与时序 → 修复回归 → 工具使用 → 提交条件”组织。每个需求场景需要对应 GIVEN 身份/页面/数据、WHEN 操作、THEN 断言和实际测试结果。明确的 role/name 需通过精确定位验证，不能只检查可见文字；自测出现失败必须非零退出，输出 FAIL 或日志不能替代断言。任务文本只注入原始需求和参考图，执行指导集中在 instance prompt 中。
 
-打包和运行时记录 commit、tag、源码指纹与配置，详见 [版本溯源](docs/versioning.md)。运行成绩尚未验证；应与原 mini6 使用相同任务、模型参数和预算进行多次对照，同时比较功能通过率、token、step、重复操作及真实验证行为。
+这次重构参考了六个 bench 的历史失败：状态通知缺少 accessible name、脚本打印失败但返回成功、直达 URL 绕过入口、初始加载覆盖新写入，以及多步业务状态缺少完整验证。通用规则覆盖取消与确认、草稿与发布、数量/价格/库存一致性、账户隔离、刷新/重开和请求交错；具体业务约束仍从当前 REQ 获取，不注入历史测试、固定样例答案或产品专属补丁。
+
+执行引擎、工具、模板和预算保持 mini6 基线，默认 reasoning effort 仍为 `low`。没有新增自动分组调度、自测执行器或代码层面的提交拦截；覆盖记录、自测脚本和失败退出仍由 agent 按 prompt 执行。打包和日志继续记录 commit、源码指纹与配置，详见 [版本溯源](docs/versioning.md)。本次重构尚无真实 bench 成绩，应与 `16cef24`、`8237a00` 在相同任务、模型参数和预算下多次对照。
 
 ## 状态
 
@@ -42,7 +44,7 @@ bash scripts/run_keep_baseline.sh <arc-bench克隆> <全新空输出目录>     
 模型优先级：`--model` > `ARC_MODEL` > `MODEL` > `deepseek-flash`。
 环境变量：`ARC_REQUEST_TIMEOUT`（秒，默认 600）、`MSWEA_MODEL_RETRY_STOP_AFTER_ATTEMPT`（默认 100——网关错误通常不计费且失败即损失全部进度，最坏情形 ~6.6 小时重试直到平台/网关恢复）、`ARC_MAX_STEPS`（默认 250，沿用上游 swebench 配置）、`ARC_MAX_SECONDS`（3600）、`ARC_REASONING_EFFORT`（默认 `low`，传给端点的思考力度，设空省略该参数）、`ARC_TRANSPORT_REASONING`（`passthrough` 默认，按上游原样回传思考内容——DeepSeek 契约与重编码网关需要；`strip` 为显式剥离，仅在确认端点不需要且窗口/计费敏感时使用）、`ARC_LOG_IMAGES`（默认剥离审计产物中的图片 base64，`=1` 保留原图用于图片相关调试）。
 
-Prompt 架构：harness 契约逐字沿用上游 `config/benchmarks/swebench.yaml`（system、instance 骨架、输出截断、format error、`drop_params`/`parallel_tool_calls`、step_limit 250）与 `config/default.yaml` 的 shell 环境（`PAGER=cat` 等）；本仓库只承载任务域内容（YAML、参考图、禁区、提交标记）。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。
+Prompt 架构：system、输出截断、format error、`drop_params`/`parallel_tool_calls` 和默认 step_limit 250 沿用上游 `config/benchmarks/swebench.yaml`，shell 环境（`PAGER=cat` 等）沿用 `config/default.yaml`。instance prompt 保留工具交互与完成标记契约，任务工作流由本仓库维护；YAML 和参考图通过任务文本注入。参考图附加前自动缩至 ≤1280px 并按更小的 JPEG/PNG 重编码（实测 19 张 13.2MB → 1.0MB，规避网关 413 请求体上限；原图在 `.arc_requirements/` 不变）。
 
 ## 日志（记在哪、有什么）
 
