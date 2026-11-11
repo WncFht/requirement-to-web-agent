@@ -170,92 +170,104 @@ Consider the following task specification:
 <instructions>
 # Task Instructions
 
-## Overview
+## Objective
 
-Implement the ENTIRE application described by the supplied requirements and visual references
-in the current workspace. Completion means working user journeys with successful self-tests
-on the final source, not merely code written, pages present, or a successful build.
-Use the existing template and preserve working behavior. Work through actual bash tool calls:
-inspect, implement, execute tests, diagnose failures, repair, and retest until complete.
-Each response must include a brief THOUGHT explaining the next concrete action and at least
-one bash tool call. Keep reasoning focused on implementation and evidence.
-
-## Important Boundaries
-
-- Modify application source and add requirement-derived self-tests as needed. Preserve
-  `deploy.sh`, supplied tests/assertions and their harness, and `.arc_requirements/` unchanged.
-- Use supplied public requirements, assets, application source, installed dependencies and
-  ordinary dependency documentation. Do not search for external evaluator tests, platform
-  submission internals, benchmark answers, or other runs. Existing application tests are usable.
-- `.arc_adapter/` and `.arc/stdout.log` are audit artifacts, not task input. If present,
-  `.arc/preflight.json` may be read for environment capabilities; it is not acceptance evidence.
-- Implement general behavior. Do not special-case known scenario titles, account names or
-  fixture values to produce answers. Do not change assertions to conceal unmet requirements.
+Implement the entire application specified by the supplied requirements and visual references.
+Completion requires working user journeys and successful self-tests on the final source.
+Use the existing template, preserve working behavior, and work through actual bash tool calls.
+Keep each response's reasoning brief and tied to the next implementation or verification action.
 
 ## Recommended Workflow
 
-### 1. Build a coverage map, then start implementing
+### 1. Read requirements and establish coverage
 
-Read the supplied YAML hierarchy and references. Child requirements inherit applicable parent
-constraints. Preserve original IDs and cover every scenario, including negative cases and
-alternatives. Written behavior, required messages, roles, names, defaults, identity and starting
-context are contracts; screenshots also guide visual layout. Resolve unspecified details with
-simple choices consistent with the application rather than inventing additional scope.
+Read the YAML hierarchy and references. Child requirements inherit applicable parent constraints.
+Retain original IDs and include every scenario, negative case and alternative. Explicit messages,
+roles, names, defaults, identities and starting contexts are contracts. References guide appearance.
+Choose simple, consistent behavior for unspecified details without adding unrelated scope.
 
-Maintain a compact local coverage map keyed by requirement/scenario ID. For each scenario,
-record its GIVEN page/identity/data, WHEN actions, THEN assertions, test file/case and result
-(not_run, failed, passed). If no scenario IDs exist, use the requirement ID and a short case name.
-Passed means an executed case met ALL its assertions on the relevant source. Printing a label,
-creating a test file, or editing a shared component does not verify its dependent scenarios.
-Keep this map concise and update it as work proceeds; do not spend the run writing a report
-or designing a new test framework before implementing the application.
+Inspect package scripts, UI, routes, API and storage. Order work by dependencies: establish
+navigation, identity and shared data flow, then implement related features in manageable groups.
+Complete each group's UI, business rules and persistence together while covering the whole app.
 
-Inspect package scripts and relevant UI, routes, API and persistence. Order features by real
-prerequisites and shared resources, establishing essential navigation, identity and data flow
-first. Implement related functionality in manageable groups while tracking coverage of the
-whole application. Complete UI, business rules and storage together; avoid a broad collection
-of disconnected placeholder pages or polishing one area while other required areas are absent.
+Keep a compact local map using this format:
+`scenario ID | test file/case | not_run/failed/passed | execution evidence or next repair`.
+Use a requirement ID plus a short case name if scenario IDs are absent. Put GIVEN setup, WHEN
+actions and THEN assertions in the tests; avoid duplicating them in a report. Update the map
+after each feature group. A passed entry must reference an actual execution on the relevant
+source; creating a test or repairing a shared component does not certify dependent scenarios.
 
-### 2. Implement complete journeys and business state
+### 2. Implement and verify each group
 
-For every scenario implement the entire path:
-specified page and identity -> visible entry -> interaction -> observable result -> required
-persistence. A direct route, API response, success toast or database schema alone is insufficient.
+Implement each scenario's full path: specified page and identity -> visible entry -> interaction
+-> observable result -> required persistence. Use the check standards below to write small,
+requirement-derived tests as you implement. Reuse installed tooling, existing application tests
+and small interaction helpers; retain meaningful self-tests for reruns.
 
-- Provide explicitly required GIVEN records and relationships through normal, idempotent
-  initialization/migrations. Preserve existing data and IDs; restarts must not overwrite edits.
-  In tests, create case-isolated data through normal user actions where the scenario requires it.
-- Keep write requests, stored fields, read responses and frontend state consistent. Verify that
-  reload/reopen reconstructs the result and a subsequent ordinary edit preserves other state.
-  Use the persistence mechanism the requirement specifies; browser state cannot replace
-  required shared or account-specific backend data.
-- Await the relevant write before announcing durable success. Show real save errors. Guard
-  initial loads, queued writes and delayed responses so stale snapshots cannot overwrite new
-  records, edits or newer navigation. Do not let startup backfills bypass live creation logic.
-- Model required transitions explicitly: draft versus published, selected versus confirmed,
-  unpaid versus paid/cancelled, active versus archived/deleted. Confirm commits once; decline
-  or cancel preserves the prior state. Refresh/reopen must agree with the committed transition.
-- Keep related business values consistent: selected entity/variant, quantity, price, totals,
-  availability and resulting record. Validate limits and required fields before committing;
-  rejected actions must not create records or partially change balances, stock or membership.
-- Enforce ownership and permissions on backend reads/writes as well as UI controls. Test a
-  second account or anonymous session where the requirements specify isolation or restrictions.
-  Public views expose only allowed data; another user's private records must not leak.
+During development, run focused checks and affected regressions. Check shared entry points early;
+when authentication, navigation, forms or storage change, rerun their affected groups. Execute
+downstream assertions after repairing a prerequisite. Inspect layout against reference images
+alongside behavior. Reserve time for integration, testing and repair across the entire application.
 
-Apply these rules to the actual requirements. Do not add unrelated product features, arbitrary
-validation, fixed dates or historical seed data that the task does not request.
+### 3. Diagnose failures and choose the next action
 
-### 3. Treat accessibility semantics as executable contracts
+Read the failing scenario's original requirement and actual error. Before editing a failing test,
+determine whether the application violates the requirement or the test misrepresents it, and
+briefly state the basis. Preserve the specified starting context, identity, action and outcome.
+Repair the earliest broken prerequisite, rerun the case, then run affected regressions.
 
-For each specified role/name, verify the actual accessible name and role, not just visible text.
-Use semantic controls, associated labels and accurate expanded, selected, checked, pressed,
-current and disabled states. Supply explicit accessible names where native semantics do not
-provide the required name. Decorative icons, punctuation or CSS-generated text must not change
-it. A notification showing text is not necessarily a status named by that text.
+If a failure repeats, reassess fixture/session state, the running build/server, asynchronous
+completion, locator scope and shared causes. Gather evidence that distinguishes these causes;
+avoid repeatedly rerunning the same command or weakening assertions to obtain a pass.
 
-In browser checks, use `getByRole(role, { name, exact: true })`, scoped to the required container.
-Assert uniqueness and visibility where one control is required, then its state and behavior.
-For example, when the requirement specifies a status named "Saved", verify the named status:
+For environment failures, inspect `.arc/preflight.json` if present and actual import/launch errors.
+A missing global command does not prove the package is absent: try a compatible import/require
+and available browser binaries before reinstalling. Continue independent implementation or
+checks while restoring the environment. Lower-level checks do not certify an unexecuted browser
+scenario. Never invent passing evidence or mark skipped cases passed.
+
+Use the coverage map to choose the next missing feature or failed/not_run scenario. As budget
+decreases, close functional gaps and failures before cosmetic polishing or large refactors.
+Continue while execution is available; the runtime enforces hard limits.
+
+## Check Standards
+
+### Business state and persistence
+
+- Supply required GIVEN records and relationships through normal, idempotent initialization or
+  migrations. Preserve existing data and IDs; restarting must not reset edits. Create test data
+  through user actions when those actions are part of the scenario.
+- Keep writes, stored fields, reads and UI state consistent. Verify required reload/reopen,
+  restart and account switching. Use the specified persistence mechanism; browser-only state
+  cannot substitute for required shared or account-specific backend storage.
+- Await the relevant write before announcing durable success and show real save errors. Guard
+  initial loads, queued saves and delayed responses so stale results cannot overwrite newer
+  edits, records or navigation. Initialization and live creation must obey the same invariants.
+- Model required states and transitions explicitly, including draft/published, unpaid/paid,
+  cancelled and archived/deleted. Confirm commits once; cancel/decline preserves prior state.
+  Verify the final record and required backward/reopen behavior in multi-step journeys.
+- Keep entity/variant, quantity, price, totals and availability consistent. Validate before
+  side effects; rejected operations must not partially change records, stock or balances.
+  Enforce ownership on backend reads/writes as well as UI controls. Check anonymous/second-user
+  access where required. Apply these rules only to business behavior requested by the task.
+
+### Browser entry and semantics
+
+Start each scenario at its specified GIVEN page, identity and data; exercise actual navigation
+and controls. Direct URLs, API calls or forced state can help diagnosis but cannot replace a
+required entry or action. Identify records by their full business identity. Use independent
+case setup and isolated sessions; use a disposable application/database copy for destructive
+checks, preserving the working application's data.
+
+Assert the property the requirement specifies: visible text, accessible name, description and
+input value are distinct. Use semantic controls, associated labels and accurate selected,
+checked, pressed, current, expanded and disabled states. Decorative icons, punctuation and
+CSS-generated text must not alter a required accessible name. A visible notification does not
+automatically have a status role or a name matching its text.
+
+For specified roles/names use `getByRole(role, { name, exact: true })`, scoped to the relevant
+record/container/dialog. Check visibility and uniqueness within that scope when one match is
+required, then state and behavior. For a required status named "Saved", for example:
 
 ```javascript
 const saved = page.getByRole('status', { name: 'Saved', exact: true });
@@ -263,97 +275,53 @@ await expect(saved).toHaveCount(1);
 await expect(saved).toBeVisible();
 ```
 
-Visible text, an accessible name, an input value and an accessible description are different
-properties; assert the property the requirement specifies. Scope repeated actions to their
-business record or dialog. Do not use `.first()`, `.nth()` or broad text matching to hide an
-ambiguous required control. Index selection is appropriate only when order itself is specified.
-If a locator is wrong, correct it against the public requirement; if the UI is wrong, repair it.
+Repeated controls are valid when their records distinguish them. Index selection is appropriate
+when specified ordering or verified business identity justifies it; do not use `.first()` or
+`.nth()` merely to bypass ambiguity. Include required filter combinations, validation messages,
+confirmation/decline branches and persistence assertions, not just clicks or page advancement.
 
-### 4. Write self-tests that actually fail
+Use auto-retrying assertions and wait for specific states or acknowledged operations. Avoid
+fixed sleeps and blanket networkidle waits that conceal unusable startup or incomplete saves.
+For risky asynchronous paths, test interaction during loading and consecutive saves/navigation;
+use controlled response delays when needed to expose stale updates. Such timing probes need
+not be added to unrelated static flows. Fix operation ownership rather than extending timeouts.
 
-Use the installed browser tooling and its assertion library, or equivalent assertions that
-throw on mismatch. Reuse small helpers for recurring interactions; keep tests tied to scenario
-IDs and retain them in the application workspace for reruns. Do not duplicate supplied suites.
+### Executable assertions and trustworthy results
 
-- Assert every THEN outcome, including exact required messages, validation, negative cases,
-  selected state and persistence. `console.log(count)`, screenshots, printed PASS/FAIL and
-  reaching the end of a script are diagnostics, not assertions. Zero matches, false conditions,
-  unexpected response statuses and browser exceptions must fail their relevant checks.
-- If collecting multiple failures, continue independent cases but finish with a nonzero exit
-  whenever any case failed. A catch block must not swallow the failure. Use the test runner's
-  failure status, or throw/set `process.exitCode = 1` after reporting collected failures.
-  Run all planned cases; an early script exception leaves later cases not_run, not passed.
-- Scope response checks to the operation: assert its expected success or rejection status and
-  resulting UI/data. An intentionally rejected negative case is not an unexpected HTTP error;
-  unrelated console output alone also does not prove success or failure.
-- Verify the assertion runner itself with a temporary deliberately failing assertion before
-  relying on a new self-test setup. Confirm it returns nonzero, then remove that probe.
-- Preserve actual command status. For checks piped through `tee` or `tail`, use
-  `bash -o pipefail -c 'node path/to/check.cjs 2>&1 | tee /tmp/check.log'`, or redirect output,
-  capture `$?` immediately, print the relevant log, and exit with the captured status.
-  Later successful commands, log printing, `|| true` or an echo must not mask test failure.
+Use the installed assertion library or assertions that throw on mismatch. Every THEN outcome
+needs an assertion. Screenshots, printed counts/PASS/FAIL and reaching the end of a script are
+diagnostics; they cannot establish success. Build and backend checks support browser testing
+but cannot replace scenario execution.
 
-### 5. Exercise real entry paths, persistence and timing
+Unexpected statuses, browser exceptions and assertion mismatches must fail their relevant checks.
+Assert the expected rejection and resulting unchanged state for negative cases. If collecting
+failures, continue independent cases and finish with a nonzero exit if any failed. Catch blocks
+must propagate failure or set `process.exitCode = 1`. Cases after an early abort remain not_run.
+For a custom assertion harness, confirm a temporary failing probe exits nonzero, then remove it.
 
-Start browser verification at each scenario's specified GIVEN page and identity, then use its
-actual navigation and controls. A direct URL, API call, hand-edited database or forced browser
-state may diagnose a problem but cannot verify a missing entry or replace a required action.
-Use records' full business identities so one entity's result cannot satisfy another's case.
+Preserve command status through log capture. For pipelines use, for example:
+`bash -o pipefail -c 'node path/to/check.cjs 2>&1 | tee /tmp/check.log'`.
+Alternatively redirect output, capture `$?` immediately, print the log and exit with that status.
+Log printing, later successful commands and `|| true` must not hide a failed check.
 
-- Run each scenario independently with isolated browser/session state and its prescribed data.
-  Use a disposable application/database copy for destructive self-tests. Resetting a disposable
-  test fixture is allowed; clearing the working database to obtain a pass is not.
-- Check shared entry points early. After changing authentication, navigation, forms or storage,
-  rerun the affected groups. A shared entry failure can block many scenarios: repair that cause,
-  then execute the downstream assertions before marking those scenarios passed.
-- Exercise create -> read -> edit -> reopen paths, combinations of filters, and required
-  confirmation/decline branches. For multi-step flows, check backward/reopen behavior and the
-  final record, not just advancement to the next page. Test required reload, restart and account
-  switching rather than assuming a successful write proves persistence or isolation.
-- Use auto-retrying assertions and wait for specific visible states or acknowledged operations.
-  Do not rely on fixed sleeps or universally wait for networkidle to make the app usable.
-  Test immediate interaction with available controls during cold loading and consecutive
-  save/navigation actions; delayed initialization must not erase newer work.
-- For timing-sensitive changes, test the relevant response ordering, for example with controlled
-  network delay in a disposable browser test. Fix stale updates and operation ownership rather
-  than adding sleeps, extra navigation or longer timeouts that conceal the defect.
-- Verify layout and required visual states against the references as well as functionality.
-  A screenshot alone does not verify interaction, semantics or data consistency.
+## Workspace and Tool Constraints
 
-### 6. Diagnose, repair and close coverage
-
-Run `npm run build` and `npm run test:backend`, then the requirement-derived browser checks.
-Build/backend success does not establish browser scenario coverage. Inspect actual errors and
-exit statuses. Read the failing case's requirement and relevant browser/backend log, identify
-its earliest broken prerequisite, make a focused repair and rerun it. Follow with affected
-regressions; do not rewrite unrelated parts or weaken a check while behavior remains wrong.
-
-Investigate environment problems using preflight information and actual module/browser launch
-results. A missing global command does not prove an installed package is unavailable; resolve
-the installed module using a compatible import/require. Reuse available browser binaries rather
-than repeatedly reinstalling unchanged dependencies. Continue independent implementation/tests
-while restoring a blocked check. Lower-level checks support diagnosis but do not certify a
-browser scenario that never ran.
-
-After each group, use the coverage map to choose the next missing functionality or failing
-scenario. A partial summary, skipped check or environmental explanation does not complete the
-task. Never invent passing evidence. Allocate the budget across implementation, integration,
-testing and repair for the whole application. As it decreases, close gaps and failures rather
-than starting large refactors or cosmetic polishing. Continue while execution remains available;
-the runtime enforces hard limits.
-
-### 7. Operate the workspace efficiently
-
-Search relevant symbols and read bounded source ranges; reuse unchanged context. Batch
-independent reads, but avoid concurrent edits to shared files or tests of partially written code.
-Use manageable writes and inspect their results; huge multi-file commands may be truncated.
-Use non-interactive commands, actual supported tool timeouts and the correct working directory.
-
-For development servers, redirect logs, record PIDs and poll HTTP readiness with a bounded
-deadline. On failure read the startup log. Stop only processes you started by their recorded
-PIDs, avoiding broad `pkill -f` patterns. Keep test ports separate from final deployment and
-release them when done. Retain application data, meaningful self-tests and their final results;
-remove temporary probes and unrelated investigation debris.
+- Modify application source and add self-tests. Preserve `deploy.sh`, supplied tests/assertions
+  and their harness, and `.arc_requirements/` unchanged. Correct your own tests only against
+  the original requirements, following the failure diagnosis above.
+- Use supplied requirements/assets, application source, dependencies and ordinary documentation.
+  Do not seek external evaluator tests, platform submission internals, benchmark answers or
+  other runs. Implement general behavior without scenario-title/account/fixture special cases.
+- `.arc_adapter/` and `.arc/stdout.log` are audit artifacts, not task input. Preflight describes
+  environment capabilities, not acceptance evidence.
+- Search relevant symbols and bounded source ranges. Batch independent reads; keep dependent
+  edits and checks sequential. Use manageable writes and inspect results. Reuse unchanged
+  context and dependencies rather than repeatedly dumping files or reinstalling packages.
+- Start servers with redirected logs, recorded PIDs and bounded HTTP readiness checks. Read
+  startup logs on failure. Stop only your recorded processes; avoid broad `pkill -f`. Keep
+  disposable test ports separate from final deployment and release them when finished.
+- Retain application data, meaningful tests and final results. Remove temporary probes and
+  unrelated investigation debris. Use non-interactive commands and supported tool timeouts.
 
 ## Command Execution Rules
 
@@ -394,11 +362,12 @@ I need to understand the template structure first. Let me inspect the project la
 
 ## Submission
 
-After the last application edit, rerun the build, backend checks and all scenario checks
-needed to validate the final source. Review the coverage map: every required scenario must
-have executed and passed; failures and not_run cases require further implementation/testing.
-Rerun affected paths after any repair and preserve the actual results. Only then submit.
-Do not replace these completion conditions with a claim that everything is verified.
+On the final application source, run `npm run build`, `npm run test:backend` and all
+requirement-derived scenario checks. Review actual exit statuses and the coverage map: every
+required scenario must have executed and passed. Repair failures and execute not_run cases;
+after any application edit, rerun affected checks and refresh the final full validation.
+Preserve the results. Submit only when these conditions are met; a partial summary or a claim
+of verification does not replace them.
 
 When you've completed your work, you MUST finish with this EXACT command, standalone and not combined with any other command:
 
