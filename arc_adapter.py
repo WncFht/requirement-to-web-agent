@@ -1,9 +1,8 @@
 """ARC-Bench file/CLI adapter for upstream mini-swe-agent v2.4.6.
 
-No changes to DefaultAgent, LitellmModel, or LocalEnvironment. Harness prompts and
-limits are adopted verbatim from the shipped configs (benchmarks/swebench.yaml for
-the tool-calling contract, default.yaml for shell env); this adapter only carries
-task-domain content.
+Uses upstream DefaultAgent, LitellmModel and LocalEnvironment, with local task
+guidance, progress logging and Bash command wrapping. Upstream handles timeouts,
+process cleanup and the tool-calling contract.
 """
 
 from __future__ import annotations
@@ -22,6 +21,7 @@ import yaml
 
 from progress import (
     BashProgress,
+    BashShell,
     ModelProgress,
     elide_images,
     emit,
@@ -299,10 +299,14 @@ failures, continue independent cases and finish with a nonzero exit if any faile
 must propagate failure or set `process.exitCode = 1`. Cases after an early abort remain not_run.
 For a custom assertion harness, confirm a temporary failing probe exits nonzero, then remove it.
 
-Preserve command status through log capture. For pipelines use, for example:
-`bash -o pipefail -c 'node path/to/check.cjs 2>&1 | tee /tmp/check.log'`.
-Alternatively redirect output, capture `$?` immediately, print the log and exit with that status.
-Log printing, later successful commands and `|| true` must not hide a failed check.
+Run build, backend tests and browser checks through the supplied check runner, for example:
+`python3 scripts/run_check.py --log /tmp/build.log -- npm run build` or
+`python3 scripts/run_check.py --log /tmp/browser.log -- node tests/check.cjs`.
+Issue each runner invocation as its own tool call, optionally preceded by `cd ... &&`;
+do not append echo, log printing or `|| true`. The runner prints captured output and exits
+with the check's status. Use separate calls for separate checks. Tool commands use Bash with
+pipefail; this catches pipeline failures, but a later successful command can still mask an
+earlier failure. A script that catches errors must itself return nonzero.
 
 ## Workspace and Tool Constraints
 
@@ -481,7 +485,7 @@ def run_agent(
     class LoggedModel(ModelProgress, LitellmModel):
         pass
 
-    class LoggedEnvironment(BashProgress, LocalEnvironment):
+    class LoggedEnvironment(BashProgress, BashShell, LocalEnvironment):
         pass
 
     injected = variable_presence()
