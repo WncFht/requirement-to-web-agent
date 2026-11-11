@@ -1,3 +1,4 @@
+import json
 import os
 import shlex
 import sys
@@ -32,16 +33,37 @@ def test_bash_syntax_pipeline_and_quoting(tmp_path):
 def test_runner_log_status_and_spaces(tmp_path, code):
     log = tmp_path / 'logs with spaces/check.log'
     child = f'import sys; print("stdout"); print("stderr", file=sys.stderr); sys.exit({code})'
-    command = shlex.join([sys.executable, str(RUNNER), '--log', str(log), '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(log), '--', sys.executable, '-c', child])
     result = execute(tmp_path, command)
     assert result['returncode'] == code
     assert 'stdout' in result['output'] and 'stderr' in result['output']
     assert log.read_text() == result['output']
+    record = json.loads((tmp_path / '.agent/checks.jsonl').read_text())
+    assert record['exit_code'] == code
+    assert record['cases'] == ['REQ-example']
+    assert record['command'] == [sys.executable, '-c', child]
+    assert record['cwd'] == str(tmp_path.resolve())
+    assert record['log'] == str(log.resolve())
+    assert record['started_at'] <= record['finished_at']
 
 
 def test_runner_preserves_failed_pipeline(tmp_path):
-    command = shlex.join([sys.executable, str(RUNNER), '--log', str(tmp_path / 'check.log'), '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(tmp_path / 'check.log'), '--', 'bash', '-o', 'pipefail', '-c', 'exit 9 | cat'])
     assert execute(tmp_path, command)['returncode'] == 9
+
+
+def test_runner_appends_grouped_checks_and_records_launch_failure(tmp_path):
+    for command in ([sys.executable, '-c', 'print("ok")'], ['missing-check-executable']):
+        result = execute(tmp_path, shlex.join([
+            sys.executable, str(RUNNER), '--case', 'REQ-a', '--case', 'REQ-b',
+            '--log', str(tmp_path / ('success.log' if len(command) > 1 else 'missing.log')),
+            '--', *command,
+        ]))
+    assert result['returncode'] == 127
+    records = [json.loads(line) for line in (tmp_path / '.agent/checks.jsonl').read_text().splitlines()]
+    assert [record['exit_code'] for record in records] == [0, 127]
+    assert all(record['cases'] == ['REQ-a', 'REQ-b'] for record in records)
+    assert 'Unable to start check' in Path(records[-1]['log']).read_text()
 
 
 def test_later_success_can_still_mask_failure(tmp_path):
@@ -58,7 +80,7 @@ def test_submission_marker_still_works(tmp_path):
 def test_timeout_kills_runner_and_descendants(tmp_path):
     sentinel = tmp_path / 'orphan-survived'
     child = 'import time; from pathlib import Path; time.sleep(1.5); Path(' + repr(str(sentinel)) + ').write_text("alive")'
-    command = shlex.join([sys.executable, str(RUNNER), '--log', str(tmp_path / 'timeout.log'), '--', sys.executable, '-c', child])
+    command = shlex.join([sys.executable, str(RUNNER), '--case', 'REQ-example', '--log', str(tmp_path / 'timeout.log'), '--', sys.executable, '-c', child])
     result = execute(tmp_path, command, timeout=1)
     assert result['returncode'] == -1
     assert result['extra']['exception_type'] == 'TimeoutExpired'

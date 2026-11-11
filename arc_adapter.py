@@ -187,11 +187,12 @@ navigation, identity and shared data flow, then implement related features in ma
 Complete each group's UI, business rules and persistence together while covering the whole app.
 
 Keep a compact local map using this format:
-`scenario ID | test file/case | not_run/failed/passed | execution evidence or next repair`.
-Use a requirement ID plus a short case name if scenario IDs are absent. Put GIVEN setup, WHEN
-actions and THEN assertions in the tests; avoid duplicating them in a report. Update the map
-after each feature group. A passed entry must reference an actual execution on the relevant
-source; creating a test or repairing a shared component does not certify dependent scenarios.
+`scenario ID | test file/case | not_run/failed/passed | check record or next repair`.
+Use a requirement ID plus a short case name if scenario IDs are absent. Each test must retain
+the scenario's GIVEN identity/data, public entry, WHEN actions, THEN results and required
+negative/persistence checks. Track scenarios, not pages or components: one broad passing test
+does not certify unexecuted alternatives. Update the map after each feature group and link
+passed entries to actual check records; dependent cases need their own executed assertions.
 
 ### 2. Implement and verify each group
 
@@ -211,6 +212,10 @@ Read the failing scenario's original requirement and actual error. Before editin
 determine whether the application violates the requirement or the test misrepresents it, and
 briefly state the basis. Preserve the specified starting context, identity, action and outcome.
 Repair the earliest broken prerequisite, rerun the case, then run affected regressions.
+Do not make a failed journey pass by jumping to a later URL, replacing its identity/setup,
+dropping an assertion or accepting a broader result. A diagnostic shortcut is not a repaired
+scenario. Fix test timing with condition-based waits; fix an incorrect expectation from the
+original requirement, without inventing additional acceptance constraints.
 
 If a failure repeats, reassess fixture/session state, the running build/server, asynchronous
 completion, locator scope and shared causes. Gather evidence that distinguishes these causes;
@@ -255,12 +260,23 @@ and controls. Direct URLs, API calls or forced state can help diagnosis but cann
 required entry or action. Identify records by their full business identity. Use independent
 case setup and isolated sessions; use a disposable application/database copy for destructive
 checks, preserving the working application's data.
+Separate independent scenarios from continuous journeys. Independent scenarios need fresh or
+explicitly restored business state, not only a new browser context. Continuous journeys must
+preserve state across required reloads, returns and repeated operations. Check that rejected
+duplicate creation leaves the original record intact; never weaken uniqueness rules to make
+test setup reusable. Treat setup failures separately from assertions that never executed.
 
 Assert the property the requirement specifies: visible text, accessible name, description and
 input value are distinct. Use semantic controls, associated labels and accurate selected,
 checked, pressed, current, expanded and disabled states. Decorative icons, punctuation and
 CSS-generated text must not alter a required accessible name. A visible notification does not
 automatically have a status role or a name matching its text.
+Validate public table names, column headers, row identities and scoped controls through their
+roles/names, not only CSS selectors. Keep business identifiers independently readable as text;
+separate adjacent values so text extraction does not join an identifier to the next word.
+Check repeated controls with popups open as well as closed. Error feedback must be associated
+with its relevant form/region. CSS selectors and direct URLs are useful diagnostics, but do
+not substitute for the required semantic assertions or public navigation in acceptance tests.
 
 For specified roles/names use `getByRole(role, { name, exact: true })`, scoped to the relevant
 record/container/dialog. Wait for the expected state, then check visibility and uniqueness within that scope when one
@@ -298,8 +314,13 @@ must propagate failure or set `process.exitCode = 1`. Cases after an early abort
 For a custom assertion harness, confirm a temporary failing probe exits nonzero, then remove it.
 
 Run build, backend tests and browser checks through the supplied check runner, for example:
-`python3 scripts/run_check.py --log /tmp/build.log -- npm run build` or
-`python3 scripts/run_check.py --log /tmp/browser.log -- node tests/check.cjs`.
+`python3 scripts/run_check.py --case build --log .agent/checks/build.log -- npm run build` or
+`python3 scripts/run_check.py --case SCN-ID --log .agent/checks/browser.log -- node tests/check.cjs`.
+Repeat `--case` for the IDs exercised by a grouped command. The runner appends command-level
+evidence to `.agent/checks.jsonl`: declared IDs, timestamps, working directory, command,
+log path and exit status. IDs are declarations, not proof of coverage: retain per-scenario
+assertions/results in the test output and link the coverage map to both. Use a distinct log
+path for each execution so later reruns do not overwrite earlier evidence.
 Issue each runner invocation as its own tool call, optionally preceded by `cd ... &&`;
 do not append echo, log printing or `|| true`. The runner prints captured output and exits
 with the check's status. Use separate calls for separate checks. Tool commands use Bash with
@@ -373,7 +394,8 @@ On the final application source, run `npm run build`, `npm run test:backend` and
 requirement-derived scenario checks. Review actual exit statuses and the coverage map: every
 required scenario must have executed and passed. Repair failures and execute not_run cases;
 after any application edit, rerun affected checks and refresh the final full validation.
-Preserve the results. Submit only when these conditions are met; a partial summary or a claim
+Check that final records postdate the last application edit; earlier passes do not certify
+changed source. Preserve the map, tests, check records and logs. Submit only when these conditions are met; a partial summary or a claim
 of verification does not replace them.
 
 When you've completed your work, you MUST finish with this EXACT command, standalone and not combined with any other command:
