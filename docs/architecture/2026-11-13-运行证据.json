@@ -1,0 +1,64 @@
+{
+  "ticket-booking": {
+    "run_dir": "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template",
+    "run_id": "68c7c302a985",
+    "source_commit": "edcc3aeefc89f0098a54b0ce2b7dd2571e8d7f63",
+    "agent": {
+      "status": "Submitted",
+      "run_seconds": 961.45,
+      "llm_calls": 44,
+      "model_http_attempts": 44,
+      "input_tokens": 1903132,
+      "output_tokens": 40245
+    },
+    "evaluation": {
+      "passed_count": 5,
+      "failed_count": 0,
+      "test_pass_rate": 100.0
+    },
+    "trajectory_messages": 92,
+    "evidence_files": [
+      "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template/template/.arc_adapter/run_summary.json",
+      "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template/template/.arc_adapter/trajectory.json",
+      "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template/run.json",
+      "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template/template/.agent/coverage.json",
+      "results/edcc3ae/smoke/ticket-booking/2026-11-12_02-09-35+0800__68c7c302a985-template/template/.agent/checks.jsonl"
+    ],
+    "coverage": {
+      "SCN-REQ-1-01": {
+        "status": "passed",
+        "check_id": "check-6kskf_z5",
+        "check_status": "passed"
+      },
+      "SCN-REQ-2-01": {
+        "status": "passed",
+        "check_id": "check-6kskf_z5",
+        "check_status": "passed"
+      }
+    }
+  },
+  "ctrip": {
+    "run_dir": "results/57cc284/practice/ctrip/2026-11-12_13-22-17+0800__135eb769a91b-template",
+    "run_id": "135eb769a91b",
+    "source_commit": "57cc2845e5ef096fc409b15976d7189ed3612db3",
+    "agent": {
+      "status": "Submitted",
+      "run_seconds": 3078.66,
+      "llm_calls": 97,
+      "model_http_attempts": 97,
+      "input_tokens": 20891742,
+      "output_tokens": 149251
+    },
+    "evaluation": {
+      "passed_count": 76,
+      "failed_count": 76,
+      "test_pass_rate": 50
+    },
+    "trajectory_messages": 200,
+    "evidence_files": [
+      "results/57cc284/practice/ctrip/2026-11-12_13-22-17+0800__135eb769a91b-template/template/.arc_adapter/run_summary.json",
+      "results/57cc284/practice/ctrip/2026-11-12_13-22-17+0800__135eb769a91b-template/template/.arc_adapter/trajectory.json",
+      "results/57cc284/practice/ctrip/2026-11-12_13-22-17+0800__135eb769a91b-template/run.json"
+    ]
+  }
+}

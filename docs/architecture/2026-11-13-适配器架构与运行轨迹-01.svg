@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080">
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L8 4L0 8Z" fill="context-stroke"/></marker></defs>
+<rect x="0" y="0" width="1600" height="1080" rx="0" fill="#F7F9FC" stroke="none"/>
+<text x="48" y="45" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="600" fill="#2764E7">
+<tspan x="48" dy="0">MINI-SWE-AGENT / ARC-BENCH</tspan>
+</text>
+<text x="48" y="102" font-family="PingFang SC,Arial,sans-serif" font-size="34" font-weight="600" fill="#172B4D">
+<tspan x="48" dy="0">从需求输入到可运行 Web 应用</tspan>
+</text>
+<text x="48" y="142" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#61748B">
+<tspan x="48" dy="0">当前源码 edcc3ae：adapter 准备任务；mini-SWE-agent 决策；bash 执行；验证记录提供可追溯证据。</tspan>
+</text>
+<rect x="48" y="1040" width="1504" height="1" rx="0" fill="#DCE5EF" stroke="none"/>
+<text x="48" y="1064" font-family="PingFang SC,Arial,sans-serif" font-size="12" font-weight="400" fill="#61748B">
+<tspan x="48" dy="0">源码走读 + 本地归档轨迹  ·  2026-11-13  ·  原生可编辑 draw.io  ·  无 MCP</tspan>
+</text>
+<rect x="48" y="190" width="280" height="592" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="68" y="223" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#2764E7">
+<tspan x="68" dy="0">01  输入与任务准备</tspan>
+</text>
+<rect x="66" y="248" width="244" height="126" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="66" y="248" width="5" height="126" rx="2" fill="#2764E7" stroke="none"/>
+<g transform="translate(83 266) scale(1.1666666666666667)" fill="none" stroke="#2764E7" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z M14 3v5h5 M10 12h5 M10 16h5"/></g>
+<text x="121" y="284" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="121" dy="0">ARC-Bench 输入</tspan>
+</text>
+<text x="84" y="322" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="84" dy="0">requirements.yaml 原文</tspan>
+<tspan x="84" dy="22.5">reference/ 原始参考图片</tspan>
+</text>
+<rect x="66" y="414" width="244" height="150" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="66" y="414" width="5" height="150" rx="2" fill="#2764E7" stroke="none"/>
+<g transform="translate(83 432) scale(1.1666666666666667)" fill="none" stroke="#2764E7" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 9-5 9 5-9 5z M3 12l9 5 9-5 M3 17l9 5 9-5"/></g>
+<text x="121" y="450" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="121" dy="0">main.py</tspan>
+</text>
+<text x="84" y="488" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="84" dy="0">参数 / .env / 模型选择</tspan>
+<tspan x="84" dy="22.5">prepare_output() 补齐模板</tspan>
+<tspan x="84" dy="22.5">build_info 记录源码身份</tspan>
+</text>
+<rect x="66" y="600" width="244" height="154" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="66" y="600" width="5" height="154" rx="2" fill="#2764E7" stroke="none"/>
+<g transform="translate(83 618) scale(1.1666666666666667)" fill="none" stroke="#2764E7" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z M14 3v5h5 M10 12h5 M10 16h5"/></g>
+<text x="121" y="636" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="121" dy="0">build_task()</tspan>
+</text>
+<text x="84" y="674" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="84" dy="0">YAML + 工作流约束</tspan>
+<tspan x="84" dy="22.5">参考图缩至 ≤1280px</tspan>
+<tspan x="84" dy="22.5">原始素材留在工作目录</tspan>
+</text>
+<polyline points="188,374 188,414" fill="none" stroke="#2764E7" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="188,564 188,600" fill="none" stroke="#2764E7" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="366" y="190" width="590" height="592" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="386" y="223" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#7952C5">
+<tspan x="386" dy="0">02  Agent 决策与执行</tspan>
+</text>
+<rect x="390" y="248" width="280" height="146" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="390" y="248" width="5" height="146" rx="2" fill="#7952C5" stroke="none"/>
+<g transform="translate(407 266) scale(1.1666666666666667)" fill="none" stroke="#7952C5" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4"/><path d="M9 2v4 M15 2v4 M9 18v4 M15 18v4 M2 9h4 M2 15h4 M18 9h4 M18 15h4"/></g>
+<text x="445" y="284" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="445" dy="0">DefaultAgent</tspan>
+</text>
+<text x="408" y="322" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="408" dy="0">messages 追加历史</tspan>
+<tspan x="408" dy="22.5">query → execute_actions</tspan>
+<tspan x="408" dy="22.5">每步保存 trajectory.json</tspan>
+</text>
+<rect x="710" y="248" width="222" height="146" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="710" y="248" width="5" height="146" rx="2" fill="#7952C5" stroke="none"/>
+<g transform="translate(727 266) scale(1.1666666666666667)" fill="none" stroke="#7952C5" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4"/><path d="M9 2v4 M15 2v4 M9 18v4 M15 18v4 M2 9h4 M2 15h4 M18 9h4 M18 15h4"/></g>
+<text x="765" y="284" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="765" dy="0">LoggedModel</tspan>
+</text>
+<text x="728" y="322" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="728" dy="0">LiteLLM + 重试</tspan>
+<tspan x="728" dy="22.5">OpenAI 兼容端点</tspan>
+<tspan x="728" dy="22.5">仅注册 bash 工具</tspan>
+</text>
+<polyline points="670,292 710,292" fill="none" stroke="#7952C5" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<polyline points="710,350 670,350" fill="none" stroke="#7952C5" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="720" y="421" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="400" fill="#7952C5">
+<tspan x="720" dy="0">模型返回 bash tool calls</tspan>
+</text>
+<rect x="390" y="454" width="280" height="148" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="390" y="454" width="5" height="148" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(407 472) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3 M13 15h4"/></g>
+<text x="445" y="490" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="445" dy="0">LoggedEnvironment</tspan>
+</text>
+<text x="408" y="528" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="408" dy="0">LocalEnvironment → Bash</tspan>
+<tspan x="408" dy="22.5">固定应用目录 / pipefail</tspan>
+<tspan x="408" dy="22.5">日志落盘 + 有限输出</tspan>
+</text>
+<polyline points="524,394 524,454" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="538" y="431" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="400" fill="#138775">
+<tspan x="538" dy="0">解析工具动作</tspan>
+</text>
+<polyline points="390,550 378,550 378,326 390,326" fill="none" stroke="#7952C5" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+<text x="396" y="636" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="600" fill="#7952C5">
+<tspan x="396" dy="0">observation → 下一轮模型请求</tspan>
+</text>
+<text x="396" y="675" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="396" dy="0">退出条件：提交标记、步数 / 时间上限、异常</tspan>
+<tspan x="396" dy="22.5">Submitted 表示 agent 结束，评测结果单独记录。</tspan>
+</text>
+<polyline points="310,675 350,675 350,300 390,300" fill="none" stroke="#2764E7" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="994" y="190" width="558" height="592" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="1014" y="223" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#138775">
+<tspan x="1014" dy="0">03  生成应用与验证</tspan>
+</text>
+<rect x="1018" y="248" width="510" height="114" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1018" y="248" width="5" height="114" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1035 266) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18 M7 5h1 M11 5h1 M8 12h8 M8 16h5"/></g>
+<text x="1073" y="284" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1073" dy="0">React + Vite 前端</tspan>
+</text>
+<text x="1036" y="322" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1036" dy="0">页面 / 交互 / API 调用；构建生成 frontend/dist</tspan>
+</text>
+<rect x="1018" y="408" width="306" height="114" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1018" y="408" width="5" height="114" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1035 426) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18 M7 5h1 M11 5h1 M8 12h8 M8 16h5"/></g>
+<text x="1073" y="444" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1073" dy="0">Express 后端</tspan>
+</text>
+<text x="1036" y="482" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1036" dy="0">业务 API + 静态页面服务</tspan>
+<tspan x="1036" dy="22.5">会话 / 校验 / 数据访问</tspan>
+</text>
+<rect x="1360" y="408" width="168" height="114" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1360" y="408" width="5" height="114" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1377 426) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5 M4 12c0 4 16 4 16 0"/></g>
+<text x="1415" y="444" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1415" dy="0">SQLite</tspan>
+</text>
+<text x="1378" y="482" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1378" dy="0">持久化存储</tspan>
+<tspan x="1378" dy="22.5">初始化 / 迁移</tspan>
+</text>
+<polyline points="1170,362 1170,408" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="1190" y="387" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="400" fill="#138775">
+<tspan x="1190" dy="0">HTTP /api</tspan>
+</text>
+<polyline points="1324,465 1360,465" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1018" y="590" width="510" height="156" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1018" y="590" width="5" height="156" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1035 608) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L20 5 M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></g>
+<text x="1073" y="626" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1073" dy="0">构建、API 与浏览器自测</tspan>
+</text>
+<text x="1036" y="664" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1036" dy="0">run_check.py：--check / --case</tspan>
+<tspan x="1036" dy="22.5">scenario.cjs：逐场景 started → passed / failed / blocked</tspan>
+<tspan x="1036" dy="22.5">Playwright 经 bash 启动，结果回到 agent</tspan>
+</text>
+<polyline points="670,515 970,515 970,552 1272,552 1272,590" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="691" y="536" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="400" fill="#138775">
+<tspan x="691" dy="0">bash 修改文件 / 启动服务 / 执行检查</tspan>
+</text>
+<rect x="48" y="818" width="1504" height="196" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="68" y="851" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#C07824">
+<tspan x="68" dy="0">04  审计、部署与外部评测</tspan>
+</text>
+<rect x="68" y="872" width="468" height="116" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="68" y="872" width="5" height="116" rx="2" fill="#C07824" stroke="none"/>
+<g transform="translate(85 890) scale(1.1666666666666667)" fill="none" stroke="#C07824" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18h18 M8 16v-5 M13 16V7 M18 16V4"/></g>
+<text x="123" y="908" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="123" dy="0">模型与源码审计</tspan>
+</text>
+<text x="86" y="946" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="86" dy="0">.arc_adapter/：calls / payloads / trajectory / summary</tspan>
+<tspan x="86" dy="22.5">build_info：commit、源码 hash、运行配置</tspan>
+</text>
+<rect x="564" y="872" width="438" height="116" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="564" y="872" width="5" height="116" rx="2" fill="#C07824" stroke="none"/>
+<g transform="translate(581 890) scale(1.1666666666666667)" fill="none" stroke="#C07824" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L20 5 M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></g>
+<text x="619" y="908" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="619" dy="0">命令与验证证据</tspan>
+</text>
+<text x="582" y="946" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="582" dy="0">.agent/commands/：完整命令输出</tspan>
+<tspan x="582" dy="22.5">checks.jsonl + coverage.json：最新执行状态</tspan>
+</text>
+<rect x="1030" y="872" width="502" height="116" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1030" y="872" width="5" height="116" rx="2" fill="#C07824" stroke="none"/>
+<g transform="translate(1047 890) scale(1.1666666666666667)" fill="none" stroke="#C07824" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18 M7 5h1 M11 5h1 M8 12h8 M8 16h5"/></g>
+<text x="1085" y="908" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1085" dy="0">应用交付与独立评测</tspan>
+</text>
+<text x="1048" y="946" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1048" dy="0">deploy.sh → build → Express；SQLite 数据持久化</tspan>
+<tspan x="1048" dy="22.5">平台测试独立执行；本地 baseline 脚本可串联官方测试</tspan>
+</text>
+</svg>

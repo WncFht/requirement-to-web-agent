@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080">
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L8 4L0 8Z" fill="context-stroke"/></marker></defs>
+<rect x="0" y="0" width="1600" height="1080" rx="0" fill="#F7F9FC" stroke="none"/>
+<text x="48" y="45" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="600" fill="#2764E7">
+<tspan x="48" dy="0">MINI-SWE-AGENT / ARC-BENCH</tspan>
+</text>
+<text x="48" y="102" font-family="PingFang SC,Arial,sans-serif" font-size="34" font-weight="600" fill="#172B4D">
+<tspan x="48" dy="0">一次 run 实际如何完成</tspan>
+</text>
+<text x="48" y="142" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#61748B">
+<tspan x="48" dy="0">代表 run：ticket-booking / 68c7c302a985 / edcc3ae；对照 run：Ctrip / 135eb769a91b / 57cc284。</tspan>
+</text>
+<rect x="48" y="1040" width="1504" height="1" rx="0" fill="#DCE5EF" stroke="none"/>
+<text x="48" y="1064" font-family="PingFang SC,Arial,sans-serif" font-size="12" font-weight="400" fill="#61748B">
+<tspan x="48" dy="0">源码走读 + 本地归档轨迹  ·  2026-11-13  ·  原生可编辑 draw.io  ·  无 MCP</tspan>
+</text>
+<rect x="48" y="190" width="340" height="112" rx="14" fill="white" stroke="#DCE5EF"/>
+<text x="70" y="236" font-family="PingFang SC,Arial,sans-serif" font-size="29" font-weight="600" fill="#2764E7">
+<tspan x="70" dy="0">44 次</tspan>
+</text>
+<text x="70" y="278" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="70" dy="0">逻辑模型调用；HTTP 尝试也是 44 次</tspan>
+</text>
+<rect x="410" y="190" width="340" height="112" rx="14" fill="white" stroke="#DCE5EF"/>
+<text x="432" y="236" font-family="PingFang SC,Arial,sans-serif" font-size="29" font-weight="600" fill="#7952C5">
+<tspan x="432" dy="0">16.0 分钟</tspan>
+</text>
+<text x="432" y="278" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="432" dy="0">agent run_seconds = 961.45</tspan>
+</text>
+<rect x="772" y="190" width="340" height="112" rx="14" fill="white" stroke="#DCE5EF"/>
+<text x="794" y="236" font-family="PingFang SC,Arial,sans-serif" font-size="29" font-weight="600" fill="#138775">
+<tspan x="794" dy="0">2 / 2 场景</tspan>
+</text>
+<text x="794" y="278" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="794" dy="0">agent 自测最新覆盖状态</tspan>
+</text>
+<rect x="1134" y="190" width="418" height="112" rx="14" fill="white" stroke="#DCE5EF"/>
+<text x="1156" y="236" font-family="PingFang SC,Arial,sans-serif" font-size="29" font-weight="600" fill="#138775">
+<tspan x="1156" dy="0">5 / 5 测试</tspan>
+</text>
+<text x="1156" y="278" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="1156" dy="0">归档平台 run.json；通过率 100%</tspan>
+</text>
+<rect x="48" y="334" width="990" height="668" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="68" y="367" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#2764E7">
+<tspan x="68" dy="0">真实轨迹：读取 → 实现 → 诊断 → 回归 → 提交</tspan>
+</text>
+<rect x="76" y="402" width="52" height="52" rx="12" fill="#F0F4FA" stroke="none"/>
+<g transform="translate(88 413) scale(1.1666666666666667)" fill="none" stroke="#2764E7" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z M14 3v5h5 M10 12h5 M10 16h5"/></g>
+<text x="148" y="422" font-family="PingFang SC,Arial,sans-serif" font-size="21" font-weight="600" fill="#2764E7">
+<tspan x="148" dy="0">读取项目与验收约束</tspan>
+</text>
+<text x="807" y="418" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="807" dy="0">msg[2–15]</tspan>
+</text>
+<text x="148" y="457" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#172B4D">
+<tspan x="148" dy="0">读取模板、后端 / 前端、run_check、场景助手与需求文件。</tspan>
+</text>
+<polyline points="102,459 102,501" fill="none" stroke="#DCE5EF" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="76" y="508" width="52" height="52" rx="12" fill="#F0F4FA" stroke="none"/>
+<g transform="translate(88 519) scale(1.1666666666666667)" fill="none" stroke="#2764E7" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 9-5 9 5-9 5z M3 12l9 5 9-5 M3 17l9 5 9-5"/></g>
+<text x="148" y="528" font-family="PingFang SC,Arial,sans-serif" font-size="21" font-weight="600" fill="#2764E7">
+<tspan x="148" dy="0">实现全栈注册与登录</tspan>
+</text>
+<text x="807" y="524" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="807" dy="0">msg[17–39]</tspan>
+</text>
+<text x="148" y="563" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#172B4D">
+<tspan x="148" dy="0">创建 users / sessions 表、认证校验、页面、样式和自测脚本。</tspan>
+</text>
+<polyline points="102,565 102,607" fill="none" stroke="#DCE5EF" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="76" y="614" width="52" height="52" rx="12" fill="#F0F4FA" stroke="none"/>
+<g transform="translate(88 625) scale(1.1666666666666667)" fill="none" stroke="#C07824" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3 M13 15h4"/></g>
+<text x="148" y="634" font-family="PingFang SC,Arial,sans-serif" font-size="21" font-weight="600" fill="#C07824">
+<tspan x="148" dy="0">失败驱动的诊断与修正</tspan>
+</text>
+<text x="807" y="630" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="807" dy="0">msg[41–61]</tspan>
+</text>
+<text x="148" y="669" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#172B4D">
+<tspan x="148" dy="0">browser 未定义 → 修正作用域；标签匹配失败 → 修正表单语义。</tspan>
+</text>
+<polyline points="102,671 102,713" fill="none" stroke="#DCE5EF" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="76" y="720" width="52" height="52" rx="12" fill="#F0F4FA" stroke="none"/>
+<g transform="translate(88 731) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L20 5 M20 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></g>
+<text x="148" y="740" font-family="PingFang SC,Arial,sans-serif" font-size="21" font-weight="600" fill="#138775">
+<tspan x="148" dy="0">源码修改后再次完整回归</tspan>
+</text>
+<text x="807" y="736" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="807" dy="0">msg[63–85]</tspan>
+</text>
+<text x="148" y="775" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#172B4D">
+<tspan x="148" dy="0">多轮 build / backend / browser；最后记录 2 个场景 passed。</tspan>
+</text>
+<polyline points="102,777 102,819" fill="none" stroke="#DCE5EF" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="76" y="826" width="52" height="52" rx="12" fill="#F0F4FA" stroke="none"/>
+<g transform="translate(88 837) scale(1.1666666666666667)" fill="none" stroke="#7952C5" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18 M7 5h1 M11 5h1 M8 12h8 M8 16h5"/></g>
+<text x="148" y="846" font-family="PingFang SC,Arial,sans-serif" font-size="21" font-weight="600" fill="#7952C5">
+<tspan x="148" dy="0">提交完成；平台另行评测</tspan>
+</text>
+<text x="807" y="842" font-family="PingFang SC,Arial,sans-serif" font-size="14" font-weight="400" fill="#61748B">
+<tspan x="807" dy="0">msg[87–91]</tspan>
+</text>
+<text x="148" y="881" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#172B4D">
+<tspan x="148" dy="0">检查最终项目；输出提交标记；平台归档结果为 5/5。</tspan>
+</text>
+<text x="76" y="956" font-family="PingFang SC,Arial,sans-serif" font-size="13" font-weight="400" fill="#61748B">
+<tspan x="76" dy="0">msg[n] 为 trajectory.messages 的零基下标；本 run 含 1 次无工具调用的格式错误，逻辑调用数与 assistant 消息数不同。</tspan>
+</text>
+<rect x="1070" y="334" width="482" height="326" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="1090" y="367" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#138775">
+<tspan x="1090" dy="0">同一架构内的生成应用</tspan>
+</text>
+<rect x="1090" y="392" width="442" height="80" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1090" y="392" width="5" height="80" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1107 410) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18 M7 5h1 M11 5h1 M8 12h8 M8 16h5"/></g>
+<text x="1145" y="428" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1145" dy="0">Home / Register / Login</tspan>
+</text>
+<text x="1108" y="466" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+</text>
+<polyline points="1310,472 1310,500" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1090" y="500" width="260" height="134" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1090" y="500" width="5" height="134" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1107 518) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3 M13 15h4"/></g>
+<text x="1145" y="536" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1145" dy="0">Express Auth API</tspan>
+</text>
+<text x="1108" y="574" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1108" dy="0">校验 / 密码处理 / 会话</tspan>
+<tspan x="1108" dy="22.5">注册、登录、退出</tspan>
+</text>
+<rect x="1374" y="500" width="158" height="134" rx="12" fill="#FFFFFF" stroke="#DCE5EF"/>
+<rect x="1374" y="500" width="5" height="134" rx="2" fill="#138775" stroke="none"/>
+<g transform="translate(1391 518) scale(1.1666666666666667)" fill="none" stroke="#138775" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5 M4 12c0 4 16 4 16 0"/></g>
+<text x="1429" y="536" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1429" dy="0">SQLite</tspan>
+</text>
+<text x="1392" y="574" font-family="PingFang SC,Arial,sans-serif" font-size="15" font-weight="400" fill="#61748B">
+<tspan x="1392" dy="0">users</tspan>
+<tspan x="1392" dy="22.5">sessions</tspan>
+</text>
+<polyline points="1350,567 1374,567" fill="none" stroke="#138775" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="1070" y="692" width="482" height="310" rx="14" fill="#FFFFFF" stroke="#DCE5EF"/>
+<text x="1090" y="725" font-family="PingFang SC,Arial,sans-serif" font-size="17" font-weight="600" fill="#C07824">
+<tspan x="1090" dy="0">对照：Ctrip 提交成功 ≠ 全部通过</tspan>
+</text>
+<text x="1092" y="784" font-family="PingFang SC,Arial,sans-serif" font-size="34" font-weight="600" fill="#C07824">
+<tspan x="1092" dy="0">76 / 152</tspan>
+</text>
+<text x="1092" y="819" font-family="PingFang SC,Arial,sans-serif" font-size="19" font-weight="600" fill="#172B4D">
+<tspan x="1092" dy="0">平台测试通过；通过率 50%</tspan>
+</text>
+<text x="1092" y="864" font-family="PingFang SC,Arial,sans-serif" font-size="16" font-weight="400" fill="#61748B">
+<tspan x="1092" dy="0">较早版本 57cc284；97 次逻辑调用</tspan>
+<tspan x="1092" dy="24.0">run_seconds = 3078.66（51.3 分钟）</tspan>
+<tspan x="1092" dy="24.0">trajectory 与 summary 均为 Submitted</tspan>
+<tspan x="1092" dy="24.0">评测数字来自独立的 run.json。</tspan>
+</text>
+</svg>
