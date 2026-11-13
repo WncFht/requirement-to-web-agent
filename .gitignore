@@ -12,6 +12,8 @@ __pycache__/
 .pytest_cache/
 
 # Local run artifacts
+.zcode
+/report/
 runs/
 test-results/
 .DS_Store
